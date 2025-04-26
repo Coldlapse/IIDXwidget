@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Controller Widget</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/earlyaccess/nanumgothic.css" rel="stylesheet" />
+
+</head>
+<body>
+  <div class="container">
+    <!-- 디스크 전체 + 버튼 그리드 -->
+    <div class="main-content">
+      <div class="disc-wrapper">
+        <!-- 디스크 관련 요소들 -->
+        <div id="outline-ring">
+          <div id="upper-indicator" class="ring-half"></div>
+          <div id="lower-indicator" class="ring-half"></div>
+        </div>
+        <div id="disc">
+          <div id="disc-needle"></div>
+        </div>
+      </div>
+
+      <div class="button-grid">
+        <div class="button-row">
+          <div class="key" id="button-2"></div>
+          <div class="key" id="button-4"></div>
+          <div class="key" id="button-6"></div>
+        </div>
+        <div class="button-row">
+          <div class="key" id="button-1"></div>
+          <div class="key" id="button-3"></div>
+          <div class="key" id="button-5"></div>
+          <div class="key" id="button-7"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ release는 container 안, main-content "아래에" 위치 -->
+    <div id="release-display" class="release-info">Release: 00 ms</div>
+
+  </div> <!-- container 닫기 -->
+
+  <script src="index.js"></script>
+</body>
+
+
+</html>

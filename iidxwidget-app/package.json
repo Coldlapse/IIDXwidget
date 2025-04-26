@@ -1,0 +1,34 @@
+{
+    "name": "iidxwidget",
+    "version": "0.1.0",
+    "description": "iidxwidget",
+    "author": "Sadang",
+    "main": "main.js",
+    "scripts": {
+      "start": "electron .",
+      "build": "electron-builder"
+    },
+    "build": {
+      "appId": "app.beatmania.iidxwidget",
+      "productName": "IIDXwidget",
+      "files": [
+        "**/*"
+      ],
+      "directories": {
+        "buildResources": "build"
+      },
+      "win": {
+        "target": "nsis" 
+      }
+    },
+    "dependencies": {
+      "express": "^4.18.4",
+      "node-hid": "^2.1.2",
+      "ws": "^8.18.1"
+    },
+    "devDependencies": {
+      "electron": "^29.1.0",
+      "electron-builder": "^26.0.12"
+    }
+  }
+  

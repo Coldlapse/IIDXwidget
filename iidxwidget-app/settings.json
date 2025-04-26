@@ -1,0 +1,8 @@
+{
+    "serverPort": 8080,
+    "widget": {
+      "buttonColor": "#00FF00",
+      "fontSize": "16px"
+    }
+  }
+  
