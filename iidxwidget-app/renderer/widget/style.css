@@ -1,0 +1,143 @@
+body {
+  background: transparent; /* ✅ 전체 배경 투명 */
+  color: #fff;
+  font-family: 'Nanum Gothic', sans-serif;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  background-color: #000; /* ✅ 위젯 배경 검정 */
+  padding: 20px 40px; /* ✅ 여백 추가해서 박스 모양 */
+  border-radius: 20px; /* ✅ 모서리 부드럽게 (optional) */
+}
+/* 디스크와 버튼 묶음 */
+.main-content {
+  display: flex;
+  flex-direction: row; /* 👉 원판 왼쪽, 버튼 오른쪽 */
+  align-items: center;
+  gap: 30px;
+}
+
+
+/* 원판 영역 */
+.disc-wrapper {
+  width: 180px;
+  height: 180px;
+  position: relative;
+}
+
+/* 고정된 회색 테두리 */
+#outline-ring {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 6px solid #666;
+  border-radius: 50%;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* 움직이는 검정 원판 */
+#disc {
+  width: 168px;
+  height: 168px;
+  background: black; /* 기본은 검정 */
+  background-size: cover; /* 업로드 이미지 꽉 채우기 */
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 50%; /* 원형 */
+  overflow: hidden; /* 원 밖으로 삐져나오는 것 차단 */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(0deg);
+  z-index: 2;
+  transition: transform 0.1s linear;
+}
+
+/* 중앙 흰 막대 */
+#disc-needle {
+  width: 6px;
+  height: 130px;
+  background: white;
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 3px;
+}
+
+/* 반원 점등 (회색 테두리 위에) */
+.ring-half {
+  width: 100%;
+  height: 50%;
+  background-color: transparent;
+  position: absolute;
+  pointer-events: none;
+  transition: background-color 0.1s;
+}
+
+#upper-indicator {
+  top: 0;
+  border-top-left-radius: 90px;
+  border-top-right-radius: 90px;
+}
+
+#lower-indicator {
+  bottom: 0;
+  border-bottom-left-radius: 90px;
+  border-bottom-right-radius: 90px;
+}
+
+.lit {
+  background-color: #fff !important;
+}
+
+/* 버튼 그리드 */
+.button-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.button-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* 버튼 스타일 */
+.key {
+  width: 40px;
+  height: 60px;
+  background-color: #444;
+  border-radius: 6px;
+  transition: background-color 0.1s;
+}
+
+.key.active {
+  background-color: #fff;
+}
+
+
+/* release 텍스트 */
+.release-info {
+  font-size: 30px;
+  color: #ccc;
+  text-align: right;
+  align-self: flex-end; /* ✅ 오른쪽 끝 정렬 */
+  width: 100%; /* ✅ 부모(400px) 기준 꽉 채우기 */
+}
