@@ -1,19 +1,31 @@
 const WebSocket = require('ws');
 
-let wss;
+let wss = null;
 
 function startWebSocketServer(port = 5678) {
-  try {
-    wss = new WebSocket.Server({ port });
+  if (wss) {
+    console.log('🛑 Closing existing WebSocket server...');
+    wss.close();
+    wss = null;
+  }
 
-    console.log(`🟢 WebSocket server running at ws://0.0.0.0:${port}`);
+  wss = new WebSocket.Server({ port });
 
-    wss.on('error', (error) => {
-      console.error(`❌ WebSocket Server Error: ${error.message}`);
+  console.log(`🟢 WebSocket server running at ws://0.0.0.0:${port}`);
+
+  wss.on('error', (error) => {
+    console.error(`❌ WebSocket Server Error: ${error.message}`);
+  });
+
+  return wss;
+}
+
+function stopWebSocketServer() {
+  if (wss) {
+    wss.close(() => {
+      console.log('🛑 WebSocket Server closed.');
     });
-
-  } catch (err) {
-    console.error(`❌ Failed to start WebSocket server: ${err.message}`);
+    wss = null;
   }
 }
 
@@ -30,5 +42,6 @@ function broadcastControllerData(data) {
 
 module.exports = {
   startWebSocketServer,
+  stopWebSocketServer,
   broadcastControllerData
 };

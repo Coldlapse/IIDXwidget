@@ -1,6 +1,7 @@
 let lastDiscValue = null;
 let discRotation = 0;
 let lastDiscUpdateTime = 0;
+
 const DISC_UPDATE_INTERVAL = 20; // ms 단위, 20ms마다 처리
 const buttonStates = {}; // 버튼별 눌림 상태
 const buttonPressTimes = {}; // 버튼별 누른 시간
@@ -20,12 +21,12 @@ function rotateDisc(delta) {
 function updateBorders(delta) {
   if (delta > 0) {
     // 반시계 방향 → 아래쪽 점등
-    lowerIndicator.classList.add("lit");
-    upperIndicator.classList.remove("lit");
-  } else if (delta < 0) {
-    // 시계 방향 → 위쪽 점등
     upperIndicator.classList.add("lit");
     lowerIndicator.classList.remove("lit");
+  } else if (delta < 0) {
+    // 시계 방향 → 위쪽 점등
+    lowerIndicator.classList.add("lit");
+    upperIndicator.classList.remove("lit");
   } else {
     // 멈춤 → 둘 다 끔
     upperIndicator.classList.remove("lit");
