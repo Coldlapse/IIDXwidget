@@ -32,7 +32,7 @@ function startControllerReader(onDataCallback) {
     // }
 
     device.on('data', (data) => {
-      console.log('Raw buffer:', data);  // 🔁 다시 복구
+      // console.log('Raw buffer:', data);  // 컨트롤러 추가 시에만 디버깅 
 
       try {
         const parsedList = parseControllerData(data);
