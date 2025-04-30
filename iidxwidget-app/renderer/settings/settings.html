@@ -1,63 +1,67 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>설정</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      background: #fff;
-      margin: 20px;
-    }
-
-    label {
-      display: block;
-      margin-top: 15px;
-      font-weight: bold;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      box-sizing: border-box;
-    }
-
-    .buttons {
-      margin-top: 30px;
-      display: flex;
-      justify-content: space-between;
-    }
-  </style>
+  <link href="https://fonts.googleapis.com/earlyaccess/nanumgothic.css" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-  <h1>설정</h1>
-
-  <form id="settings-form">
-    <label for="serverPort">웹서버 포트</label>
-    <input type="number" id="serverPort" required>
-
-    <label for="webSocketPort">웹소켓 포트</label>
-    <input type="number" id="webSocketPort" required>
-
-    <label for="buttonColor">버튼 색상</label>
-    <input type="color" id="buttonColor">
-
-    <label for="fontSize">폰트 크기</label>
-    <select id="fontSize">
-      <option value="12px">12px</option>
-      <option value="14px">14px</option>
-      <option value="16px">16px</option>
-      <option value="18px">18px</option>
-      <option value="20px">20px</option>
-    </select>
-
-    <div class="buttons">
-      <button type="button" id="save-button">저장</button>
-      <button type="button" id="cancel-button">취소</button>
+  
+  <div class="settings-container">
+    <div class="setting-group">
+      <label for="controllerProfile">컨트롤러 프로필</label>
+      <select id="controllerProfile">
+        <option value="PHOENIXWAN">PHOENIXWAN+</option>
+        <option value="KB">BM으로 하라고 만든 게임을 꾸역꾸역 키보드로 하는 멍청이</option>
+      </select>
     </div>
-  </form>
+
+    <div id="key-mapping-container" class="setting-group" style="display: none;">
+      <label>키보드 매핑 (저는 KB를 하는 바보입니다)</label>
+      <table id="key-mapping-table">
+        <tr><td>SCup</td><td><input type="text" data-key="SCup" readonly /></td></tr>
+        <tr><td>SCdown</td><td><input type="text" data-key="SCdown" readonly /></td></tr>
+        <tr><td>1</td><td><input type="text" data-key="1" readonly /></td></tr>
+        <tr><td>2</td><td><input type="text" data-key="2" readonly /></td></tr>
+        <tr><td>3</td><td><input type="text" data-key="3" readonly /></td></tr>
+        <tr><td>4</td><td><input type="text" data-key="4" readonly /></td></tr>
+        <tr><td>5</td><td><input type="text" data-key="5" readonly /></td></tr>
+        <tr><td>6</td><td><input type="text" data-key="6" readonly /></td></tr>
+        <tr><td>7</td><td><input type="text" data-key="7" readonly /></td></tr>
+      </table>
+    </div>
+
+    <div class="setting-group">
+      <label for="serverPort">서버 포트</label>
+      <input type="number" id="serverPort" min="1024" max="65535" />
+    </div>
+    <div class="setting-group">
+      <label for="webSocketPort">웹소켓 포트</label>
+      <input type="number" id="webSocketPort" min="1024" max="65535" />
+    </div>
+
+    <div class="setting-group">
+      <label for="infoPosition">세션 정보 표시 위치</label>
+      <select id="infoPosition">
+        <option value="top">상단</option>
+        <option value="bottom">하단</option>
+        <option value="none">없음</option>
+      </select>
+    </div>
+    <div class="setting-group">
+      <label for="buttonLayout">버튼 레이아웃</label>
+      <select id="buttonLayout">
+        <option value="1P">1P</option>
+        <option value="2P">2P</option>
+      </select>
+    </div>
+
+    <div class="button-row">
+      <button id="save-button">저장</button>
+      <button id="cancel-button">저장하지 않고 종료</button>
+    </div>
+  </div>
 
   <script src="settings.js"></script>
 </body>

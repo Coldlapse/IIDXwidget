@@ -1,8 +1,22 @@
 {
-  "serverPort": 1111,
-  "webSocketPort": 12222,
+  "serverPort": 8080,
+  "webSocketPort": 5678,
+  "controllerProfile": "PHOENIXWAN",
+  "keyMapping": {
+    "KB": {
+      "SCup": "ShiftLeft",
+      "SCdown": "ControlLeft",
+      "1": "KeyS",
+      "2": "KeyD",
+      "3": "KeyF",
+      "4": "Space",
+      "5": "KeyJ",
+      "6": "KeyK",
+      "7": "KeyL"
+    }
+  },
   "widget": {
-    "buttonColor": "#000000",
-    "fontSize": "12px"
+    "infoPosition": "bottom",
+    "buttonLayout": "1P"
   }
 }

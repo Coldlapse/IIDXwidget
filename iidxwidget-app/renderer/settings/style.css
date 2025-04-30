@@ -1,0 +1,71 @@
+body {
+    margin: 0;
+    padding: 40px;
+    background-color: #121212;
+    color: #fff;
+    font-family: 'Nanum Gothic', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  
+  .settings-container {
+    background-color: #1e1e1e;
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+    width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .setting-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  label {
+    font-size: 14px;
+    color: #aaa;
+  }
+  
+  input, select {
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+    background-color: #2a2a2a;
+    color: #fff;
+    font-size: 15px;
+    font-family: 'Nanum Gothic', sans-serif;
+  }
+  
+  button {
+    padding: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Nanum Gothic', sans-serif;
+    transition: background 0.2s;
+  }
+  
+  #save-button {
+    background-color: #00c853;
+    color: #fff;
+  }
+  
+  #cancel-button {
+    background-color: #555;
+    color: #fff;
+  }
+  
+  .button-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  
