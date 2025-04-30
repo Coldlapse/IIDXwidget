@@ -97,7 +97,7 @@ function createStatusMenu() {
             dialog.showMessageBox({
               type: 'info',
               title: '정보',
-              message: 'IIDXwidget v1.0.1\n개발자: Sadang\nhttps://github.com/Coldlapse/IIDXwidget',
+              message: 'IIDXwidget v1.0.2\n개발자: Sadang\nhttps://github.com/Coldlapse/IIDXwidget',
               buttons: ['확인']
             });
           }
@@ -284,7 +284,7 @@ function startKBMode() {
 app.whenReady().then(() => {
   ensureSettingsFileExists();
   try {
-    const raw = fs.readFileSync('settings.json', 'utf-8');
+    const raw = fs.readFileSync(SETTINGS_FILE, 'utf8');
     settings = JSON.parse(raw);
     console.log('✅ settings.json loaded.');
   } catch (err) {
@@ -293,6 +293,8 @@ app.whenReady().then(() => {
 
   serverInstance = startServer(settings.serverPort);
   webSocketInstance = startWebSocketServer(settings.webSocketPort);
+
+  console.log(settings.controllerProfile) 
 
   if (settings.controllerProfile === 'KB') {
     startKBMode();
