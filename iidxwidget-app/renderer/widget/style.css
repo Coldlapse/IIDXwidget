@@ -1,41 +1,43 @@
 body {
-  background: transparent; /* ✅ 전체 배경 투명 */
-  color: #fff;
-  font-family: 'Nanum Gothic', sans-serif;
+  background: transparent;
   margin: 0;
   padding: 0;
   height: 100vh;
+  width: 100vw;
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative; /* ✅ body 자체를 relative 기준 */
+  font-family: 'Nanum Gothic', sans-serif;
+  color: #fff;
 }
 
 .container {
+  background: #000;
+  padding: 25px 40px;
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
-  background-color: #000; /* ✅ 위젯 배경 검정 */
-  padding: 20px 40px; /* ✅ 여백 추가해서 박스 모양 */
-  border-radius: 20px; /* ✅ 모서리 부드럽게 (optional) */
+  gap: 30px;
+  position: relative; /* ✅ release-container absolute 잡을 기준 */
 }
-/* 디스크와 버튼 묶음 */
+
 .main-content {
   display: flex;
-  flex-direction: row; /* 👉 원판 왼쪽, 버튼 오른쪽 */
+  flex-direction: row;
   align-items: center;
   gap: 30px;
 }
 
 
-/* 원판 영역 */
+/* 디스크 */
 .disc-wrapper {
   width: 180px;
   height: 180px;
   position: relative;
 }
 
-/* 고정된 회색 테두리 */
 #outline-ring {
   width: 100%;
   height: 100%;
@@ -50,16 +52,15 @@ body {
   pointer-events: none;
 }
 
-/* 움직이는 검정 원판 */
 #disc {
   width: 168px;
   height: 168px;
-  background: black; /* 기본은 검정 */
-  background-size: cover; /* 업로드 이미지 꽉 채우기 */
+  background: black;
+  background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  border-radius: 50%; /* 원형 */
-  overflow: hidden; /* 원 밖으로 삐져나오는 것 차단 */
+  border-radius: 50%;
+  overflow: hidden;
   position: absolute;
   top: 50%;
   left: 50%;
@@ -68,7 +69,6 @@ body {
   transition: transform 0.1s linear;
 }
 
-/* 중앙 흰 막대 */
 #disc-needle {
   width: 6px;
   height: 130px;
@@ -80,7 +80,7 @@ body {
   border-radius: 3px;
 }
 
-/* 반원 점등 (회색 테두리 위에) */
+/* 반원 점등 */
 .ring-half {
   width: 100%;
   height: 50%;
@@ -106,7 +106,7 @@ body {
   background-color: #fff !important;
 }
 
-/* 버튼 그리드 */
+/* 버튼 */
 .button-grid {
   display: flex;
   flex-direction: column;
@@ -119,38 +119,79 @@ body {
   gap: 10px;
 }
 
-/* 버튼 스타일 */
 .key {
   width: 40px;
   height: 60px;
   background-color: #444;
   border-radius: 6px;
   transition: background-color 0.1s;
+  display: flex;               /* ✅ flex 설정 */
+  justify-content: center;     /* ✅ 가로 중앙 */
+  align-items: center;         /* ✅ 세로 중앙 */
+  position: relative;          /* ✅ 내부 span 고정 가능하게 */
+}
+
+.release-label {
+  font-size: 18px; /* 숫자만 보여줄거니까 조금 더 크고 선명하게 */
+  color: #ccc;
+  pointer-events: none;
+  text-shadow:
+  -1px -1px 0 #000,
+   0px -1px 0 #000,
+   1px -1px 0 #000,
+  -1px  0px 0 #000,
+   1px  0px 0 #000,
+  -1px  1px 0 #000,
+   0px  1px 0 #000,
+   1px  1px 0 #000;
 }
 
 .key.active {
   background-color: #fff;
 }
 
+/* 🔥 release-container */
 .release-container {
   position: absolute;
-  top: 72%;
-  left: 69.8%;
-  transform: translate(-50%, 0);
+  top: 102%; /* ✅ 메인 컨테이너 아래쪽 적당히 */
+  right: 0%;
+  transform: none;
   background: #000;
-  padding: 15px;
+  padding: 15px 15px;
+  border-radius: 15px;
   box-sizing: border-box;
-  border-radius: 20px;
-  font-size: 20px;
-  text-align: right;
   display: flex;
   flex-direction: column;
-  gap: 8px; /* ✅ 각 줄 사이 간격 */
+  gap: 8px;
+  align-items: flex-end;
+  width: 195px; /* release 박스 가로 고정 (원하면 수정 가능) */
 }
 
+.kb-indicator {
+  position: absolute;
+  top: 102%; /* ✅ 메인 컨테이너 아래쪽 적당히 */
+  left: 0%;
+  transform: none;
+  background: #000;
+  padding: 15px 15px;
+  border-radius: 15px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  width: 185px; /* release 박스 가로 고정 (원하면 수정 가능) */
+}
+
+
 .release-container > div {
-  color: #ccc;
   font-size: 22px;
+  color: #ccc;
   text-align: right;
 }
 
+.kb-indicator > div {
+  font-size: 22px;
+  color: #ccc;
+  text-align: left;
+}

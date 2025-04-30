@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>Controller Widget</title>
+  <title>IIDXwidget v1.0.0 by Sadang</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/earlyaccess/nanumgothic.css" rel="stylesheet" />
 
@@ -24,28 +24,33 @@
 
       <div class="button-grid">
         <div class="button-row">
-          <div class="key" id="button-2"></div>
-          <div class="key" id="button-4"></div>
-          <div class="key" id="button-6"></div>
+          <div class="key" id="button-2"><span class="release-label">99</span></div>
+          <div class="key" id="button-4"><span class="release-label">99</span></div>
+          <div class="key" id="button-6"><span class="release-label">99</span></div>
         </div>
         <div class="button-row">
-          <div class="key" id="button-1"></div>
-          <div class="key" id="button-3"></div>
-          <div class="key" id="button-5"></div>
-          <div class="key" id="button-7"></div>
+          <div class="key" id="button-1"><span class="release-label">99</span></div>
+          <div class="key" id="button-3"><span class="release-label">99</span></div>
+          <div class="key" id="button-5"><span class="release-label">99</span></div>
+          <div class="key" id="button-7"><span class="release-label">99</span></div>
         </div>
       </div>
     </div>
+    <!-- 기존 release-container 외에 추가 -->
+    <div class="kb-indicator">
+      <div>input : KB</div>
+    </div>
 
-
+    <div class="release-container">
+      <div id="session-display">Session: 0</div>
+      <div id="release-display">Release: 00 ms</div>
+      <div id="kps-display">0 KPS</div>
+    </div>
   </div> <!-- container 닫기 -->
-
-  <div class="release-container">
-    <div id="release-display">Release: 00 ms</div>
-  </div>
 
 
   <script src="index.js"></script>
+  
 </body>
 
 
