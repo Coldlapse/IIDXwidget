@@ -1,0 +1,12 @@
+This software includes:
+
+• Electron (MIT)
+• Express (MIT)
+• node-hid (MIT)
+• node-global-key-listener (MIT)
+• ws (MIT)
+
+The above packages are licensed under their respective open-source licenses.
+
+The source code of this software is licensed under the MIT License.
+See https://opensource.org/licenses/MIT
