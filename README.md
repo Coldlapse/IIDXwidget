@@ -6,7 +6,7 @@
 **투컴 방송** 환경에서도 사용할 수 있도록 설계되었습니다.
 
 - **개발자** : [BMS Sadang](https://www.youtube.com/@Sadang)
-- **라이센스** : MIT License
+- **라이센스** : MIT License (이 패키지에 포함된 소프트웨어들의 라이센스 명시는 ([LICENCES](https://github.com/Coldlapse/IIDXwidget/blob/main/LICENCES)) 를 참고하세요.
 - **후원** : https://toon.at/donate/Sadang (제 개인방송 도네 링크입니다.)
 
 ---
