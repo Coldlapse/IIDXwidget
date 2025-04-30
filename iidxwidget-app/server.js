@@ -1,6 +1,8 @@
 const express = require('express');
+const { app } = require('electron'); // server.js가 별도 프로세스면 이건 불가
 const path = require('path');
 const fs = require('fs');
+const SETTINGS_FILE = path.join(app.getPath('userData'), 'settings.json');
 
 let serverInstance = null;
 
@@ -8,9 +10,8 @@ function startServer(port) {
   const app = express();
   app.use('/widget', express.static(path.join(__dirname, 'renderer/widget')));
   app.get('/settings', (req, res) => {
-    const settingsPath = path.join(__dirname, 'settings.json');
     try {
-      const data = fs.readFileSync(settingsPath, 'utf8');
+      const data = fs.readFileSync(SETTINGS_FILE, 'utf8');
       res.setHeader('Content-Type', 'application/json');
       res.send(data);
     } catch (err) {

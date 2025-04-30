@@ -97,7 +97,7 @@ function createStatusMenu() {
             dialog.showMessageBox({
               type: 'info',
               title: '정보',
-              message: 'IIDXwidget v1.0.0\n개발자: Sadang\nhttps://github.com/Coldlapse/IIDXwidget',
+              message: 'IIDXwidget v1.0.1\n개발자: Sadang\nhttps://github.com/Coldlapse/IIDXwidget',
               buttons: ['확인']
             });
           }
