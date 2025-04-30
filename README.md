@@ -40,8 +40,9 @@
 
 ## 업데이트 이력
 
-- 0.1.0 : 최초 릴리즈
-- 1.0.0 : 정식 출시 ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v1.0.0))
+- 0.1.0 : 최초 릴리즈 (https://github.com/Coldlapse/IIDXwidget/releases/tag/v0.1.0)
+- ~~1.0.0 : 정식 출시~~ (심각한 버그로 인해 v1.0.1을 바로 게시했습니다.) ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v1.0.0))
+- 1.0.1 : 설정값이 저장 안되던 문제 해결 (https://github.com/Coldlapse/IIDXwidget/releases/tag/v1.0.1)
 
 ---
 
