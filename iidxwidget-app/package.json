@@ -3,6 +3,7 @@
     "version": "1.0.2",
     "description": "iidxwidget",
     "author": "Sadang",
+    "license": "MIT" ,
     "main": "main.js",
     "scripts": {
         "start": "electron .",
