@@ -2,6 +2,8 @@ const { app, BrowserWindow, Menu, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
+const SETTINGS_FILE = path.join(app.getPath('userData'), 'settings.json');
+
 const { startServer, stopServer } = require('./server');
 const { startWebSocketServer, stopWebSocketServer, broadcastControllerData } = require('./wsServer');
 const { startControllerReader } = require('./controller/controllerReader');
@@ -172,7 +174,7 @@ ipcMain.handle('request-log-buffer', () => logBuffer);
 
 ipcMain.handle('load-settings', () => {
   try {
-    const data = fs.readFileSync('settings.json', 'utf8');
+    const data = fs.readFileSync(SETTINGS_FILE, 'utf8');
     return JSON.parse(data);
   } catch (err) {
     console.error('❌ Failed to load settings.json:', err);
@@ -182,7 +184,7 @@ ipcMain.handle('load-settings', () => {
 
 ipcMain.handle('save-settings', async (event, newSettings) => {
   try {
-    fs.writeFileSync('settings.json', JSON.stringify(newSettings, null, 2));
+    fs.writeFileSync(SETTINGS_FILE, JSON.stringify(newSettings, null, 2));
     settings = newSettings;
 
     if (settings.controllerProfile === 'KB') {
@@ -196,6 +198,37 @@ ipcMain.handle('save-settings', async (event, newSettings) => {
     console.error('❌ Failed to save settings.json:', err);
   }
 });
+
+function ensureSettingsFileExists() {
+  if (!fs.existsSync(SETTINGS_FILE)) {
+    const defaultSettings = {
+      serverPort: 8080,
+      webSocketPort: 5678,
+      controllerProfile: 'PHOENIXWAN',
+      keyMapping: {
+        KB: {
+          SCup: "ShiftLeft",
+          SCdown: "ControlLeft",
+          "1": "KeyS",
+          "2": "KeyD",
+          "3": "KeyF",
+          "4": "Space",
+          "5": "KeyJ",
+          "6": "KeyK",
+          "7": "KeyL"
+        }
+      },
+      widget: {
+        infoPosition: "bottom",
+        buttonLayout: "1P"
+      }
+    };
+
+    fs.writeFileSync(SETTINGS_FILE, JSON.stringify(defaultSettings, null, 2));
+    console.log('✅ Default settings.json created at', SETTINGS_FILE);
+  }
+}
+
 
 // 🟩 모드 실행 함수들
 function startPHOENIXWANMode() {
@@ -249,6 +282,7 @@ function startKBMode() {
 
 // 🟢 앱 시작
 app.whenReady().then(() => {
+  ensureSettingsFileExists();
   try {
     const raw = fs.readFileSync('settings.json', 'utf-8');
     settings = JSON.parse(raw);
