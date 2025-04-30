@@ -7,6 +7,7 @@
 
 - **개발자** : [BMS Sadang](https://www.youtube.com/@Sadang)
 - **라이센스** : MIT License
+- **후원** : https://toon.at/donate/Sadang (제 개인방송 도네 링크입니다.)
 
 ---
 
