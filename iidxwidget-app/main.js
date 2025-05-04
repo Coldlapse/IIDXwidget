@@ -97,11 +97,21 @@ function createStatusMenu() {
             dialog.showMessageBox({
               type: 'info',
               title: '정보',
-              message: 'IIDXwidget v1.0.2\n개발자: Sadang\nhttps://github.com/Coldlapse/IIDXwidget',
+              message: 'IIDXwidget v1.0.3\n개발자: Sadang\nhttps://github.com/Coldlapse/IIDXwidget',
               buttons: ['확인']
             });
           }
         },
+        { label: '기여자', click: () => {
+          const { dialog } = require('electron');
+          dialog.showMessageBox({
+            type: 'info',
+            title: '기여자',
+            message: '기여자 : rhombus9',
+            buttons: ['확인']
+          });
+        }
+      },
         { type: 'separator' },
         { label: '재시작', click: restartApp },
         { label: '끝내기', click: () => app.quit() }

@@ -14,7 +14,7 @@ function startGlobalKeyboardReader(mapping, onEventCallback) {
 
     const code = (event.rawKey?.standardName?.trim()) || event.rawKey?.name || '';
 
-    console.log('log: ',code);
+    // console.log('log: ',code); 콘솔 로그 창에는 나타나지 않도록 하였습니다. - Coldlapse
 
     const isDown = event.state === 'DOWN';
     const normalized = normalizeKeyName(code);
