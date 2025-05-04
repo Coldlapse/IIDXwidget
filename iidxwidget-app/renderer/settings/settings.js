@@ -98,6 +98,8 @@ document.getElementById('controllerProfile').addEventListener('change', async (e
 document.querySelectorAll('#key-mapping-table input').forEach(input => {
   input.addEventListener('keydown', (e) => {
     e.preventDefault();
-    input.value = e.code;
+    // Normalize Enter and NumpadEnter to the same value
+    let normalizedCode = (e.code === 'NumpadEnter' || e.code === 'Enter') ? 'Enter' : e.code;
+    input.value = normalizedCode;
   });
 });
