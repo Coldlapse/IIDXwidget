@@ -44,6 +44,7 @@
 - 1.0.0 : 정식 출시 (심각한 버그로 인해 v1.0.1을 바로 게시했습니다.) ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v1.0.0))
 - 1.0.1 : 설정값이 저장 안되던 문제 해결 ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v1.0.1))
 - 1.0.2 : KB만 설정값이 저장 안되던 문제 해결 ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v1.0.2))
+- 1.0.3 : KB 모드 특수키 입력 매핑 추가 (기여자 : rhombus9) ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v1.0.3))
 
 ---
 
@@ -52,3 +53,6 @@
 - PC 실행시 트레이로 자동 실행 기능 구현
 - 원본 라그 위젯처럼 위젯 커스터마이징 기능 구현
 - Release 계산의 표본 갯수 커스터마이징 기능 구현
+- 자동 업데이트 기능 구현
+- beatmania.app 서열표 사이트와 연계하여, 매일 입력한 버튼 수 통계 보는 기능 추가 (DB 작업)
+- 10만회 이상 입력 시, Session에서 줄바꿈이 일어나는 문제 수정
