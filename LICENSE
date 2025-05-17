@@ -19,16 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-This software includes the following third-party components:
-
-• Electron – MIT License  
-• Express – MIT License  
-• node-hid – MIT License  
-• node-global-key-listener – MIT License  
-• ws – MIT License  
-
-These components are licensed under their respective open-source licenses.
-
-The source code of this software is licensed under the MIT License.  
-See https://opensource.org/licenses/MIT
