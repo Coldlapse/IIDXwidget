@@ -8,6 +8,8 @@ document.getElementById('save-button').addEventListener('click', async () => {
   const controllerProfile = document.getElementById('controllerProfile').value;
   const infoPosition = document.getElementById('infoPosition').value;
   const buttonLayout = document.getElementById('buttonLayout').value;
+  const lr2ModeEnabled = document.getElementById('lr2ModeEnabled').checked;
+  
 
   if (
     isNaN(serverPort) || isNaN(webSocketPort) ||
@@ -35,6 +37,8 @@ document.getElementById('save-button').addEventListener('click', async () => {
     serverPort,
     webSocketPort,
     controllerProfile,
+    lr2ModeEnabled,
+    autoLaunch: document.getElementById('autoLaunch').checked,
     keyMapping: {
       KB: controllerProfile === 'KB' ? kbMapping : existingKeyMapping
     },
@@ -51,8 +55,15 @@ document.getElementById('save-button').addEventListener('click', async () => {
 
 // ✅ 키 매핑 UI 토글 함수
 function toggleKeyMappingUI(profile) {
-  const keyMappingSection = document.getElementById('key-mapping-container');
-  keyMappingSection.style.display = (profile === 'KB') ? 'block' : 'none';
+  const keyMapping = document.getElementById('key-mapping-container');
+  const lr2Row = document.getElementById('lr2-detect-row');
+  if (profile === 'KB') {
+    keyMapping.style.display = 'block';
+    lr2Row.style.display = 'none';
+  } else {
+    keyMapping.style.display = 'none';
+    lr2Row.style.display = 'block';
+  }
 }
 
 // ✅ 초기 설정 불러오기
@@ -65,6 +76,8 @@ function toggleKeyMappingUI(profile) {
     document.getElementById('controllerProfile').value = settings.controllerProfile || 'PHOENIXWAN';
     document.getElementById('infoPosition').value = settings.widget?.infoPosition || 'bottom';
     document.getElementById('buttonLayout').value = settings.widget?.buttonLayout || '1P';
+    document.getElementById('lr2ModeEnabled').checked = !!settings.lr2ModeEnabled;
+    document.getElementById('autoLaunch').checked = settings.autoLaunch || false;
 
     toggleKeyMappingUI(settings.controllerProfile || 'PHOENIXWAN');
 

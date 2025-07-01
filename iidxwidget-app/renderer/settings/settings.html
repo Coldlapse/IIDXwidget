@@ -10,11 +10,20 @@
   
   <div class="settings-container">
     <div class="setting-group">
+      <label><input type="checkbox" id="autoLaunch" /> Windows 시작 시 자동 실행</label><br>
       <label for="controllerProfile">컨트롤러 프로필</label>
       <select id="controllerProfile">
         <option value="PHOENIXWAN">PHOENIXWAN+</option>
+        <option value="FPS EMP Gen2">FPS EMP Gen2</option>
         <option value="KB">BM으로 하라고 만든 게임을 꾸역꾸역 키보드로 하는 멍청이</option>
       </select>
+    </div>
+
+    <div id="lr2-detect-row">
+      <label>
+        <input type="checkbox" id="lr2ModeEnabled" />
+        LR2 모드 감지 (주작콘 전용)
+      </label>
     </div>
 
     <div id="key-mapping-container" class="setting-group" style="display: none;">
