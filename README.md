@@ -15,7 +15,7 @@
 
 - 스크래치의 입력 방향과 버튼 입력을 실시간으로 시각화하여 보여줍니다.
 - 버튼이 눌렸다가 떼지는 데에 소요된 시간을 ms 단위로 측정하여 평균을 내줍니다. 현재 마지막 200회 입력에 대한 이동평균으로 설정되어 있습니다. (추후 커스터마이징 지원 예정)
-- 현재 피닉스완(주작콘) 및 키보드 입력을 지원합니다.
+- 현재 피닉스완(주작콘), FPS 2세대 및 키보드 입력을 지원합니다.
 - 직접 컨트롤러 매핑을 가능하게 하는 방안은 고려 중입니다.
 ---
 ## 사용 방법
@@ -45,14 +45,16 @@
 - 1.0.1 : 설정값이 저장 안되던 문제 해결 ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v1.0.1))
 - 1.0.2 : KB만 설정값이 저장 안되던 문제 해결 ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v1.0.2))
 - 1.0.3 : KB 모드 특수키 입력 매핑 추가 (기여자 : rhombus9) ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v1.0.3))
+- 1.1.0 : 자동 업데이트 구현을 위한 중간 버전 ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v1.1.0))
+- 1.1.1 : 자동 업데이트 구현을 위한 중간 버전 ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v1.1.1))
+- 1.2.0 : 자동 업데이터 구현 및 LR2 인식 추가 등등 ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v1.2.0))
+- 1.2.1 : 10만번 이상 두들겨도 줄 바꿈 일어나지 않게 수정 ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v1.2.1))
 
 ---
 
 ## TODO
 
-- PC 실행시 트레이로 자동 실행 기능 구현
 - 원본 라그 위젯처럼 위젯 커스터마이징 기능 구현
 - Release 계산의 표본 갯수 커스터마이징 기능 구현
-- 자동 업데이트 기능 구현
 - beatmania.app 서열표 사이트와 연계하여, 매일 입력한 버튼 수 통계 보는 기능 추가 (DB 작업)
-- 10만회 이상 입력 시, Session에서 줄바꿈이 일어나는 문제 수정
+- 채터링 감지 기능 구현
