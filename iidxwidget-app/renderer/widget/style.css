@@ -188,6 +188,8 @@ body {
   font-size: 22px;
   color: #ccc;
   text-align: right;
+  white-space: nowrap;     /* ✅ 줄바꿈 방지 */
+  overflow: hidden;        /* ✅ 넘치는 텍스트 숨김 */
 }
 
 .kb-indicator > div {
