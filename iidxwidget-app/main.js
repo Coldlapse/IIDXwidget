@@ -29,6 +29,7 @@ let controllerInstance = null;
 let keyboardInstance = null;
 
 const logBuffer = [];
+const appVersion = app.getVersion();
 
 const preloadPath = path.join(__dirname, 'preload.js');
 console.log('[DEBUG] Preload path:', preloadPath);
@@ -56,6 +57,17 @@ function createMainWindow() {
   });
   mainWindow.loadFile('./renderer/widget/index.html');
 }
+
+function stripHtmlToText(html) {
+  return html
+    .replace(/<\/p>/gi, '\n\n')     // 문단 끝에 줄바꿈 2번
+    .replace(/<p[^>]*>/gi, '')      // 문단 시작 태그 제거
+    .replace(/<br\s*\/?>/gi, '\n')  // 줄바꿈
+    .replace(/<\/?div[^>]*>/gi, '\n') // div 줄바꿈
+    .replace(/<[^>]+>/g, '')        // 나머지 태그 제거
+    .trim();
+}
+
 
 function createSettingsWindow() {
   if (settingsWindow) return settingsWindow.focus();
@@ -106,7 +118,7 @@ function createStatusMenu() {
             dialog.showMessageBox({
               type: 'info',
               title: '정보',
-              message: 'IIDXwidget v1.1.0\n개발자: Sadang\nhttps://github.com/Coldlapse/IIDXwidget',
+              message: `IIDXwidget v${appVersion}\n개발자: Sadang\nhttps://github.com/Coldlapse/IIDXwidget`,
               buttons: ['확인']
             });
           }
@@ -192,6 +204,9 @@ console.log = (...args) => {
 // 📡 IPC
 ipcMain.handle('get-websocket-port', () => settings.webSocketPort || 5678);
 ipcMain.handle('request-log-buffer', () => logBuffer);
+ipcMain.handle('get-app-version', () => {
+  return app.getVersion();
+});
 
 ipcMain.handle('load-settings', () => {
   try {
@@ -325,8 +340,11 @@ function manualUpdateCheck() {
   autoUpdater.once('update-available', (info) => {
     console.log('📦 업데이트 발견됨:', info.version);
 
-    const releaseNotes = info.releaseNotes || '패치 노트 없음';
-    const message = `📦 새 버전 ${info.version} 이(가) 있습니다!\n\n🔖 변경사항:\n${releaseNotes}`;
+    const plainReleaseNotes = (info.releaseNotes || '')
+      .replace(/<[^>]+>/g, '')  // HTML 태그 제거
+      .trim();
+
+    const message = `새 버전 ${info.version} 이(가) 있습니다!\n\n변경사항:\n${plainReleaseNotes}`;
 
     const result = dialog.showMessageBoxSync({
       type: 'info',
@@ -378,8 +396,11 @@ function checkForUpdateWithUI() {
       return;
     }
 
-    const releaseNotes = info.releaseNotes || '패치 노트 없음';
-    const message = `📦 새 버전 ${info.version} 이(가) 있습니다!\n\n🔖 변경사항:\n${releaseNotes}`;
+    const plainReleaseNotes = (info.releaseNotes || '')
+      .replace(/<[^>]+>/g, '')  // HTML 태그 제거
+      .trim();
+
+    const message = `새 버전 ${info.version} 이(가) 있습니다!\n\n변경사항:\n${plainReleaseNotes}`;
 
     const result = dialog.showMessageBoxSync({
       type: 'info',

@@ -11,3 +11,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   loadSettings: () => ipcRenderer.invoke('load-settings'),
   saveSettings: (newSettings) => ipcRenderer.invoke('save-settings', newSettings) // ✅ 이거 필요
 });
+
+contextBridge.exposeInMainWorld('iidxapi', {
+  getAppVersion: () => ipcRenderer.invoke('get-app-version')
+});

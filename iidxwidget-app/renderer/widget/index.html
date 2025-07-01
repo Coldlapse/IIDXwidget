@@ -50,7 +50,11 @@
 
 
   <script src="index.js"></script>
-  
+  <script>
+    window.iidxapi.getAppVersion().then(version => {
+      document.title = `IIDXwidget v${version} by Sadang`;
+    });
+  </script>
 </body>
 
 
