@@ -34,6 +34,10 @@ const preloadPath = path.join(__dirname, 'preload.js');
 console.log('[DEBUG] Preload path:', preloadPath);
 console.log('[DEBUG] Preload exists:', fs.existsSync(preloadPath));
 
+const { autoUpdater } = require('electron-updater');
+const Store = require('electron-store');
+const store = new Store();
+
 function createMainWindow() {
   mainWindow = new BrowserWindow({
     width: 800,
@@ -97,7 +101,7 @@ function createStatusMenu() {
             dialog.showMessageBox({
               type: 'info',
               title: '정보',
-              message: 'IIDXwidget v1.0.3\n개발자: Sadang\nhttps://github.com/Coldlapse/IIDXwidget',
+              message: 'IIDXwidget v1.1.0\n개발자: Sadang\nhttps://github.com/Coldlapse/IIDXwidget',
               buttons: ['확인']
             });
           }
@@ -107,12 +111,13 @@ function createStatusMenu() {
           dialog.showMessageBox({
             type: 'info',
             title: '기여자',
-            message: '기여자 : rhombus9',
+            message: '기여자 : rhombus9, 멘탈바사삭',
             buttons: ['확인']
           });
         }
       },
         { type: 'separator' },
+        { label: '업데이트 확인', click: () => manualUpdateCheck() },
         { label: '재시작', click: restartApp },
         { label: '끝내기', click: () => app.quit() }
       ]
@@ -126,7 +131,6 @@ function restartApp() {
   stopServer();
   stopWebSocketServer();
 
-  // ⛔ 기존 입력 리더 정지
   if (controllerInstance && controllerInstance.close) {
     try { controllerInstance.close(); } catch (e) {}
     controllerInstance = null;
@@ -140,12 +144,14 @@ function restartApp() {
     serverInstance = startServer(settings.serverPort);
     webSocketInstance = startWebSocketServer(settings.webSocketPort);
 
-    // ✅ 입력 리더 재시작
-    if (settings.controllerProfile === 'PHOENIXWAN') {
-      controllerInstance = startControllerReader(data => {
+    if (settings.controllerProfile === 'PHOENIXWAN' || settings.controllerProfile === 'FPS EMP Gen2') {
+      const { startControllerReader } = require('./controller/controllerReader');
+      controllerInstance = startControllerReader(settings.controllerProfile, data => {
         if (mainWindow) mainWindow.webContents.send('controller-data', data);
         broadcastControllerData(data);
-      });
+      }, { lr2ModeEnabled: settings.lr2ModeEnabled });
+
+      currentHIDDevice = controllerInstance;  // ✅ 이거 추가!
     } else if (settings.controllerProfile === 'KB') {
       const defaultMap = {
         SCup: "ShiftLeft",
@@ -200,8 +206,16 @@ ipcMain.handle('save-settings', async (event, newSettings) => {
     if (settings.controllerProfile === 'KB') {
       startKBMode();
     } else {
-      startPHOENIXWANMode();
+      startPHOENIXWANMode(settings.controllerProfile, settings.lr2ModeEnabled); // ✅ 수정
     }
+
+    app.setLoginItemSettings({
+      openAtLogin: newSettings.autoLaunch,
+      path: app.getPath('exe')
+    });
+
+    console.log(`[AutoLaunch 설정 저장 시 적용됨] ${newSettings.autoLaunch ? '✅ 등록됨' : '❎ 해제됨'}`);
+
 
     restartApp(); // 서버 재시작 및 프론트 리로드
   } catch (err) {
@@ -215,6 +229,8 @@ function ensureSettingsFileExists() {
       serverPort: 8080,
       webSocketPort: 5678,
       controllerProfile: 'PHOENIXWAN',
+      lr2ModeEnabled: false,
+      autoLaunch: false,
       keyMapping: {
         KB: {
           SCup: "ShiftLeft",
@@ -241,21 +257,25 @@ function ensureSettingsFileExists() {
 
 
 // 🟩 모드 실행 함수들
-function startPHOENIXWANMode() {
+function startPHOENIXWANMode(profile = 'PHOENIXWAN', lr2DetectEnabled = false) {
   if (currentKBReader && typeof currentKBReader.stop === 'function') {
     currentKBReader.stop();
     currentKBReader = null;
-    console.log('🛑 Stopped keyboard reader (switching to PHOENIXWAN)');
+    console.log('🛑 Stopped keyboard reader (switching to HID)');
   }
 
   if (currentHIDDevice?.close) {
-    try { currentHIDDevice.close(); } catch (e) {}
-  }
+  try {
+    currentHIDDevice.close();
+  } catch (e) {}
+  currentHIDDevice = null;
+}
 
-  currentHIDDevice = startControllerReader((data) => {
+  console.log(`🎮 Starting controller reader for profile: ${profile}`);
+  currentHIDDevice = startControllerReader(profile, (data) => {
     if (mainWindow) mainWindow.webContents.send('controller-data', data);
     broadcastControllerData(data);
-  });
+  }, { lr2ModeEnabled: lr2DetectEnabled });
 }
 
 function startKBMode() {
@@ -290,9 +310,108 @@ function startKBMode() {
   });
 }
 
+function manualUpdateCheck() {
+  autoUpdater.autoDownload = false;
+
+  autoUpdater.once('update-available', (info) => {
+    // ❗ 스킵된 버전이어도 알림 표시
+    const releaseNotes = info.releaseNotes || '패치 노트 없음';
+    const message = `📦 새 버전 ${info.version} 이(가) 있습니다!\n\n🔖 변경사항:\n${releaseNotes}`;
+
+    const result = dialog.showMessageBoxSync({
+      type: 'info',
+      title: '업데이트 알림',
+      message: message,
+      buttons: ['업데이트', '다음에 하기'],
+      cancelId: 1,
+      defaultId: 0,
+    });
+
+    if (result === 0) {
+      autoUpdater.downloadUpdate();
+    }
+  });
+
+  autoUpdater.once('update-not-available', () => {
+    dialog.showMessageBox({
+      type: 'info',
+      title: '업데이트 확인',
+      message: '현재 최신 버전입니다.'
+    });
+  });
+
+  autoUpdater.once('error', (err) => {
+    dialog.showMessageBox({
+      type: 'error',
+      title: '업데이트 오류',
+      message: `업데이트 확인 중 오류 발생:\n${err.message}`
+    });
+  });
+
+  console.log('🔍 수동 업데이트 확인 시작');
+  autoUpdater.checkForUpdates();
+}
+
+
+function checkForUpdateWithUI() {
+  autoUpdater.autoDownload = false;
+
+  autoUpdater.on('update-available', (info) => {
+    const currentVersion = app.getVersion();
+    const skippedVersion = store.get('skippedVersion');
+
+    if (info.version === skippedVersion) {
+      console.log(`🚫 스킵된 버전 ${skippedVersion} – 알림 건너뜀`);
+      return;
+    }
+
+    const releaseNotes = info.releaseNotes || '패치 노트 없음';
+    const message = `📦 새 버전 ${info.version} 이(가) 있습니다!\n\n🔖 변경사항:\n${releaseNotes}`;
+
+    const result = dialog.showMessageBoxSync({
+      type: 'info',
+      title: '업데이트 알림',
+      message: message,
+      buttons: ['업데이트', '다음에 하기', '이번 버전 스킵'],
+      cancelId: 1,
+      defaultId: 0,
+    });
+
+    if (result === 0) {
+      autoUpdater.downloadUpdate();
+    } else if (result === 2) {
+      store.set('skippedVersion', info.version);
+      console.log(`⚠️ ${info.version} 을(를) 스킵 목록에 추가`);
+    }
+  });
+
+  autoUpdater.on('update-downloaded', () => {
+    const confirm = dialog.showMessageBoxSync({
+      type: 'question',
+      title: '업데이트 준비 완료',
+      message: '업데이트가 다운로드되었습니다.\n지금 재시작하고 설치할까요?',
+      buttons: ['지금 재시작', '나중에'],
+      defaultId: 0,
+      cancelId: 1
+    });
+
+    if (confirm === 0) {
+      autoUpdater.quitAndInstall(); // ✅ 종료 후 설치
+    }
+  });
+
+  autoUpdater.on('error', (err) => {
+    console.error('❌ 업데이트 오류:', err);
+  });
+
+  // 업데이트 체크 시작
+  autoUpdater.checkForUpdates();
+}
+
 // 🟢 앱 시작
 app.whenReady().then(() => {
   ensureSettingsFileExists();
+
   try {
     const raw = fs.readFileSync(SETTINGS_FILE, 'utf8');
     settings = JSON.parse(raw);
@@ -301,21 +420,62 @@ app.whenReady().then(() => {
     console.warn('⚠️ settings.json not found, using defaults.');
   }
 
+  // ✅ 정확히 settings 로딩 후 autoLaunch 처리
+  const exePath = app.getPath('exe');
+
+  // 설정값 기반 등록
+  app.setLoginItemSettings({
+    openAtLogin: settings.autoLaunch,
+    path: exePath
+  });
+
+  console.log(`[AutoLaunch 설정] ${settings.autoLaunch ? '✅ 등록 요청됨' : '❎ 등록 해제됨'} → ${exePath}`);
+
+
+
+  // ✅ 그 다음 나머지 서버/윈도우/입력 리더 실행
+  checkForUpdateWithUI();
   serverInstance = startServer(settings.serverPort);
   webSocketInstance = startWebSocketServer(settings.webSocketPort);
-
-  console.log(settings.controllerProfile) 
 
   if (settings.controllerProfile === 'KB') {
     startKBMode();
   } else {
-    startPHOENIXWANMode();
+    startPHOENIXWANMode(settings.controllerProfile, settings.lr2ModeEnabled);
   }
 
   createMainWindow();
   createStatusMenu();
 });
 
+
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
+});
+
+app.on('before-quit', () => {
+  console.log('🛑 App is quitting, cleaning up HID devices.');
+
+  if (currentHIDDevice) {
+    try {
+      if (typeof currentHIDDevice.removeAllListeners === 'function') {
+        currentHIDDevice.removeAllListeners(); // ✅ 오류 방지
+      }
+      if (typeof currentHIDDevice.close === 'function') {
+        currentHIDDevice.close();
+      }
+    } catch (e) {
+      console.error('❌ Failed to close HID device safely:', e);
+    }
+    currentHIDDevice = null;
+  }
+
+  if (currentKBReader?.stop) {
+    try {
+      currentKBReader.stop();
+    } catch (e) {
+      console.error('❌ Failed to stop keyboard reader:', e);
+    }
+    currentKBReader = null;
+  }
 });
