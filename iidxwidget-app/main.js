@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, ipcMain } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -37,6 +37,11 @@ console.log('[DEBUG] Preload exists:', fs.existsSync(preloadPath));
 const { autoUpdater } = require('electron-updater');
 const Store = require('electron-store');
 const store = new Store();
+
+const log = require('electron-log');
+autoUpdater.logger = log;
+autoUpdater.logger.transports.file.level = 'debug';
+log.info('🧪 실행 중 버전:', app.getVersion());
 
 function createMainWindow() {
   mainWindow = new BrowserWindow({
@@ -313,8 +318,13 @@ function startKBMode() {
 function manualUpdateCheck() {
   autoUpdater.autoDownload = false;
 
+  autoUpdater.once('checking-for-update', () => {
+    console.log('🔍 업데이트 확인 중...');
+  });
+
   autoUpdater.once('update-available', (info) => {
-    // ❗ 스킵된 버전이어도 알림 표시
+    console.log('📦 업데이트 발견됨:', info.version);
+
     const releaseNotes = info.releaseNotes || '패치 노트 없음';
     const message = `📦 새 버전 ${info.version} 이(가) 있습니다!\n\n🔖 변경사항:\n${releaseNotes}`;
 
@@ -333,6 +343,7 @@ function manualUpdateCheck() {
   });
 
   autoUpdater.once('update-not-available', () => {
+    console.log('✅ 현재 최신 버전입니다.');
     dialog.showMessageBox({
       type: 'info',
       title: '업데이트 확인',
@@ -341,6 +352,7 @@ function manualUpdateCheck() {
   });
 
   autoUpdater.once('error', (err) => {
+    console.error('❌ 업데이트 오류:', err);
     dialog.showMessageBox({
       type: 'error',
       title: '업데이트 오류',
@@ -348,9 +360,10 @@ function manualUpdateCheck() {
     });
   });
 
-  console.log('🔍 수동 업데이트 확인 시작');
+  console.log('🟡 manualUpdateCheck(): checkForUpdates() 호출됨');
   autoUpdater.checkForUpdates();
 }
+
 
 
 function checkForUpdateWithUI() {
@@ -411,7 +424,7 @@ function checkForUpdateWithUI() {
 // 🟢 앱 시작
 app.whenReady().then(() => {
   ensureSettingsFileExists();
-
+  console.log('🚀 현재 실행 중 앱 버전:', app.getVersion());
   try {
     const raw = fs.readFileSync(SETTINGS_FILE, 'utf8');
     settings = JSON.parse(raw);
