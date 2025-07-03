@@ -21,13 +21,19 @@ function startWebSocketServer(port = 5678) {
 }
 
 function stopWebSocketServer() {
-  if (wss) {
-    wss.close(() => {
-      console.log('🛑 WebSocket Server closed.');
-    });
-    wss = null;
-  }
+  return new Promise((resolve) => {
+    if (wss) {
+      wss.close(() => {
+        console.log('🛑 WebSocket Server closed.');
+        wss = null;
+        resolve();
+      });
+    } else {
+      resolve();
+    }
+  });
 }
+
 
 function broadcastControllerData(data) {
   if (!wss) return;

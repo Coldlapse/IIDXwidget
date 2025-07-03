@@ -20,7 +20,11 @@
             "buildResources": "build"
         },
         "win": {
-            "target": "nsis"
+            "target": "nsis",
+            "icon": "build/icon.ico"
+        },
+        "nsis": {
+            "installerHeaderIcon": "build/icon.ico"
         },
         "publish": [
             {
