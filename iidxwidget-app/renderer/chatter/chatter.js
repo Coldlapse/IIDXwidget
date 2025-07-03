@@ -10,8 +10,8 @@ function updateUI() {
   logEl.textContent = output || '아직 감지된 채터링 없음';
 }
 
-// 초기 요약 데이터 로딩
-(async () => {
+// 요약 데이터 갱신 함수
+async function fetchSummary() {
   const summary = await window.electronAPI?.requestChatterSummary?.();
   if (summary) {
     Object.entries(summary).forEach(([button, count]) => {
@@ -19,15 +19,10 @@ function updateUI() {
     });
     updateUI();
   }
-})();
+}
 
-// 실시간 데이터 수신
-window.electronAPI?.onChatterData?.((data) => {
-  const button = data.button;
-  const releaseTime = data.releaseTime;
+// 초기에 한 번 로딩
+fetchSummary();
 
-  if (releaseTime <= 60) {
-    chatterCounts[button] = (chatterCounts[button] || 0) + 1;
-    updateUI();
-  }
-});
+// 이후 1초마다 갱신
+setInterval(fetchSummary, 1000);

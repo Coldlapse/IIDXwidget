@@ -460,7 +460,7 @@ const chatterStats = {};
 
 ipcMain.on('chatter-data', (event, data) => {
   const { button, releaseTime } = data;
-  if (releaseTime <= 15) {
+  if (releaseTime <= 99) {
     chatterStats[button] = (chatterStats[button] || 0) + 1;
   }
 
