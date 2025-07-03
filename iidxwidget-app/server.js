@@ -6,9 +6,10 @@ const SETTINGS_FILE = path.join(app.getPath('userData'), 'settings.json');
 
 let serverInstance = null;
 
-function startServer(port) {
+function startServer(port, userImagePath) {
   const app = express();
   app.use('/widget', express.static(path.join(__dirname, 'renderer/widget')));
+  app.use('/userImages', express.static(userImagePath));
   app.get('/settings', (req, res) => {
     try {
       const data = fs.readFileSync(SETTINGS_FILE, 'utf8');

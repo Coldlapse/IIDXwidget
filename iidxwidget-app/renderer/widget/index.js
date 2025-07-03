@@ -2,6 +2,7 @@ let lastDiscValue = 128;
 let discRotation = 0;
 let lastDiscUpdateTime = 0;
 let is2PMode = false;
+let uptimeSeconds = 0;
 
 let DISC_UPDATE_INTERVAL = 20; // 기본값
 const buttonStates = {};
@@ -11,9 +12,29 @@ const perButtonReleases = {};
 let totalKeyPresses = 0;
 let keyTimestamps = [];
 
+let GlobalReleaseMALength = 200;
+let PerButtonMALength = 200;
+
 const disc = document.getElementById("disc");
 const upperIndicator = document.getElementById("upper-indicator");
 const lowerIndicator = document.getElementById("lower-indicator");
+
+function formatUptime(seconds) {
+  const hrs = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  return `${hrs}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+}
+
+function startUptimeTimer() {
+  const uptimeDisplay = document.getElementById('uptime-display');
+  if (!uptimeDisplay) return;
+
+  setInterval(() => {
+    uptimeSeconds++;
+    uptimeDisplay.textContent = `${formatUptime(uptimeSeconds)}`;
+  }, 1000);
+}
 
 function rotateDisc(delta) {
   discRotation -= delta * 2.5;
@@ -50,32 +71,41 @@ function updateButton(id, pressed) {
     if (buttonStates[id]) {
       const pressTime = buttonPressTimes[id];
       const releaseDuration = Math.min(Date.now() - pressTime, 99);
+
+      if (window.electronAPI?.sendChatterData) {
+        window.electronAPI.sendChatterData({
+          button: id,
+          releaseTime: releaseDuration
+        });
+      }
+
       perButtonReleases[id] = perButtonReleases[id] || [];
       perButtonReleases[id].push(releaseDuration);
-      if (perButtonReleases[id].length > 200) perButtonReleases[id].shift();
+      if (perButtonReleases[id].length > PerButtonMALength) perButtonReleases[id].shift();
 
       const avg = perButtonReleases[id].reduce((a, b) => a + b, 0) / perButtonReleases[id].length;
       const label = el.querySelector('.release-label');
       if (label) label.textContent = `${avg.toFixed(0)}`;
 
       releaseDurations.push(releaseDuration);
-      if (releaseDurations.length > 200) releaseDurations.shift();
+      if (releaseDurations.length > GlobalReleaseMALength) releaseDurations.shift();
       updateReleaseDisplay();
     }
     buttonStates[id] = false;
   }
+
 }
 
 function updateReleaseDisplay() {
   const display = document.getElementById('release-display');
   if (!display || releaseDurations.length === 0) return;
   const avg = releaseDurations.reduce((a, b) => a + b, 0) / releaseDurations.length;
-  display.textContent = `Release: ${avg.toFixed(0)} ms`;
+  display.textContent = `${avg.toFixed(0)} ms`;
 }
 
 function updateSessionDisplay() {
   const display = document.getElementById('session-display');
-  if (display) display.textContent = `Session: ${totalKeyPresses}`;
+  if (display) display.textContent = `${totalKeyPresses}`;
 }
 
 function updateKPSDisplay() {
@@ -85,6 +115,23 @@ function updateKPSDisplay() {
   if (display) display.textContent = `${parseInt(keyTimestamps.length)} KPS`;
 }
 setInterval(updateKPSDisplay, 100);
+
+function applyDiscImage(imagePath) {
+  const img = document.getElementById('disc-image');
+  const needle = document.getElementById('disc-needle');
+
+  if (!img || !needle) return;
+
+  if (!imagePath) {
+    img.src = '';
+    img.style.display = 'none';
+    needle.style.display = 'block';  // 기본 bar 보이기
+  } else {
+    img.src = imagePath;
+    img.style.display = 'block';
+    needle.style.display = 'none';   // 이미지 있으면 bar 숨기기
+  }
+}
 
 function handleData(data) {
   const now = Date.now();
@@ -135,7 +182,7 @@ function applyReleaseContainerSettings(infoPosition) {
   const releaseContainer = document.querySelector('.release-container');
   if (!releaseContainer) return;
   releaseContainer.style.display = (infoPosition === 'none') ? 'none' : 'flex';
-  releaseContainer.style.top = (infoPosition === 'top') ? '-58.2%' : '102%';
+  releaseContainer.style.top = (infoPosition === 'top') ? '-73.7%' : '102%';
 }
 
 function applyButtonLayout(layout) {
@@ -161,6 +208,11 @@ function applyButtonLayout(layout) {
   if (settings?.widget) {
     applyReleaseContainerSettings(settings.widget.infoPosition || 'bottom');
     applyButtonLayout(settings.widget.buttonLayout || '1P');
+    applyDiscImage(settings?.widget?.discImagePath);
+    applyPromoBox(settings);
+    GlobalReleaseMALength = settings.widget.GlobalReleaseMALength || 200;
+    PerButtonMALength = settings.widget.PerButtonMALength || 200;
+    applyCustomColors(settings.widget.colors);
   }
 
   if (settings?.controllerProfile === 'KB') {
@@ -181,4 +233,40 @@ if (window.electronAPI?.onControllerData) {
       list.forEach(handleData);
     }
   });
+}
+
+window.addEventListener('DOMContentLoaded', async () => {
+  startUptimeTimer();
+});
+
+function applyCustomColors(colors) {
+  if (!colors) return;
+  document.documentElement.style.setProperty('--background-color', colors.background);
+  document.documentElement.style.setProperty('--accent-color', colors.accent);
+  document.documentElement.style.setProperty('--font-color', colors.fontColor);
+  document.documentElement.style.setProperty('--active-color', colors.activeColor);
+}
+
+function applyPromoBox(settings) {
+  const show = settings.widget?.showPromoBox;
+  const position = settings.widget?.infoPosition;
+
+  const promoTop = document.getElementById('promo-top');
+  const promoBottom = document.getElementById('promo-bottom');
+
+  if (show) {
+    if (position === 'top') {
+      promoBottom.style.display = 'block';  // 아래쪽에 보여줌
+      promoTop.style.display = 'none';
+    } else if (position === 'bottom') {
+      promoTop.style.display = 'block';     // 위쪽에 보여줌
+      promoBottom.style.display = 'none';
+    } else {
+      promoTop.style.display = 'none';
+      promoBottom.style.display = 'none';
+    }
+  } else {
+    promoTop.style.display = 'none';
+    promoBottom.style.display = 'none';
+  }
 }

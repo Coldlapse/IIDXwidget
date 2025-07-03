@@ -1,3 +1,6 @@
+let uploadedDiscImagePath = null;
+let removeDiscImage = false;
+
 document.getElementById('cancel-button').addEventListener('click', () => {
   window.close();
 });
@@ -9,7 +12,15 @@ document.getElementById('save-button').addEventListener('click', async () => {
   const infoPosition = document.getElementById('infoPosition').value;
   const buttonLayout = document.getElementById('buttonLayout').value;
   const lr2ModeEnabled = document.getElementById('lr2ModeEnabled').checked;
-  
+  const showPromoBox = document.getElementById('showPromoBox').checked;
+  const globalMALength = parseInt(document.getElementById('GlobalReleaseMALength').value, 10);
+  const perButtonMALength = parseInt(document.getElementById('PerButtonMALength').value, 10);
+  const widgetColors = {
+    background: document.getElementById('color-background').value,
+    accent: document.getElementById('color-accent').value,
+    fontColor: document.getElementById('color-fontColor').value,
+    activeColor: document.getElementById('color-activeColor').value,
+  };
 
   if (
     isNaN(serverPort) || isNaN(webSocketPort) ||
@@ -44,7 +55,12 @@ document.getElementById('save-button').addEventListener('click', async () => {
     },
     widget: {
       infoPosition,
-      buttonLayout
+      buttonLayout,
+      discImagePath: uploadedDiscImagePath,
+      showPromoBox,
+      globalMALength,
+      perButtonMALength,
+      colors: widgetColors
     }
   };
 
@@ -78,6 +94,9 @@ function toggleKeyMappingUI(profile) {
     document.getElementById('buttonLayout').value = settings.widget?.buttonLayout || '1P';
     document.getElementById('lr2ModeEnabled').checked = !!settings.lr2ModeEnabled;
     document.getElementById('autoLaunch').checked = settings.autoLaunch || false;
+    document.getElementById('showPromoBox').checked = !!settings.widget?.showPromoBox;
+    document.getElementById('GlobalReleaseMALength').value = settings.widget?.GlobalReleaseMALength || 200;
+    document.getElementById('PerButtonMALength').value = settings.widget?.PerButtonMALength || 200;
 
     toggleKeyMappingUI(settings.controllerProfile || 'PHOENIXWAN');
 
@@ -88,6 +107,37 @@ function toggleKeyMappingUI(profile) {
         input.value = kbMap[action] || '';
       });
     }
+
+    const defaultColors = {
+      background: '#000000',
+      accent: '#444444',
+      fontColor: '#cccccc',
+      activeColor: '#ffffff'
+    };
+
+    const mergedColors = {
+      ...defaultColors,
+      ...(settings.widget?.colors || {})
+    };
+
+    document.getElementById('color-background').value = mergedColors.background;
+    document.getElementById('color-accent').value = mergedColors.accent;
+    document.getElementById('color-fontColor').value = mergedColors.fontColor;
+    document.getElementById('color-activeColor').value = mergedColors.activeColor;
+
+    uploadedDiscImagePath = settings.widget?.discImagePath || null;
+    removeDiscImage = false;
+
+    if (uploadedDiscImagePath) {
+      const previewImg = document.getElementById('disc-preview');
+      previewImg.src = uploadedDiscImagePath;
+      previewImg.style.display = 'block';
+    }
+
+    bindColorPreview('color-background', 'preview-background');
+    bindColorPreview('color-accent', 'preview-accent');
+    bindColorPreview('color-fontColor', 'preview-fontColor');
+    bindColorPreview('color-activeColor', 'preview-activeColor');
   }
 })();
 
@@ -116,3 +166,45 @@ document.querySelectorAll('#key-mapping-table input').forEach(input => {
     input.value = normalizedCode;
   });
 });
+
+document.getElementById('disc-image-upload').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const filePath = file.path;
+  const savedPath = await window.electronAPI.saveUserImage(filePath);
+
+  if (savedPath) {
+    uploadedDiscImagePath = savedPath;
+    removeDiscImage = false;
+
+    const previewImg = document.getElementById('disc-preview');
+    previewImg.src = savedPath;
+    previewImg.style.display = 'block';
+  }
+});
+
+document.getElementById('delete-disc-button').addEventListener('click', () => {
+  uploadedDiscImagePath = null;
+  removeDiscImage = true;
+
+  const previewImg = document.getElementById('disc-preview');
+  previewImg.src = '';
+  previewImg.style.display = 'none';
+
+  // 파일 선택 input 초기화
+  document.getElementById('disc-image-upload').value = '';
+});
+
+function bindColorPreview(inputId, previewId) {
+  const input = document.getElementById(inputId);
+  const preview = document.getElementById(previewId);
+  if (!input || !preview) return;
+
+  const updatePreview = () => {
+    preview.style.backgroundColor = input.value;
+  };
+
+  input.addEventListener('input', updatePreview);
+  updatePreview(); // 초기 적용
+}
