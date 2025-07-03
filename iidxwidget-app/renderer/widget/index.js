@@ -12,8 +12,8 @@ const perButtonReleases = {};
 let totalKeyPresses = 0;
 let keyTimestamps = [];
 
-let GlobalReleaseMALength = 200;
-let PerButtonMALength = 200;
+let globalMALength = 200;
+let perButtonMALength = 200;
 
 const disc = document.getElementById("disc");
 const upperIndicator = document.getElementById("upper-indicator");
@@ -81,14 +81,14 @@ function updateButton(id, pressed) {
 
       perButtonReleases[id] = perButtonReleases[id] || [];
       perButtonReleases[id].push(releaseDuration);
-      if (perButtonReleases[id].length > PerButtonMALength) perButtonReleases[id].shift();
+      if (perButtonReleases[id].length > perButtonMALength) perButtonReleases[id].shift();
 
       const avg = perButtonReleases[id].reduce((a, b) => a + b, 0) / perButtonReleases[id].length;
       const label = el.querySelector('.release-label');
       if (label) label.textContent = `${avg.toFixed(0)}`;
 
       releaseDurations.push(releaseDuration);
-      if (releaseDurations.length > GlobalReleaseMALength) releaseDurations.shift();
+      if (releaseDurations.length > globalMALength) releaseDurations.shift();
       updateReleaseDisplay();
     }
     buttonStates[id] = false;
@@ -210,8 +210,8 @@ function applyButtonLayout(layout) {
     applyButtonLayout(settings.widget.buttonLayout || '1P');
     applyDiscImage(settings?.widget?.discImagePath);
     applyPromoBox(settings);
-    GlobalReleaseMALength = settings.widget.GlobalReleaseMALength || 200;
-    PerButtonMALength = settings.widget.PerButtonMALength || 200;
+    globalMALength = settings.widget.globalMALength || 200;
+    perButtonMALength = settings.widget.perButtonMALength || 200;
     applyCustomColors(settings.widget.colors);
   }
 

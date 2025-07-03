@@ -95,8 +95,8 @@ function toggleKeyMappingUI(profile) {
     document.getElementById('lr2ModeEnabled').checked = !!settings.lr2ModeEnabled;
     document.getElementById('autoLaunch').checked = settings.autoLaunch || false;
     document.getElementById('showPromoBox').checked = !!settings.widget?.showPromoBox;
-    document.getElementById('GlobalReleaseMALength').value = settings.widget?.GlobalReleaseMALength || 200;
-    document.getElementById('PerButtonMALength').value = settings.widget?.PerButtonMALength || 200;
+    document.getElementById('GlobalReleaseMALength').value = settings.widget?.globalMALength || 200;
+    document.getElementById('PerButtonMALength').value = settings.widget?.perButtonMALength || 200;
 
     toggleKeyMappingUI(settings.controllerProfile || 'PHOENIXWAN');
 
