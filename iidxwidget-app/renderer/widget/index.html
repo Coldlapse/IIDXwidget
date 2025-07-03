@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>IIDXwidget v1.1.0 by Sadang</title>
+  <title>IIDXwidget Browser Sourse Page</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/earlyaccess/nanumgothic.css" rel="stylesheet" />
 
@@ -18,6 +18,7 @@
           <div id="lower-indicator" class="ring-half"></div>
         </div>
         <div id="disc">
+          <img id="disc-image" src="" alt=" " />
           <div id="disc-needle"></div>
         </div>
       </div>
@@ -42,10 +43,15 @@
     </div>
 
     <div class="release-container">
-      <div id="session-display">Session: 0</div>
-      <div id="release-display">Release: 00 ms</div>
-      <div id="kps-display">0 KPS</div>
+      <div class="release-line"><span class="label">Session</span><span class="value" id="session-display">0</span></div>
+      <div class="release-line"><span class="label">Uptime</span><span class="value" id="uptime-display">0:00:00</span></div>
+      <div class="release-line"><span class="label">Release</span><span class="value" id="release-display">00 ms</span></div>
+      <div class="release-line"><span class="value" id="kps-display">0 KPS</span></div> <!-- 그대로 유지 가능 -->
     </div>
+
+    <div id="promo-top" class="promo-box">Try this! → https://github.com/Coldlapse/IIDXwidget</div>
+    <div id="promo-bottom" class="promo-box">Try this! → https://github.com/Coldlapse/IIDXwidget</div>
+
   </div> <!-- container 닫기 -->
 
 

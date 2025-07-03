@@ -14,15 +14,44 @@ let settingsWindow;
 let logsWindow;
 let serverInstance;
 let webSocketInstance;
-let settings = {
+let chatterWindow = null;
+
+const defaultSettings = {
   serverPort: 8080,
   webSocketPort: 5678,
+  controllerProfile: 'PHOENIXWAN',
+  lr2ModeEnabled: false,
+  autoLaunch: false,
+  keyMapping: {
+    KB: {
+      SCup: "ShiftLeft",
+      SCdown: "ControlLeft",
+      "1": "KeyS",
+      "2": "KeyD",
+      "3": "KeyF",
+      "4": "Space",
+      "5": "KeyJ",
+      "6": "KeyK",
+      "7": "KeyL"
+    }
+  },
   widget: {
-    buttonColor: "#00FF00",
-    fontSize: "16px"
+    infoPosition: "bottom",
+    buttonLayout: "1P",
+    discImagePath: null,
+    showPromoBox: false,
+    GlobalReleaseMALength: 200,
+    PerButtonMALength: 200,
+    colors: {
+      background: "#000000",
+      accent: "#444444",
+      fontColor: "#cccccc",
+      activeColor: "#ffffff"
+    }
   }
 };
 
+let settings = structuredClone(defaultSettings);
 let currentKBReader = null;
 let currentHIDDevice = null;
 let controllerInstance = null;
@@ -46,8 +75,8 @@ log.info('🧪 실행 중 버전:', app.getVersion());
 
 function createMainWindow() {
   mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1000,
+    height: 800,
     resizable: false,
     webPreferences: {
       preload: preloadPath,
@@ -112,6 +141,7 @@ function createStatusMenu() {
       submenu: [
         { label: '설정', click: createSettingsWindow },
         { label: '로그', click: createLogsWindow },
+        { label: '채터링 감지', click: createChatterWindow },
         { type: 'separator' },
         { label: '정보', click: () => {
             const { dialog } = require('electron');
@@ -158,7 +188,8 @@ function restartApp() {
   }
 
   setTimeout(() => {
-    serverInstance = startServer(settings.serverPort);
+    const userImageDir = path.join(app.getPath('userData'), 'userImages');
+    serverInstance = startServer(settings.serverPort, userImageDir);
     webSocketInstance = startWebSocketServer(settings.webSocketPort);
 
     if (settings.controllerProfile === 'PHOENIXWAN' || settings.controllerProfile === 'FPS EMP Gen2') {
@@ -243,37 +274,63 @@ ipcMain.handle('save-settings', async (event, newSettings) => {
   }
 });
 
+
+ipcMain.handle('save-user-image', async (event, sourcePath) => {
+  try {
+    const destDir = path.join(app.getPath('userData'), 'userImages');
+    if (!fs.existsSync(destDir)) fs.mkdirSync(destDir);
+
+    const fileName = `disc_${Date.now()}${path.extname(sourcePath)}`;
+    const destPath = path.join(destDir, fileName);
+    fs.copyFileSync(sourcePath, destPath);
+
+    // settings 업데이트
+    const settingsPath = path.join(app.getPath('userData'), 'settings.json');
+    const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+    settings.widget = settings.widget || {};
+
+    const publicUrl = `http://localhost:${settings.serverPort}/userImages/${fileName}`;
+    settings.widget.discImagePath = publicUrl;
+    fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+
+    return publicUrl;  // ✅ 여기 수정!
+  } catch (err) {
+    console.error('❌ 이미지 저장 실패:', err);
+    return null;
+  }
+});
+
+
 function ensureSettingsFileExists() {
   if (!fs.existsSync(SETTINGS_FILE)) {
-    const defaultSettings = {
-      serverPort: 8080,
-      webSocketPort: 5678,
-      controllerProfile: 'PHOENIXWAN',
-      lr2ModeEnabled: false,
-      autoLaunch: false,
-      keyMapping: {
-        KB: {
-          SCup: "ShiftLeft",
-          SCdown: "ControlLeft",
-          "1": "KeyS",
-          "2": "KeyD",
-          "3": "KeyF",
-          "4": "Space",
-          "5": "KeyJ",
-          "6": "KeyK",
-          "7": "KeyL"
-        }
-      },
-      widget: {
-        infoPosition: "bottom",
-        buttonLayout: "1P"
-      }
-    };
-
     fs.writeFileSync(SETTINGS_FILE, JSON.stringify(defaultSettings, null, 2));
     console.log('✅ Default settings.json created at', SETTINGS_FILE);
   }
 }
+
+function createChatterWindow() {
+  if (chatterWindow) return chatterWindow.focus();
+
+  chatterWindow = new BrowserWindow({
+    width: 400,
+    height: 500,
+    parent: mainWindow,
+    modal: true,
+    autoHideMenuBar: true,
+    webPreferences: {
+      preload: preloadPath,
+      contextIsolation: true,
+      nodeIntegration: false
+    }
+  });
+
+  chatterWindow.loadFile('./renderer/chatter/chatter.html');
+
+  chatterWindow.on('closed', () => {
+    chatterWindow = null;
+  });
+}
+
 
 
 // 🟩 모드 실행 함수들
@@ -382,6 +439,39 @@ function manualUpdateCheck() {
   autoUpdater.checkForUpdates();
 }
 
+function deepMerge(target, source) {
+  for (const key in source) {
+    if (
+      source[key] &&
+      typeof source[key] === 'object' &&
+      !Array.isArray(source[key])
+    ) {
+      if (!target[key]) target[key] = {};
+      deepMerge(target[key], source[key]);
+    } else {
+      target[key] = source[key];
+    }
+  }
+  return target;
+}
+
+// main.js
+const chatterStats = {};
+
+ipcMain.on('chatter-data', (event, data) => {
+  const { button, releaseTime } = data;
+  if (releaseTime <= 15) {
+    chatterStats[button] = (chatterStats[button] || 0) + 1;
+  }
+
+  if (chatterWindow && chatterWindow.webContents) {
+    chatterWindow.webContents.send('chatter-data', data);
+  }
+});
+
+ipcMain.handle('request-chatter-summary', () => {
+  return chatterStats;
+});
 
 
 function checkForUpdateWithUI() {
@@ -446,13 +536,19 @@ function checkForUpdateWithUI() {
 app.whenReady().then(() => {
   ensureSettingsFileExists();
   console.log('🚀 현재 실행 중 앱 버전:', app.getVersion());
+
+  let loadedSettings = {};
   try {
     const raw = fs.readFileSync(SETTINGS_FILE, 'utf8');
-    settings = JSON.parse(raw);
+    loadedSettings = JSON.parse(raw);
     console.log('✅ settings.json loaded.');
   } catch (err) {
-    console.warn('⚠️ settings.json not found, using defaults.');
+    console.warn('⚠️ settings.json not found or invalid, using defaults.');
   }
+
+  const defaultClone = JSON.parse(JSON.stringify(defaultSettings));
+  settings = deepMerge(defaultClone, loadedSettings); // ✅ 안전 병합
+
 
   // ✅ 정확히 settings 로딩 후 autoLaunch 처리
   const exePath = app.getPath('exe');
@@ -469,7 +565,8 @@ app.whenReady().then(() => {
 
   // ✅ 그 다음 나머지 서버/윈도우/입력 리더 실행
   checkForUpdateWithUI();
-  serverInstance = startServer(settings.serverPort);
+  const userImageDir = path.join(app.getPath('userData'), 'userImages');
+  serverInstance = startServer(settings.serverPort, userImageDir);
   webSocketInstance = startWebSocketServer(settings.webSocketPort);
 
   if (settings.controllerProfile === 'KB') {

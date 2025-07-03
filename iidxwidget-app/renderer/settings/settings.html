@@ -10,7 +10,12 @@
   
   <div class="settings-container">
     <div class="setting-group">
-      <label><input type="checkbox" id="autoLaunch" /> Windows 시작 시 자동 실행</label><br>
+      <label class="section-label">앱 기본 설정</label>
+      <label><input type="checkbox" id="autoLaunch" /> Windows 시작 시 자동 실행</label>
+      <label>
+        <input type="checkbox" id="showPromoBox" />
+        위젯 홍보 박스 표시
+      </label><br>
       <label for="controllerProfile">컨트롤러 프로필</label>
       <select id="controllerProfile">
         <option value="PHOENIXWAN">PHOENIXWAN+</option>
@@ -64,6 +69,46 @@
         <option value="1P">1P</option>
         <option value="2P">2P</option>
       </select>
+    </div>
+    <div class="setting-group">
+      <label for="GlobalReleaseMALength">전체 Release 수집 표본 갯수 (수치가 높을수록 변화에 둔감)</label>
+      <input type="number" id="GlobalReleaseMALength" min="10" max="1000" step="1" value="200" />
+    </div>
+
+    <div class="setting-group">
+      <label for="PerButtonMALength">버튼별 Release 수집 표본 갯수 (수치가 높을수록 변화에 둔감)</label>
+      <input type="number" id="PerButtonMALength" min="10" max="1000" step="1" value="200" />
+    </div>
+    <label class="section-label">위젯 외관 커스터마이징</label>
+    <div class="setting-group">
+      <label>스크래치 커스텀 이미지 업로드</label>
+      <div class="input-with-delete">
+        <input type="file" id="disc-image-upload" accept="image/*">
+        <button id="delete-disc-button">삭제</button>
+      </div>
+      <img id="disc-preview" style="margin-top: 10px; max-width: 100%; border-radius: 10px;" />
+    </div>
+    <div class="setting-group">
+      <div class="color-setting-row">
+        <label for="color-background">배경/스크래치 색상</label>
+        <input type="color" id="color-background" />
+        <span class="color-preview" id="preview-background"></span>
+      </div>
+      <div class="color-setting-row">
+        <label for="color-accent">버튼/스크래치 입력 전 색상</label>
+        <input type="color" id="color-accent" />
+        <span class="color-preview" id="preview-accent"></span>
+      </div>
+      <div class="color-setting-row">
+        <label for="color-activeColor">버튼/스크래치 입력 시 색상</label>
+        <input type="color" id="color-activeColor" />
+        <span class="color-preview" id="preview-activeColor"></span>
+      </div>
+      <div class="color-setting-row">
+        <label for="color-fontColor">폰트/스크래치 가로선 색상</label>
+        <input type="color" id="color-fontColor" />
+        <span class="color-preview" id="preview-fontColor"></span>
+      </div>
     </div>
 
     <div class="button-row">
