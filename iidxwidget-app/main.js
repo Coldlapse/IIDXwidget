@@ -460,7 +460,7 @@ const chatterStats = {};
 
 ipcMain.on('chatter-data', (event, data) => {
   const { button, releaseTime } = data;
-  if (releaseTime <= 99) {
+  if (releaseTime <= 15) {
     chatterStats[button] = (chatterStats[button] || 0) + 1;
   }
 
@@ -584,29 +584,28 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
 
-app.on('before-quit', () => {
-  console.log('🛑 App is quitting, cleaning up HID devices.');
+app.on('before-quit', async () => {
+  console.log('🛑 App is quitting, cleaning up...');
 
+  // HID, 키보드 종료
   if (currentHIDDevice) {
     try {
-      if (typeof currentHIDDevice.removeAllListeners === 'function') {
-        currentHIDDevice.removeAllListeners(); // ✅ 오류 방지
-      }
-      if (typeof currentHIDDevice.close === 'function') {
-        currentHIDDevice.close();
-      }
-    } catch (e) {
-      console.error('❌ Failed to close HID device safely:', e);
-    }
+      currentHIDDevice.removeAllListeners?.();
+      currentHIDDevice.close?.();
+    } catch (e) {}
     currentHIDDevice = null;
   }
 
   if (currentKBReader?.stop) {
-    try {
-      currentKBReader.stop();
-    } catch (e) {
-      console.error('❌ Failed to stop keyboard reader:', e);
-    }
+    try { currentKBReader.stop(); } catch (e) {}
     currentKBReader = null;
   }
+
+  // ✅ 서버 정리 - await 로 기다림
+  stopServer?.();
+  await stopWebSocketServer();  // ⬅ 이 줄
+
+  BrowserWindow.getAllWindows().forEach(win => {
+    if (!win.isDestroyed()) win.destroy();
+  });
 });
