@@ -1,6 +1,6 @@
 {
     "name": "iidxwidget",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "description": "iidxwidget",
     "author": "Sadang",
     "license": "MIT",
@@ -39,6 +39,7 @@
         "electron-store": "^8.2.0",
         "electron-updater": "^6.6.2",
         "express": "^4.18.4",
+        "ip": "^2.0.1",
         "node-global-key-listener": "^0.3.0",
         "node-hid": "^2.1.2",
         "ws": "^8.18.1"
