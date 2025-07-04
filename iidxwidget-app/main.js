@@ -289,7 +289,9 @@ ipcMain.handle('save-user-image', async (event, sourcePath) => {
     const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
     settings.widget = settings.widget || {};
 
-    const publicUrl = `http://localhost:${settings.serverPort}/userImages/${fileName}`;
+    const ip = require('ip');
+    const hostAddress = ip.address(); // 예: 192.168.0.13
+    const publicUrl = `http://${hostAddress}:${settings.serverPort}/userImages/${fileName}`;
     settings.widget.discImagePath = publicUrl;
     fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
 
