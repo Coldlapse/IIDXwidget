@@ -87,7 +87,7 @@ body {
   border-radius: 3px;
 }
 
-#disc-image {
+.disc-image {
   width: 100%;
   height: 100%;
   object-fit: cover;     /* 정사각형 채움 */

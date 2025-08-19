@@ -15,11 +15,12 @@ let keyTimestamps = [];
 let globalMALength = 200;
 let perButtonMALength = 200;
 
-let upDiscImagePath = null;
-let downDiscImagePath = null;
-let isLatestDiscDirectionUp = false;
+let isLatestDiscDirectionUp = true;
 
 const disc = document.getElementById("disc");
+const upImg = document.getElementById('up-disc-image');
+const downImg = document.getElementById('down-disc-image');
+const needle = document.getElementById('disc-needle');
 const upperIndicator = document.getElementById("upper-indicator");
 const lowerIndicator = document.getElementById("lower-indicator");
 
@@ -48,7 +49,28 @@ function rotateDisc(delta) {
 function changeDiscImage(delta) {
   if (delta === 0) return;
   if (is2PMode) delta = -delta;
-  applyDiscImage(delta > 0);
+
+  const isUp = delta > 0;
+  if (isLatestDiscDirectionUp == isUp) return;
+
+  if (isUp) {
+    downImg.style.display = 'none';
+    if (upImg.classList.contains("img-available")) {
+      upImg.style.display = 'block';
+      needle.style.display = 'none';   // 이미지 있으면 bar 숨기기
+    } else {
+      upImg.style.display = 'none';
+      needle.style.display = 'block';  // 기본 bar 보이기
+    }
+    isLatestDiscDirectionUp = true;
+  } else { // Is down
+    if (downImg.classList.contains("img-available")) {
+      upImg.style.display = 'none'; // Remove the upDisc image only if the downDisc image is available
+      downImg.style.display = 'block';
+      needle.style.display = 'none';   // 이미지 있으면 bar 숨기기
+      isLatestDiscDirectionUp = false;
+    }
+  }
 }
 
 function updateBorders(delta) {
@@ -125,29 +147,28 @@ function updateKPSDisplay() {
 }
 setInterval(updateKPSDisplay, 100);
 
-function applyDiscImage(isUp) {
-  const img = document.getElementById('disc-image');
-  const needle = document.getElementById('disc-needle');
-
-  if (!img || !needle) return;
-  if (isUp == isLatestDiscDirectionUp) return;
-
-  if (isUp) {
-    if (!upDiscImagePath) {
-      img.src = '';
-      img.style.display = 'none';
-      needle.style.display = 'block';  // 기본 bar 보이기
-    } else {
-      img.src = upDiscImagePath;
-      img.style.display = 'block';
-      needle.style.display = 'none';   // 이미지 있으면 bar 숨기기
-    }
-    isLatestDiscDirectionUp = true;
-  } else if (downDiscImagePath) {
-    img.src = downDiscImagePath;
-    img.style.display = 'block';
+function applyDiscImage(settings) {
+  let upDiscImagePath = settings.widget.upDiscImagePath;
+  let downDiscImagePath = settings.widget.downDiscImagePath;
+  
+  if (upDiscImagePath) {
+    upImg.classList.add("img-available");
+    upImg.src = upDiscImagePath;
+    upImg.style.display = 'block';
     needle.style.display = 'none';   // 이미지 있으면 bar 숨기기
-    isLatestDiscDirectionUp = false;
+  } else {
+    upImg.classList.remove("img-available");
+    upImg.src = '';
+    upImg.style.display = 'none';
+    needle.style.display = 'block';  // 기본 bar 보이기
+  }
+
+  if (downDiscImagePath) {
+    downImg.classList.add("img-available");
+    downImg.src = downDiscImagePath;
+    downImg.style.display = 'none';
+  } else {
+    downImg.classList.remove("img-available");
   }
 }
 
@@ -227,9 +248,7 @@ function applyButtonLayout(layout) {
   if (settings?.widget) {
     applyReleaseContainerSettings(settings.widget.infoPosition || 'bottom');
     applyButtonLayout(settings.widget.buttonLayout || '1P');
-    upDiscImagePath = settings.widget.upDiscImagePath;
-    downDiscImagePath = settings.widget.downDiscImagePath;
-    applyDiscImage(true);
+    applyDiscImage(settings);
     applyPromoBox(settings);
     globalMALength = settings.widget.globalMALength || 200;
     perButtonMALength = settings.widget.perButtonMALength || 200;
