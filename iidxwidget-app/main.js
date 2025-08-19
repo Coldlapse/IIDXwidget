@@ -38,7 +38,8 @@ const defaultSettings = {
   widget: {
     infoPosition: "bottom",
     buttonLayout: "1P",
-    discImagePath: null,
+    upDiscImagePath: null,
+    downDiscImagePath: null,
     showPromoBox: false,
     GlobalReleaseMALength: 200,
     PerButtonMALength: 200,
@@ -292,7 +293,6 @@ ipcMain.handle('save-user-image', async (event, sourcePath) => {
     const ip = require('ip');
     const hostAddress = ip.address(); // 예: 192.168.0.13
     const publicUrl = `http://${hostAddress}:${settings.serverPort}/userImages/${fileName}`;
-    settings.widget.discImagePath = publicUrl;
     fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
 
     return publicUrl;  // ✅ 여기 수정!

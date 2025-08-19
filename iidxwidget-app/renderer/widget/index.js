@@ -15,6 +15,10 @@ let keyTimestamps = [];
 let globalMALength = 200;
 let perButtonMALength = 200;
 
+let upDiscImagePath = null;
+let downDiscImagePath = null;
+let isLatestDiscDirectionUp = false;
+
 const disc = document.getElementById("disc");
 const upperIndicator = document.getElementById("upper-indicator");
 const lowerIndicator = document.getElementById("lower-indicator");
@@ -39,7 +43,12 @@ function startUptimeTimer() {
 function rotateDisc(delta) {
   discRotation -= delta * 2.5;
   disc.style.transform = `translate(-50%, -50%) rotate(${discRotation}deg)`;
-  updateBorders(delta);
+}
+
+function changeDiscImage(delta) {
+  if (delta === 0) return;
+  if (is2PMode) delta = -delta;
+  applyDiscImage(delta > 0);
 }
 
 function updateBorders(delta) {
@@ -116,20 +125,29 @@ function updateKPSDisplay() {
 }
 setInterval(updateKPSDisplay, 100);
 
-function applyDiscImage(imagePath) {
+function applyDiscImage(isUp) {
   const img = document.getElementById('disc-image');
   const needle = document.getElementById('disc-needle');
 
   if (!img || !needle) return;
+  if (isUp == isLatestDiscDirectionUp) return;
 
-  if (!imagePath) {
-    img.src = '';
-    img.style.display = 'none';
-    needle.style.display = 'block';  // 기본 bar 보이기
-  } else {
-    img.src = imagePath;
+  if (isUp) {
+    if (!upDiscImagePath) {
+      img.src = '';
+      img.style.display = 'none';
+      needle.style.display = 'block';  // 기본 bar 보이기
+    } else {
+      img.src = upDiscImagePath;
+      img.style.display = 'block';
+      needle.style.display = 'none';   // 이미지 있으면 bar 숨기기
+    }
+    isLatestDiscDirectionUp = true;
+  } else if (downDiscImagePath) {
+    img.src = downDiscImagePath;
     img.style.display = 'block';
     needle.style.display = 'none';   // 이미지 있으면 bar 숨기기
+    isLatestDiscDirectionUp = false;
   }
 }
 
@@ -142,6 +160,7 @@ function handleData(data) {
         let delta = (newValue - lastDiscValue + 256) % 256;
         if (delta > 127) delta -= 256;
         rotateDisc(delta);
+        changeDiscImage(delta);
         updateBorders(delta);
       }
       lastDiscValue = newValue;
@@ -208,7 +227,9 @@ function applyButtonLayout(layout) {
   if (settings?.widget) {
     applyReleaseContainerSettings(settings.widget.infoPosition || 'bottom');
     applyButtonLayout(settings.widget.buttonLayout || '1P');
-    applyDiscImage(settings?.widget?.discImagePath);
+    upDiscImagePath = settings.widget.upDiscImagePath;
+    downDiscImagePath = settings.widget.downDiscImagePath;
+    applyDiscImage(true);
     applyPromoBox(settings);
     globalMALength = settings.widget.globalMALength || 200;
     perButtonMALength = settings.widget.perButtonMALength || 200;

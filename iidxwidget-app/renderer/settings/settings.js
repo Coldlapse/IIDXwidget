@@ -1,5 +1,5 @@
-let uploadedDiscImagePath = null;
-let removeDiscImage = false;
+let uploadedUpDiscImagePath = null;
+let uploadedDownDiscImagePath = null;
 
 document.getElementById('cancel-button').addEventListener('click', () => {
   window.close();
@@ -56,7 +56,8 @@ document.getElementById('save-button').addEventListener('click', async () => {
     widget: {
       infoPosition,
       buttonLayout,
-      discImagePath: uploadedDiscImagePath,
+      upDiscImagePath: uploadedUpDiscImagePath,
+      downDiscImagePath: uploadedDownDiscImagePath,
       showPromoBox,
       globalMALength,
       perButtonMALength,
@@ -125,13 +126,19 @@ function toggleKeyMappingUI(profile) {
     document.getElementById('color-fontColor').value = mergedColors.fontColor;
     document.getElementById('color-activeColor').value = mergedColors.activeColor;
 
-    uploadedDiscImagePath = settings.widget?.discImagePath || null;
-    removeDiscImage = false;
+    uploadedUpDiscImagePath = settings.widget?.upDiscImagePath || null;
+    uploadedDownDiscImagePath = settings.widget?.downDiscImagePath || null;
 
-    if (uploadedDiscImagePath) {
-      const previewImg = document.getElementById('disc-preview');
-      previewImg.src = uploadedDiscImagePath;
-      previewImg.style.display = 'block';
+    if (uploadedUpDiscImagePath) {
+      const upDiscPreviewImg = document.getElementById('up-disc-preview');
+      upDiscPreviewImg.src = uploadedUpDiscImagePath;
+      upDiscPreviewImg.style.display = 'block';
+    }
+
+    if (uploadedDownDiscImagePath) {
+      const downDiscPreviewImg = document.getElementById('down-disc-preview');
+      downDiscPreviewImg.src = uploadedDownDiscImagePath;
+      downDiscPreviewImg.style.display = 'block';
     }
 
     bindColorPreview('color-background', 'preview-background');
@@ -167,7 +174,7 @@ document.querySelectorAll('#key-mapping-table input').forEach(input => {
   });
 });
 
-document.getElementById('disc-image-upload').addEventListener('change', async (e) => {
+document.getElementById('up-disc-image-upload').addEventListener('change', async (e) => {
   const file = e.target.files[0];
   if (!file) return;
 
@@ -175,26 +182,52 @@ document.getElementById('disc-image-upload').addEventListener('change', async (e
   const savedPath = await window.electronAPI.saveUserImage(filePath);
 
   if (savedPath) {
-    uploadedDiscImagePath = savedPath;
-    removeDiscImage = false;
+    uploadedUpDiscImagePath = savedPath;
 
-    const previewImg = document.getElementById('disc-preview');
+    const previewImg = document.getElementById('up-disc-preview');
     previewImg.src = savedPath;
     previewImg.style.display = 'block';
   }
 });
 
-document.getElementById('delete-disc-button').addEventListener('click', () => {
-  uploadedDiscImagePath = null;
-  removeDiscImage = true;
+document.getElementById('delete-up-disc-button').addEventListener('click', () => {
+  uploadedUpDiscImagePath = null;
 
-  const previewImg = document.getElementById('disc-preview');
+  const previewImg = document.getElementById('up-disc-preview');
   previewImg.src = '';
   previewImg.style.display = 'none';
 
   // 파일 선택 input 초기화
-  document.getElementById('disc-image-upload').value = '';
+  document.getElementById('up-disc-image-upload').value = '';
 });
+
+document.getElementById('down-disc-image-upload').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const filePath = file.path;
+  const savedPath = await window.electronAPI.saveUserImage(filePath);
+
+  if (savedPath) {
+    uploadedDownDiscImagePath = savedPath;
+
+    const previewImg = document.getElementById('down-disc-preview');
+    previewImg.src = savedPath;
+    previewImg.style.display = 'block';
+  }
+});
+
+document.getElementById('delete-down-disc-button').addEventListener('click', () => {
+  uploadedDownDiscImagePath = null;
+
+  const previewImg = document.getElementById('down-disc-preview');
+  previewImg.src = '';
+  previewImg.style.display = 'none';
+
+  // 파일 선택 input 초기화
+  document.getElementById('down-disc-image-upload').value = '';
+});
+
 
 function bindColorPreview(inputId, previewId) {
   const input = document.getElementById(inputId);
