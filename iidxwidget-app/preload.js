@@ -13,7 +13,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   saveUserImage: (filePath) => ipcRenderer.invoke('save-user-image', filePath),
   sendChatterData: (data) => ipcRenderer.send('chatter-data', data),
   onChatterData: (callback) => ipcRenderer.on('chatter-data', (_, data) => callback(data)),
-  requestChatterSummary: () => ipcRenderer.invoke('request-chatter-summary')
+  requestChatterSummary: () => ipcRenderer.invoke('request-chatter-summary'),
+  // Main -> Renderer: "카운트 알려줘" 요청을 받을 리스너
+  requestSessionCount: (callback) => ipcRenderer.on('request-session-count', () => callback()),
+  // Renderer -> Main: 카운트를 담아 보낼 함수
+  sendSessionCount: (count) => ipcRenderer.send('session-count', count),
+  // Main -> Renderer: "카운트 초기화해" 명령을 받을 리스너
+  onResetSessionCount: (callback) => ipcRenderer.on('reset-session-count', () => callback())
 });
 
 contextBridge.exposeInMainWorld('iidxapi', {
