@@ -6,6 +6,7 @@ document.getElementById('cancel-button').addEventListener('click', () => {
 });
 
 document.getElementById('save-button').addEventListener('click', async () => {
+  const apiToken = document.getElementById('apiToken').value;
   const serverPort = parseInt(document.getElementById('serverPort').value, 10);
   const webSocketPort = parseInt(document.getElementById('webSocketPort').value, 10);
   const controllerProfile = document.getElementById('controllerProfile').value;
@@ -45,6 +46,7 @@ document.getElementById('save-button').addEventListener('click', async () => {
   }
 
   const newSettings = {
+    apiToken,
     serverPort,
     webSocketPort,
     controllerProfile,
@@ -88,6 +90,7 @@ function toggleKeyMappingUI(profile) {
   const settings = await window.electronAPI.loadSettings();
 
   if (settings) {
+    document.getElementById('apiToken').value = settings.apiToken || '';
     document.getElementById('serverPort').value = settings.serverPort || 8080;
     document.getElementById('webSocketPort').value = settings.webSocketPort || 5678;
     document.getElementById('controllerProfile').value = settings.controllerProfile || 'PHOENIXWAN';

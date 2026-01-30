@@ -35,10 +35,13 @@ function startUptimeTimer() {
   const uptimeDisplay = document.getElementById('uptime-display');
   if (!uptimeDisplay) return;
 
+  const startTime = Date.now(); // 타이머 시작 시점의 시간을 기록
+
   setInterval(() => {
-    uptimeSeconds++;
-    uptimeDisplay.textContent = `${formatUptime(uptimeSeconds)}`;
-  }, 1000);
+    // 매번 현재 시간과 시작 시간의 차이를 계산하여 경과된 시간을 구함
+    const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+    uptimeDisplay.textContent = `${formatUptime(elapsedSeconds)}`;
+  }, 1000); // 간격은 1초로 유지
 }
 
 function rotateDisc(delta) {
@@ -310,3 +313,30 @@ function applyPromoBox(settings) {
     promoBottom.style.display = 'none';
   }
 }
+
+// ✅ Main 프로세스로부터 요청이 오면 현재 타건 수를 응답
+if (window.electronAPI?.requestSessionCount) {
+  window.electronAPI.requestSessionCount(() => {
+    window.electronAPI.sendSessionCount(totalKeyPresses);
+  });
+}
+
+// ✅ Main 프로세스로부터 초기화 명령이 오면 타건 수를 0으로 리셋
+if (window.electronAPI?.onResetSessionCount) {
+    window.electronAPI.onResetSessionCount(() => {
+        totalKeyPresses = 0;
+        updateSessionDisplay();
+        console.log('Session count has been reset by the main process.');
+    });
+}
+
+/*
+// 디버깅용: ` 키를 누르면 카운트 500 증가
+window.addEventListener('keydown', (event) => {
+    if (event.code === 'Backquote') {
+        totalKeyPresses += 500;
+        updateSessionDisplay();
+        console.log(`[DEBUG] Count increased by 500. Current: ${totalKeyPresses}`);
+    }
+});
+*/

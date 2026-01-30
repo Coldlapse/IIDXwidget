@@ -1,6 +1,8 @@
 const { app, BrowserWindow, Menu, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const https = require('https');
+const fetch = require('node-fetch');
 
 const SETTINGS_FILE = path.join(app.getPath('userData'), 'settings.json');
 
@@ -8,6 +10,7 @@ const { startServer, stopServer } = require('./server');
 const { startWebSocketServer, stopWebSocketServer, broadcastControllerData } = require('./wsServer');
 const { startControllerReader } = require('./controller/controllerReader');
 const { startGlobalKeyboardReader } = require('./controller/keyboardReader');
+
 
 let mainWindow;
 let settingsWindow;
@@ -17,6 +20,7 @@ let webSocketInstance;
 let chatterWindow = null;
 
 const defaultSettings = {
+  apiToken: "",
   serverPort: 8080,
   webSocketPort: 5678,
   controllerProfile: 'PHOENIXWAN',
@@ -135,6 +139,72 @@ function createLogsWindow() {
   logsWindow.on('closed', () => logsWindow = null);
 }
 
+// ✅ 타건 기록 전송 함수
+async function sendTypingCount() {
+  const token = settings.apiToken;
+  if (!token) {
+    dialog.showMessageBox({ type: 'error', title: '오류', message: 'API 토큰이 설정되지 않았습니다.' });
+    return;
+  }
+
+  // 1. 위젯(Renderer)에 현재 카운트를 요청
+  if (mainWindow) {
+    mainWindow.webContents.send('request-session-count');
+  }
+
+  // 2. 위젯으로부터 카운트를 한 번만 받도록 리스너 설정
+  ipcMain.once('session-count', async (event, count) => {
+    if (count === 0) {
+      dialog.showMessageBox({ type: 'info', title: '알림', message: '전송할 타건 기록이 없습니다.' });
+      return;
+    }
+
+    // 3. 사용자에게 전송 여부 확인
+    const result = dialog.showMessageBoxSync(mainWindow, {
+      type: 'question',
+      buttons: ['예', '아니오'],
+      defaultId: 0, cancelId: 1,
+      title: '타건 기록 전송 확인',
+      message: `현재 타건 수 ${count}회를 서버로 전송합니다.\nOBS의 수치는 그대로 남고, 앱 화면의 타건 수치는 0으로 초기화됩니다. 계속하시겠습니까?`
+    });
+
+    if (result === 1) return; // '아니오' 선택
+
+    // 4. API 서버로 데이터 전송
+    const apiEndpoint = 'https://beatmania.app/api/v1/update-typing-count/';
+    const agent = new https.Agent({ rejectUnauthorized: false });
+
+    try {
+      const response = await fetch(apiEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Token ${token}` },
+        body: JSON.stringify({ count }),
+        agent
+      });
+
+      if (response.status === 401) {
+        dialog.showMessageBox({ type: 'error', title: '전송 실패', message: '잘못된 토큰입니다.' });
+        return;
+      }
+      if (!response.ok) throw new Error(`서버 응답 오류: ${response.statusText}`);
+
+      const data = await response.json();
+      if (data.status === 'success') {
+        dialog.showMessageBox({ type: 'info', title: '전송 성공', message: `완료되었습니다. (일일 총 타건 수: ${data.daily_total})` });
+        // 5. 성공 시 앱의 위젯(mainWindow)에만 초기화 명령 전송
+        if (mainWindow) {
+          mainWindow.webContents.send('reset-session-count');
+        }
+      } else {
+        throw new Error('API에서 성공 상태를 반환하지 않았습니다.');
+      }
+    } catch (error) {
+      console.error('❌ API 전송 오류:', error);
+      dialog.showMessageBox({ type: 'error', title: '전송 실패', message: `오류가 발생했습니다: ${error.message}` });
+    }
+  });
+}
+
 function createStatusMenu() {
   const menu = Menu.buildFromTemplate([
     {
@@ -142,6 +212,8 @@ function createStatusMenu() {
       submenu: [
         { label: '설정', click: createSettingsWindow },
         { label: '로그', click: createLogsWindow },
+        { type: 'separator' },
+        { label: '타건 기록 서버로 전송', click: sendTypingCount},
         { label: '채터링 감지', click: createChatterWindow },
         { type: 'separator' },
         { label: '정보', click: () => {

@@ -52,6 +52,8 @@
 - 1.2.0 : 자동 업데이터 구현 및 LR2 인식 추가 등등 ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v1.2.0))
 - 1.2.1 : 10만번 이상 두들겨도 줄 바꿈 일어나지 않게 수정 ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v1.2.1))
 - 2.0.0 : 위젯 커스터마이징 추가, 이동평균 수치 조정 추가, 채터링 감지 기능 추가 ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v2.0.0))
+- 2.0.1 : 버그 수정 ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v2.0.1))
+- 2.1.0 : beatmania.app 서열표 사이트 일일 타건 기록 연동 추가, Uptime 기능 버그 수정 ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v2.1.0))
 
 ---
 
