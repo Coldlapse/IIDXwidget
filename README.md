@@ -5,9 +5,8 @@
 **OBS 브라우저 소스**로 쉽게 불러올 수 있도록 개발한 **투덱 방송용 위젯 프로젝트**입니다.  
 **투컴 방송** 환경에서도 사용할 수 있도록 설계되었습니다.
 
-- **개발자** : [BMS Sadang](https://www.youtube.com/@Sadang)
 - **라이센스** : MIT License
-- **후원** : [투네이션](https://toon.at/donate/Sadang) [Buy Me a Coffee](https://buymeacoffee.com/sadang)
+- **후원** : [Buy Me a Coffee](https://buymeacoffee.com/sadang)
 
 ---
 
