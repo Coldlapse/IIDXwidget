@@ -6,6 +6,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   startKeyboardReader: () => ipcRenderer.send('start-keyboard-reader'),
   getWebSocketPort: () => ipcRenderer.invoke('get-websocket-port'),
   onControllerData: (callback) => ipcRenderer.on('controller-data', (event, data) => callback(data)),
+  getLanguage: () => ipcRenderer.invoke('get-language'),
+  onLanguageChanged: callback => {
+    const listener = (_, language) => callback(language);
+    ipcRenderer.on('language-changed', listener);
+    return () => ipcRenderer.removeListener('language-changed', listener);
+  },
   onNewLog: (callback) => ipcRenderer.on('new-log', (event, message) => callback(message)),
   requestLogBuffer: () => ipcRenderer.invoke('request-log-buffer'),
   loadSettings: () => ipcRenderer.invoke('load-settings'),

@@ -1,4 +1,5 @@
 :root {
+  --container-background-color: #000000;
   --background-color: #000000;
   --accent-color: #444444;
   --font-color: #cccccc;
@@ -20,7 +21,7 @@ body {
 }
 
 .container {
-  background: var(--background-color);
+  background: var(--container-background-color);
   padding: 25px 40px;
   border-radius: 20px;
   display: flex;

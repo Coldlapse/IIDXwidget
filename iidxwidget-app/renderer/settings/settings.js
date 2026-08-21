@@ -14,9 +14,11 @@ document.getElementById('save-button').addEventListener('click', async () => {
   const buttonLayout = document.getElementById('buttonLayout').value;
   const lr2ModeEnabled = document.getElementById('lr2ModeEnabled').checked;
   const showPromoBox = document.getElementById('showPromoBox').checked;
+  const transparentContainer = document.getElementById('transparent-container').checked;
   const globalMALength = parseInt(document.getElementById('GlobalReleaseMALength').value, 10);
   const perButtonMALength = parseInt(document.getElementById('PerButtonMALength').value, 10);
   const widgetColors = {
+    containerBackground: document.getElementById('color-container-background').value,
     background: document.getElementById('color-background').value,
     accent: document.getElementById('color-accent').value,
     fontColor: document.getElementById('color-fontColor').value,
@@ -28,12 +30,13 @@ document.getElementById('save-button').addEventListener('click', async () => {
     serverPort < 1024 || serverPort > 65535 ||
     webSocketPort < 1024 || webSocketPort > 65535
   ) {
-    alert('❗ 포트 번호는 1024 ~ 65535 사이여야 합니다.');
+    alert(window.i18n.t('settings.invalidPort'));
     return;
   }
 
   const settings = await window.electronAPI.loadSettings();
   const existingKeyMapping = settings?.keyMapping?.KB || {};
+  const existingGenericMapping = settings?.keyMapping?.GENERIC || {};
 
   // ✅ 키 매핑 저장
   let kbMapping = {};
@@ -44,6 +47,10 @@ document.getElementById('save-button').addEventListener('click', async () => {
       if (value) kbMapping[action] = value;
     });
   }
+  const genericMapping = { ...existingGenericMapping };
+  if (controllerProfile === 'AUTO') document.querySelectorAll('#generic-mapping-table input').forEach(input => {
+    const value = Number(input.value); if (value >= 1 && value <= 32) genericMapping[input.dataset.key] = value;
+  });
 
   const newSettings = {
     apiToken,
@@ -53,13 +60,15 @@ document.getElementById('save-button').addEventListener('click', async () => {
     lr2ModeEnabled,
     autoLaunch: document.getElementById('autoLaunch').checked,
     keyMapping: {
-      KB: controllerProfile === 'KB' ? kbMapping : existingKeyMapping
+      KB: controllerProfile === 'KB' ? kbMapping : existingKeyMapping,
+      GENERIC: genericMapping
     },
     widget: {
       infoPosition,
       buttonLayout,
       discImagePath: uploadedDiscImagePath,
       showPromoBox,
+      transparentContainer,
       globalMALength,
       perButtonMALength,
       colors: widgetColors
@@ -67,20 +76,23 @@ document.getElementById('save-button').addEventListener('click', async () => {
   };
 
   await window.electronAPI.saveSettings(newSettings);
-  alert('저장 완료! OBS의 브라우저 소스 속성에서 "현재 페이지의 캐시를 새로고침" 버튼을 눌러주세요!');
+  alert(window.i18n.t('settings.saved'));
   window.close();
 });
 
 // ✅ 키 매핑 UI 토글 함수
 function toggleKeyMappingUI(profile) {
   const keyMapping = document.getElementById('key-mapping-container');
+  const genericMapping = document.getElementById('generic-mapping-container');
   const lr2Row = document.getElementById('lr2-detect-row');
   if (profile === 'KB') {
     keyMapping.style.display = 'block';
+    genericMapping.style.display = 'none';
     lr2Row.style.display = 'none';
   } else {
     keyMapping.style.display = 'none';
-    lr2Row.style.display = 'block';
+    genericMapping.style.display = profile === 'AUTO' ? 'block' : 'none';
+    lr2Row.style.display = profile === 'AUTO' ? 'none' : 'block';
   }
 }
 
@@ -92,16 +104,18 @@ function toggleKeyMappingUI(profile) {
     document.getElementById('apiToken').value = settings.apiToken || '';
     document.getElementById('serverPort').value = settings.serverPort || 8080;
     document.getElementById('webSocketPort').value = settings.webSocketPort || 5678;
-    document.getElementById('controllerProfile').value = settings.controllerProfile || 'PHOENIXWAN';
+    document.getElementById('controllerProfile').value = settings.controllerProfile || 'AUTO';
     document.getElementById('infoPosition').value = settings.widget?.infoPosition || 'bottom';
     document.getElementById('buttonLayout').value = settings.widget?.buttonLayout || '1P';
     document.getElementById('lr2ModeEnabled').checked = !!settings.lr2ModeEnabled;
     document.getElementById('autoLaunch').checked = settings.autoLaunch || false;
     document.getElementById('showPromoBox').checked = !!settings.widget?.showPromoBox;
+    document.getElementById('transparent-container').checked = !!settings.widget?.transparentContainer;
+    updateContainerColorAvailability();
     document.getElementById('GlobalReleaseMALength').value = settings.widget?.globalMALength || 200;
     document.getElementById('PerButtonMALength').value = settings.widget?.perButtonMALength || 200;
 
-    toggleKeyMappingUI(settings.controllerProfile || 'PHOENIXWAN');
+    toggleKeyMappingUI(settings.controllerProfile || 'AUTO');
 
     if (settings.controllerProfile === 'KB') {
       const kbMap = settings.keyMapping?.KB || {};
@@ -110,8 +124,11 @@ function toggleKeyMappingUI(profile) {
         input.value = kbMap[action] || '';
       });
     }
+    const genericMap = settings.keyMapping?.GENERIC || {};
+    document.querySelectorAll('#generic-mapping-table input').forEach(input => input.value = genericMap[input.dataset.key] || '');
 
     const defaultColors = {
+      containerBackground: '#000000',
       background: '#000000',
       accent: '#444444',
       fontColor: '#cccccc',
@@ -123,6 +140,7 @@ function toggleKeyMappingUI(profile) {
       ...(settings.widget?.colors || {})
     };
 
+    document.getElementById('color-container-background').value = mergedColors.containerBackground;
     document.getElementById('color-background').value = mergedColors.background;
     document.getElementById('color-accent').value = mergedColors.accent;
     document.getElementById('color-fontColor').value = mergedColors.fontColor;
@@ -137,6 +155,7 @@ function toggleKeyMappingUI(profile) {
       previewImg.style.display = 'block';
     }
 
+    bindColorPreview('color-container-background', 'preview-container-background');
     bindColorPreview('color-background', 'preview-background');
     bindColorPreview('color-accent', 'preview-accent');
     bindColorPreview('color-fontColor', 'preview-fontColor');
@@ -158,6 +177,37 @@ document.getElementById('controllerProfile').addEventListener('change', async (e
     });
   }
 });
+
+let learningInput = null;
+document.querySelectorAll('#generic-mapping-table input').forEach(input => {
+  input.addEventListener('focus', () => {
+    if (document.getElementById('controllerProfile').value !== 'AUTO') return;
+    learningInput = input;
+    document.getElementById('mapping-status').textContent = window.i18n.t('settings.listening', { key: getMappingLabel(input.dataset.key) });
+  });
+});
+window.electronAPI.onControllerData(events => {
+  if (!learningInput || document.getElementById('controllerProfile').value !== 'AUTO') return;
+  const event = events.find(item => item.type === 'physical-button' && item.pressed);
+  if (!event) return;
+  const key = learningInput.dataset.key;
+  learningInput.value = event.physicalButton;
+  learningInput = null;
+  document.getElementById('mapping-status').textContent = window.i18n.t('settings.mapped', { key: getMappingLabel(key), button: event.physicalButton });
+});
+
+function getMappingLabel(key) {
+  if (key === 'SCup') return window.i18n.t('settings.turntableClockwise');
+  if (key === 'SCdown') return window.i18n.t('settings.turntableCounterclockwise');
+  return window.i18n.t('settings.logicalKey', { key });
+}
+
+function localizeMappingLabels() {
+  document.querySelectorAll('#generic-mapping-table tr').forEach(row => {
+    const input = row.querySelector('input'); row.cells[0].textContent = getMappingLabel(input.dataset.key);
+  });
+}
+document.addEventListener('i18n-changed', localizeMappingLabels);
 
 
 // ✅ 키보드 키 입력 감지
@@ -211,3 +261,11 @@ function bindColorPreview(inputId, previewId) {
   input.addEventListener('input', updatePreview);
   updatePreview(); // 초기 적용
 }
+
+function updateContainerColorAvailability() {
+  const transparent = document.getElementById('transparent-container').checked;
+  document.getElementById('color-container-background').disabled = transparent;
+  document.getElementById('preview-container-background').style.opacity = transparent ? '0.35' : '1';
+}
+
+document.getElementById('transparent-container').addEventListener('change', updateContainerColorAvailability);

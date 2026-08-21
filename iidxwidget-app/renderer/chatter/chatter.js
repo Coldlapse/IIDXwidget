@@ -5,9 +5,9 @@ const chatterCounts = {};
 function updateUI() {
   let output = '';
   Object.keys(chatterCounts).forEach(btn => {
-    output += `버튼 ${btn} : ${chatterCounts[btn]} 회\n`;
+    output += `${window.i18n.t('chatter.count', { button: btn, count: chatterCounts[btn] })}\n`;
   });
-  logEl.textContent = output || '아직 감지된 채터링 없음';
+  logEl.textContent = output || window.i18n.t('chatter.none');
 }
 
 // 요약 데이터 갱신 함수
@@ -26,3 +26,4 @@ fetchSummary();
 
 // 이후 1초마다 갱신
 setInterval(fetchSummary, 1000);
+document.addEventListener('i18n-changed', updateUI);

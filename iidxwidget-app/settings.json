@@ -1,7 +1,8 @@
 {
   "serverPort": 8080,
   "webSocketPort": 5678,
-  "controllerProfile": "PHOENIXWAN",
+  "language": "ko",
+  "controllerProfile": "AUTO",
   "keyMapping": {
     "KB": {
       "SCup": "ShiftLeft",
@@ -13,10 +14,19 @@
       "5": "KeyJ",
       "6": "KeyK",
       "7": "KeyL"
-    }
+    },
+    "GENERIC": { "1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "SCup": 8, "SCdown": 9 }
   },
   "widget": {
     "infoPosition": "bottom",
-    "buttonLayout": "1P"
+    "buttonLayout": "1P",
+    "transparentContainer": false,
+    "colors": {
+      "containerBackground": "#000000",
+      "background": "#000000",
+      "accent": "#444444",
+      "fontColor": "#cccccc",
+      "activeColor": "#ffffff"
+    }
   }
 }

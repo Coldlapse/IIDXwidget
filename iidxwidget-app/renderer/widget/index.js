@@ -170,14 +170,31 @@ function applyKBIndicatorPosition(position) {
   kbIndicator.style.top = (position === 'top') ? '-26.8%' : '102%';
 }
 
+let webSocketReconnectTimer = null;
+
 function connectWebSocket(port) {
   const wsHost = location.hostname || '127.0.0.1';
   const ws = new WebSocket(`ws://${wsHost}:${port}`);
-  ws.onopen = () => console.log(`[WS] Connected to ws://${wsHost}:${port}`);
-  ws.onerror = (e) => console.error("[WS] Error", e);
+  ws.onopen = () => {
+    console.log(`[WS] Connected to ws://${wsHost}:${port}`);
+    if (webSocketReconnectTimer) clearTimeout(webSocketReconnectTimer);
+    webSocketReconnectTimer = null;
+  };
+  ws.onerror = (e) => console.error('[WS] Error', e);
+  ws.onclose = () => {
+    if (webSocketReconnectTimer) return;
+    webSocketReconnectTimer = setTimeout(() => {
+      webSocketReconnectTimer = null;
+      connectWebSocket(port);
+    }, 1000);
+  };
   ws.onmessage = (event) => {
-    const dataList = JSON.parse(event.data);
-    if (Array.isArray(dataList)) dataList.forEach(handleData);
+    try {
+      const dataList = JSON.parse(event.data);
+      if (Array.isArray(dataList)) dataList.forEach(handleData);
+    } catch (error) {
+      console.error('[WS] Invalid controller message', error);
+    }
   };
 }
 
@@ -215,7 +232,7 @@ function applyButtonLayout(layout) {
     applyPromoBox(settings);
     globalMALength = settings.widget.globalMALength || 200;
     perButtonMALength = settings.widget.perButtonMALength || 200;
-    applyCustomColors(settings.widget.colors);
+    applyCustomColors(settings.widget.colors, settings.widget.transparentContainer);
   }
 
   if (settings?.controllerProfile === 'KB') {
@@ -242,12 +259,14 @@ window.addEventListener('DOMContentLoaded', async () => {
   startUptimeTimer();
 });
 
-function applyCustomColors(colors) {
-  if (!colors) return;
-  document.documentElement.style.setProperty('--background-color', colors.background);
-  document.documentElement.style.setProperty('--accent-color', colors.accent);
-  document.documentElement.style.setProperty('--font-color', colors.fontColor);
-  document.documentElement.style.setProperty('--active-color', colors.activeColor);
+function applyCustomColors(colors, transparentContainer = false) {
+  colors = colors || {};
+  const containerBackground = transparentContainer ? 'transparent' : (colors.containerBackground || colors.background || '#000000');
+  document.documentElement.style.setProperty('--container-background-color', containerBackground);
+  document.documentElement.style.setProperty('--background-color', colors.background || '#000000');
+  document.documentElement.style.setProperty('--accent-color', colors.accent || '#444444');
+  document.documentElement.style.setProperty('--font-color', colors.fontColor || '#cccccc');
+  document.documentElement.style.setProperty('--active-color', colors.activeColor || '#ffffff');
 }
 
 function applyPromoBox(settings) {

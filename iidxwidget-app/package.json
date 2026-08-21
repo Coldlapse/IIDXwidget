@@ -7,14 +7,19 @@
     "main": "main.js",
     "scripts": {
         "start": "electron .",
-        "build": "electron-builder"
+        "build": "electron-builder",
+        "test": "node test/controllerReader.test.js && node test/localization.test.js"
     },
     "build": {
         "appId": "app.beatmania.iidxwidget",
         "productName": "IIDXwidget",
         "artifactName": "IIDXwidget-Setup-${version}.${ext}",
         "files": [
-            "**/*"
+            "**/*",
+            "!dist{,/**}",
+            "!dist-*/**",
+            "!dist-rebuild{,/**}",
+            "!dist-fixed{,/**}"
         ],
         "directories": {
             "buildResources": "build"
