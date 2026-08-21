@@ -8,8 +8,9 @@ const SETTINGS_FILE = path.join(app.getPath('userData'), 'settings.json');
 
 const { startServer, stopServer } = require('./server');
 const { startWebSocketServer, stopWebSocketServer, broadcastControllerData } = require('./wsServer');
-const { startControllerReader } = require('./controller/controllerReader');
+const { startControllerReader, startAutoControllerReader } = require('./controller/controllerReader');
 const { startGlobalKeyboardReader } = require('./controller/keyboardReader');
+const { normalizeLanguage, translate } = require('./localization/translations');
 
 
 let mainWindow;
@@ -20,10 +21,11 @@ let webSocketInstance;
 let chatterWindow = null;
 
 const defaultSettings = {
+  language: 'ko',
   apiToken: "",
   serverPort: 8080,
   webSocketPort: 5678,
-  controllerProfile: 'PHOENIXWAN',
+  controllerProfile: 'AUTO',
   lr2ModeEnabled: false,
   autoLaunch: false,
   keyMapping: {
@@ -37,16 +39,19 @@ const defaultSettings = {
       "5": "KeyJ",
       "6": "KeyK",
       "7": "KeyL"
-    }
+    },
+    GENERIC: { "1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, SCup: 8, SCdown: 9 }
   },
   widget: {
     infoPosition: "bottom",
     buttonLayout: "1P",
     discImagePath: null,
     showPromoBox: false,
+    transparentContainer: false,
     GlobalReleaseMALength: 200,
     PerButtonMALength: 200,
     colors: {
+      containerBackground: "#000000",
       background: "#000000",
       accent: "#444444",
       fontColor: "#cccccc",
@@ -140,9 +145,10 @@ function createLogsWindow() {
 
 // ✅ 타건 기록 전송 함수
 async function sendTypingCount() {
+  const t = (key, replacements) => translate(settings.language, key, replacements);
   const token = settings.apiToken;
   if (!token) {
-    dialog.showMessageBox({ type: 'error', title: '오류', message: 'API 토큰이 설정되지 않았습니다.' });
+    dialog.showMessageBox({ type: 'error', title: t('common.error'), message: t('upload.noToken') });
     return;
   }
 
@@ -154,17 +160,16 @@ async function sendTypingCount() {
   // 2. 위젯으로부터 카운트를 한 번만 받도록 리스너 설정
   ipcMain.once('session-count', async (event, count) => {
     if (count === 0) {
-      dialog.showMessageBox({ type: 'info', title: '알림', message: '전송할 타건 기록이 없습니다.' });
+      dialog.showMessageBox({ type: 'info', title: t('common.notice'), message: t('upload.noData') });
       return;
     }
 
     // 3. 사용자에게 전송 여부 확인
     const result = dialog.showMessageBoxSync(mainWindow, {
       type: 'question',
-      buttons: ['예', '아니오'],
+      buttons: [t('common.yes'), t('common.no')],
       defaultId: 0, cancelId: 1,
-      title: '타건 기록 전송 확인',
-      message: `현재 타건 수 ${count}회를 서버로 전송합니다.\nOBS의 수치는 그대로 남고, 앱 화면의 타건 수치는 0으로 초기화됩니다. 계속하시겠습니까?`
+      title: t('upload.confirmTitle'), message: t('upload.confirm', { count })
     });
 
     if (result === 1) return; // '아니오' 선택
@@ -182,14 +187,14 @@ async function sendTypingCount() {
       });
 
       if (response.status === 401) {
-        dialog.showMessageBox({ type: 'error', title: '전송 실패', message: '잘못된 토큰입니다.' });
+        dialog.showMessageBox({ type: 'error', title: t('upload.failed'), message: t('upload.invalidToken') });
         return;
       }
       if (!response.ok) throw new Error(`서버 응답 오류: ${response.statusText}`);
 
       const data = await response.json();
       if (data.status === 'success') {
-        dialog.showMessageBox({ type: 'info', title: '전송 성공', message: `완료되었습니다. (일일 총 타건 수: ${data.daily_total})` });
+        dialog.showMessageBox({ type: 'info', title: t('upload.success'), message: t('upload.successMessage', { count: data.daily_total }) });
         // 5. 성공 시 앱의 위젯(mainWindow)에만 초기화 명령 전송
         if (mainWindow) {
           mainWindow.webContents.send('reset-session-count');
@@ -199,50 +204,76 @@ async function sendTypingCount() {
       }
     } catch (error) {
       console.error('❌ API 전송 오류:', error);
-      dialog.showMessageBox({ type: 'error', title: '전송 실패', message: `오류가 발생했습니다: ${error.message}` });
+      dialog.showMessageBox({ type: 'error', title: t('upload.failed'), message: t('upload.error', { message: error.message }) });
     }
   });
 }
 
 function createStatusMenu() {
+  const language = normalizeLanguage(settings.language);
+  const t = (key, replacements) => translate(language, key, replacements);
   const menu = Menu.buildFromTemplate([
     {
-      label: '메뉴',
+      label: t('menu.main'),
       submenu: [
-        { label: '설정', click: createSettingsWindow },
-        { label: '로그', click: createLogsWindow },
+        { label: t('menu.settings'), click: createSettingsWindow },
+        { label: t('menu.logs'), click: createLogsWindow },
         { type: 'separator' },
-        { label: '타건 기록 서버로 전송', click: sendTypingCount},
-        { label: '채터링 감지', click: createChatterWindow },
+        { label: t('menu.uploadCount'), click: sendTypingCount},
+        { label: t('menu.chatter'), click: createChatterWindow },
         { type: 'separator' },
-        { label: '정보', click: () => {
+        { label: t('menu.about'), click: () => {
             const { dialog } = require('electron');
             dialog.showMessageBox({
               type: 'info',
-              title: '정보',
-              message: `IIDXwidget v${appVersion}\n개발자: Sadang\nhttps://github.com/Coldlapse/IIDXwidget`,
-              buttons: ['확인']
+              title: t('menu.about'), message: t('about.message', { version: appVersion }), buttons: [t('common.ok')]
             });
           }
         },
-        { label: '기여자', click: () => {
+        { label: t('menu.contributors'), click: () => {
           const { dialog } = require('electron');
           dialog.showMessageBox({
             type: 'info',
-            title: '기여자',
-            message: '기여자 : rhombus9, 멘탈바사삭',
-            buttons: ['확인']
+            title: t('menu.contributors'), message: t('about.contributors'), buttons: [t('common.ok')]
           });
         }
       },
         { type: 'separator' },
-        { label: '업데이트 확인', click: () => manualUpdateCheck() },
-        { label: '재시작', click: restartApp },
-        { label: '끝내기', click: () => app.quit() }
+        { label: t('menu.checkUpdates'), click: () => manualUpdateCheck() },
+        { label: t('menu.restart'), click: restartApp },
+        { label: t('menu.quit'), click: () => app.quit() }
       ]
+    },
+    {
+      label: t('menu.language'), submenu: [
+        { label: '한국어', type: 'radio', checked: language === 'ko', click: () => setLanguage('ko') },
+        { label: 'English', type: 'radio', checked: language === 'en', click: () => setLanguage('en') }
+      ]
+    },
+    {
+      label: 'README',
+      submenu: [{
+        label: t('readme.obsSetup'),
+        click: () => dialog.showMessageBox({
+          type: 'info',
+          title: t('readme.title'),
+          message: t('readme.obsInstructions', {
+            serverPort: settings.serverPort || 8080,
+            webSocketPort: settings.webSocketPort || 5678
+          }),
+          buttons: [t('common.ok')]
+        })
+      }]
     }
   ]);
   Menu.setApplicationMenu(menu);
+}
+
+function setLanguage(language) {
+  settings.language = normalizeLanguage(language);
+  fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2));
+  createStatusMenu();
+  BrowserWindow.getAllWindows().forEach(win => { if (!win.isDestroyed()) win.webContents.send('language-changed', settings.language); });
 }
 
 function restartApp() {
@@ -264,31 +295,7 @@ function restartApp() {
     serverInstance = startServer(settings.serverPort, userImageDir);
     webSocketInstance = startWebSocketServer(settings.webSocketPort);
 
-    if (settings.controllerProfile === 'PHOENIXWAN' || settings.controllerProfile === 'FPS EMP Gen2') {
-      const { startControllerReader } = require('./controller/controllerReader');
-      controllerInstance = startControllerReader(settings.controllerProfile, data => {
-        if (mainWindow) mainWindow.webContents.send('controller-data', data);
-        broadcastControllerData(data);
-      }, { lr2ModeEnabled: settings.lr2ModeEnabled });
-
-      currentHIDDevice = controllerInstance;  // ✅ 이거 추가!
-    } else if (settings.controllerProfile === 'KB') {
-      const defaultMap = {
-        SCup: "ShiftLeft",
-        SCdown: "ControlLeft",
-        "1": "KeyS",
-        "2": "KeyD",
-        "3": "KeyF",
-        "4": "Space",
-        "5": "KeyJ",
-        "6": "KeyK",
-        "7": "KeyL"
-      };
-      const map = Object.assign({}, defaultMap, settings.keyMapping?.KB || {});
-      keyboardInstance = startGlobalKeyboardReader(map, data => {
-        if (mainWindow) mainWindow.webContents.send('controller-data', [data]);
-      });
-    }
+    startConfiguredController();
 
     if (mainWindow) mainWindow.reload();
   }, 300);
@@ -306,6 +313,7 @@ console.log = (...args) => {
 
 // 📡 IPC
 ipcMain.handle('get-websocket-port', () => settings.webSocketPort || 5678);
+ipcMain.handle('get-language', () => normalizeLanguage(settings.language));
 ipcMain.handle('request-log-buffer', () => logBuffer);
 ipcMain.handle('get-app-version', () => {
   return app.getVersion();
@@ -323,14 +331,9 @@ ipcMain.handle('load-settings', () => {
 
 ipcMain.handle('save-settings', async (event, newSettings) => {
   try {
+    newSettings.language = normalizeLanguage(newSettings.language ?? settings.language);
     fs.writeFileSync(SETTINGS_FILE, JSON.stringify(newSettings, null, 2));
     settings = newSettings;
-
-    if (settings.controllerProfile === 'KB') {
-      startKBMode();
-    } else {
-      startPHOENIXWANMode(settings.controllerProfile, settings.lr2ModeEnabled); // ✅ 수정
-    }
 
     app.setLoginItemSettings({
       openAtLogin: newSettings.autoLaunch,
@@ -423,10 +426,42 @@ function startPHOENIXWANMode(profile = 'PHOENIXWAN', lr2DetectEnabled = false) {
 }
 
   console.log(`🎮 Starting controller reader for profile: ${profile}`);
-  currentHIDDevice = startControllerReader(profile, (data) => {
-    if (mainWindow) mainWindow.webContents.send('controller-data', data);
-    broadcastControllerData(data);
-  }, { lr2ModeEnabled: lr2DetectEnabled });
+  currentHIDDevice = startControllerReader(profile, dispatchControllerData, { lr2ModeEnabled: lr2DetectEnabled, logger: controllerLogger });
+}
+
+function startAutoControllerMode() {
+  stopInputReaders();
+  currentHIDDevice = startAutoControllerReader(dispatchControllerData, {
+    genericMapping: settings.keyMapping?.GENERIC || {}, lr2ModeEnabled: settings.lr2ModeEnabled, logger: controllerLogger
+  });
+}
+
+function stopInputReaders() {
+  if (currentHIDDevice?.close) { try { currentHIDDevice.close(); } catch (e) {} currentHIDDevice = null; }
+  if (currentKBReader?.stop) { try { currentKBReader.stop(); } catch (e) {} currentKBReader = null; }
+}
+
+function dispatchControllerData(data) {
+  const widgetData = data.filter(event => event.type !== 'physical-button');
+  if (settingsWindow && !settingsWindow.isDestroyed()) settingsWindow.webContents.send('controller-data', data);
+  if (mainWindow && !mainWindow.isDestroyed() && widgetData.length) mainWindow.webContents.send('controller-data', widgetData);
+  if (chatterWindow && !chatterWindow.isDestroyed() && widgetData.length) chatterWindow.webContents.send('controller-data', widgetData);
+  if (widgetData.length) broadcastControllerData(widgetData);
+}
+
+function controllerLogger(level, code, details = {}) {
+  const message = translate(settings.language, `controller.${code}`, details);
+  console[level]?.(`${level === 'error' ? '❌' : '🎮'} ${message}`, details.error || '');
+}
+
+function startConfiguredController() {
+  switch (settings.controllerProfile) {
+    case 'KB': startKBMode(); break;
+    case 'AUTO': startAutoControllerMode(); break;
+    case 'PHOENIXWAN':
+    case 'FPS EMP Gen2': startPHOENIXWANMode(settings.controllerProfile, settings.lr2ModeEnabled); break;
+    default: startAutoControllerMode(); break;
+  }
 }
 
 function startKBMode() {
@@ -462,6 +497,7 @@ function startKBMode() {
 }
 
 function manualUpdateCheck() {
+  const t = (key, replacements) => translate(settings.language, key, replacements);
   autoUpdater.autoDownload = false;
 
   autoUpdater.once('checking-for-update', () => {
@@ -475,13 +511,13 @@ function manualUpdateCheck() {
       .replace(/<[^>]+>/g, '')  // HTML 태그 제거
       .trim();
 
-    const message = `새 버전 ${info.version} 이(가) 있습니다!\n\n변경사항:\n${plainReleaseNotes}`;
+    const message = t('update.available', { version: info.version, notes: plainReleaseNotes });
 
     const result = dialog.showMessageBoxSync({
       type: 'info',
-      title: '업데이트 알림',
+      title: t('update.availableTitle'),
       message: message,
-      buttons: ['업데이트', '다음에 하기'],
+      buttons: [t('update.update'), t('common.later')],
       cancelId: 1,
       defaultId: 0,
     });
@@ -495,8 +531,7 @@ function manualUpdateCheck() {
     console.log('✅ 현재 최신 버전입니다.');
     dialog.showMessageBox({
       type: 'info',
-      title: '업데이트 확인',
-      message: '현재 최신 버전입니다.'
+      title: t('menu.checkUpdates'), message: t('update.current')
     });
   });
 
@@ -504,8 +539,7 @@ function manualUpdateCheck() {
     console.error('❌ 업데이트 오류:', err);
     dialog.showMessageBox({
       type: 'error',
-      title: '업데이트 오류',
-      message: `업데이트 확인 중 오류 발생:\n${err.message}`
+      title: t('update.errorTitle'), message: t('update.error', { message: err.message })
     });
   });
 
@@ -549,6 +583,7 @@ ipcMain.handle('request-chatter-summary', () => {
 
 
 function checkForUpdateWithUI() {
+  const t = (key, replacements) => translate(settings.language, key, replacements);
   autoUpdater.autoDownload = false;
 
   autoUpdater.on('update-available', (info) => {
@@ -564,13 +599,13 @@ function checkForUpdateWithUI() {
       .replace(/<[^>]+>/g, '')  // HTML 태그 제거
       .trim();
 
-    const message = `새 버전 ${info.version} 이(가) 있습니다!\n\n변경사항:\n${plainReleaseNotes}`;
+    const message = t('update.available', { version: info.version, notes: plainReleaseNotes });
 
     const result = dialog.showMessageBoxSync({
       type: 'info',
-      title: '업데이트 알림',
+      title: t('update.availableTitle'),
       message: message,
-      buttons: ['업데이트', '다음에 하기', '이번 버전 스킵'],
+      buttons: [t('update.update'), t('common.later'), t('update.skip')],
       cancelId: 1,
       defaultId: 0,
     });
@@ -586,9 +621,7 @@ function checkForUpdateWithUI() {
   autoUpdater.on('update-downloaded', () => {
     const confirm = dialog.showMessageBoxSync({
       type: 'question',
-      title: '업데이트 준비 완료',
-      message: '업데이트가 다운로드되었습니다.\n지금 재시작하고 설치할까요?',
-      buttons: ['지금 재시작', '나중에'],
+      title: t('update.readyTitle'), message: t('update.ready'), buttons: [t('update.restartNow'), t('update.later')],
       defaultId: 0,
       cancelId: 1
     });
@@ -643,11 +676,7 @@ app.whenReady().then(() => {
   serverInstance = startServer(settings.serverPort, userImageDir);
   webSocketInstance = startWebSocketServer(settings.webSocketPort);
 
-  if (settings.controllerProfile === 'KB') {
-    startKBMode();
-  } else {
-    startPHOENIXWANMode(settings.controllerProfile, settings.lr2ModeEnabled);
-  }
+  startConfiguredController();
 
   createMainWindow();
   createStatusMenu();

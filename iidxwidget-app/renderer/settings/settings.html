@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>설정</title>
+  <title data-i18n="settings.title">설정</title>
   <link href="https://fonts.googleapis.com/earlyaccess/nanumgothic.css" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -10,34 +10,35 @@
   
   <div class="settings-container">
     <div class="setting-group">
-      <label class="section-label">앱 기본 설정</label>
-      <label><input type="checkbox" id="autoLaunch" /> Windows 시작 시 자동 실행</label>
+      <label class="section-label" data-i18n="settings.app">앱 기본 설정</label>
+      <label><input type="checkbox" id="autoLaunch" /> <span data-i18n="settings.autoLaunch">Windows 시작 시 자동 실행</span></label>
       <label>
         <input type="checkbox" id="showPromoBox" />
-        위젯 홍보 박스 표시
+        <span data-i18n="settings.promo">위젯 홍보 박스 표시</span>
       </label><br>
-      <label for="controllerProfile">컨트롤러 프로필</label>
+      <label for="controllerProfile" data-i18n="settings.controllerProfile">컨트롤러 프로필</label>
       <select id="controllerProfile">
+        <option value="AUTO" data-i18n="settings.auto">자동 감지</option>
         <option value="PHOENIXWAN">PHOENIXWAN+</option>
         <option value="FPS EMP Gen2">FPS EMP Gen2</option>
-        <option value="KB">BM으로 하라고 만든 게임을 꾸역꾸역 키보드로 하는 멍청이</option>
+        <option value="KB" data-i18n="settings.keyboard">키보드</option>
       </select>
     </div>
 
     <div class="setting-group">
-      <label for="apiToken">beatmania.app 타건 기록 토큰</label>
-      <input type="text" id="apiToken" placeholder="웹사이트에서 발급받은 토큰 입력" />
+      <label for="apiToken" data-i18n="settings.apiToken">beatmania.app 타건 기록 토큰</label>
+      <input type="text" id="apiToken" placeholder="웹사이트에서 발급받은 토큰 입력" data-i18n-placeholder="settings.apiPlaceholder" />
     </div>
 
     <div id="lr2-detect-row">
       <label>
         <input type="checkbox" id="lr2ModeEnabled" />
-        LR2 모드 감지 (주작콘 전용)
+        <span data-i18n="settings.lr2">LR2 모드 감지 (주작콘 전용)</span>
       </label>
     </div>
 
     <div id="key-mapping-container" class="setting-group" style="display: none;">
-      <label>키보드 매핑 (저는 KB를 하는 바보입니다)</label>
+      <label data-i18n="settings.keyboardMapping">키보드 매핑</label>
       <table id="key-mapping-table">
         <tr><td>SCup</td><td><input type="text" data-key="SCup" readonly /></td></tr>
         <tr><td>SCdown</td><td><input type="text" data-key="SCdown" readonly /></td></tr>
@@ -51,77 +52,101 @@
       </table>
     </div>
 
+    <div id="generic-mapping-container" class="setting-group" style="display: none;">
+      <label data-i18n="settings.genericMapping">AUTO 일반 컨트롤러 매핑</label>
+      <p class="mapping-help" data-i18n="settings.genericHelp">Auto-detect를 저장한 뒤 설정을 다시 열고, 각 필드를 클릭한 다음 원하는 컨트롤러 버튼을 누르세요. 마지막에 저장을 누르세요.</p>
+      <table id="generic-mapping-table">
+        <tbody>
+          <tr><td data-i18n="settings.logicalKey">IIDX 키 1</td><td><input type="number" min="1" max="32" data-key="1"></td></tr>
+          <tr><td>IIDX 키 2</td><td><input type="number" min="1" max="32" data-key="2"></td></tr>
+          <tr><td>IIDX 키 3</td><td><input type="number" min="1" max="32" data-key="3"></td></tr>
+          <tr><td>IIDX 키 4</td><td><input type="number" min="1" max="32" data-key="4"></td></tr>
+          <tr><td>IIDX 키 5</td><td><input type="number" min="1" max="32" data-key="5"></td></tr>
+          <tr><td>IIDX 키 6</td><td><input type="number" min="1" max="32" data-key="6"></td></tr>
+          <tr><td>IIDX 키 7</td><td><input type="number" min="1" max="32" data-key="7"></td></tr>
+          <tr><td>턴테이블 시계 방향</td><td><input type="number" min="1" max="32" data-key="SCup"></td></tr>
+          <tr><td>턴테이블 반시계 방향</td><td><input type="number" min="1" max="32" data-key="SCdown"></td></tr>
+        </tbody>
+      </table>
+      <div id="mapping-status" aria-live="polite"></div>
+    </div>
+
     <div class="setting-group">
-      <label for="serverPort">서버 포트</label>
+      <label for="serverPort" data-i18n="settings.serverPort">서버 포트</label>
       <input type="number" id="serverPort" min="1024" max="65535" />
     </div>
     <div class="setting-group">
-      <label for="webSocketPort">웹소켓 포트</label>
+      <label for="webSocketPort" data-i18n="settings.websocketPort">웹소켓 포트</label>
       <input type="number" id="webSocketPort" min="1024" max="65535" />
     </div>
 
     <div class="setting-group">
-      <label for="infoPosition">세션 정보 표시 위치</label>
+      <label for="infoPosition" data-i18n="settings.infoPosition">세션 정보 표시 위치</label>
       <select id="infoPosition">
-        <option value="top">상단</option>
-        <option value="bottom">하단</option>
-        <option value="none">없음</option>
+        <option value="top" data-i18n="settings.top">상단</option><option value="bottom" data-i18n="settings.bottom">하단</option><option value="none" data-i18n="settings.none">없음</option>
       </select>
     </div>
     <div class="setting-group">
-      <label for="buttonLayout">버튼 레이아웃</label>
+      <label for="buttonLayout" data-i18n="settings.buttonLayout">버튼 레이아웃</label>
       <select id="buttonLayout">
         <option value="1P">1P</option>
         <option value="2P">2P</option>
       </select>
     </div>
     <div class="setting-group">
-      <label for="GlobalReleaseMALength">전체 Release 수집 표본 갯수 (수치가 높을수록 변화에 둔감)</label>
+      <label for="GlobalReleaseMALength" data-i18n="settings.globalMA">전체 Release 수집 표본 갯수 (수치가 높을수록 변화에 둔감)</label>
       <input type="number" id="GlobalReleaseMALength" min="10" max="1000" step="1" value="200" />
     </div>
 
     <div class="setting-group">
-      <label for="PerButtonMALength">버튼별 Release 수집 표본 갯수 (수치가 높을수록 변화에 둔감)</label>
+      <label for="PerButtonMALength" data-i18n="settings.perButtonMA">버튼별 Release 수집 표본 갯수 (수치가 높을수록 변화에 둔감)</label>
       <input type="number" id="PerButtonMALength" min="10" max="1000" step="1" value="200" />
     </div>
-    <label class="section-label">위젯 외관 커스터마이징</label>
+    <label class="section-label" data-i18n="settings.appearance">위젯 외관 커스터마이징</label>
     <div class="setting-group">
-      <label>스크래치 커스텀 이미지 업로드</label>
+      <label><input type="checkbox" id="transparent-container" /> <span data-i18n="settings.transparentContainer">위젯 컨테이너 배경 투명하게</span></label>
+    </div>
+    <div class="setting-group">
+      <label data-i18n="settings.discImage">스크래치 커스텀 이미지 업로드</label>
       <div class="input-with-delete">
         <input type="file" id="disc-image-upload" accept="image/*">
-        <button id="delete-disc-button">삭제</button>
+        <button id="delete-disc-button" data-i18n="settings.delete">삭제</button>
       </div>
       <img id="disc-preview" style="margin-top: 10px; max-width: 100%; border-radius: 10px;" />
     </div>
     <div class="setting-group">
       <div class="color-setting-row">
-        <label for="color-background">배경/스크래치 색상</label>
+        <label for="color-container-background" data-i18n="settings.containerBackground">위젯 컨테이너 배경색</label>
+        <input type="color" id="color-container-background" />
+        <span class="color-preview" id="preview-container-background"></span>
+      </div>
+      <div class="color-setting-row">
+        <label for="color-background" data-i18n="settings.background">스크래치 배경색</label>
         <input type="color" id="color-background" />
         <span class="color-preview" id="preview-background"></span>
       </div>
       <div class="color-setting-row">
-        <label for="color-accent">버튼/스크래치 입력 전 색상</label>
+        <label for="color-accent" data-i18n="settings.accent">버튼/스크래치 입력 전 색상</label>
         <input type="color" id="color-accent" />
         <span class="color-preview" id="preview-accent"></span>
       </div>
       <div class="color-setting-row">
-        <label for="color-activeColor">버튼/스크래치 입력 시 색상</label>
+        <label for="color-activeColor" data-i18n="settings.active">버튼/스크래치 입력 시 색상</label>
         <input type="color" id="color-activeColor" />
         <span class="color-preview" id="preview-activeColor"></span>
       </div>
       <div class="color-setting-row">
-        <label for="color-fontColor">폰트/스크래치 가로선 색상</label>
+        <label for="color-fontColor" data-i18n="settings.font">폰트/스크래치 가로선 색상</label>
         <input type="color" id="color-fontColor" />
         <span class="color-preview" id="preview-fontColor"></span>
       </div>
     </div>
 
     <div class="button-row">
-      <button id="save-button">저장</button>
-      <button id="cancel-button">저장하지 않고 종료</button>
+      <button id="save-button" data-i18n="settings.save">저장</button><button id="cancel-button" data-i18n="settings.cancel">저장하지 않고 종료</button>
     </div>
   </div>
 
-  <script src="settings.js"></script>
+  <script src="../shared/i18n.js"></script><script src="settings.js"></script>
 </body>
 </html>
