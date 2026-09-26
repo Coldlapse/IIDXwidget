@@ -22,7 +22,7 @@ const translations = {
         'rhombus9 : KB 모드 특수키 입력 매핑\n' +
         '멘탈바사삭 : FPS EMP 2세대 컨트롤러 지원\n' +
         'MellDa1024 : 스크래치 회전 방향별 이미지\n' +
-        'Ryochobi : 한국어/영어 지원, 자동 감지, 위젯 배경 설정'
+        'Ryochobi : 한국어/영어 지원, 그 외 컨트롤러 지원, 위젯 배경 설정'
     },
     records: {
       title: '세션 기록',
@@ -106,7 +106,7 @@ const translations = {
       autoLaunch: 'Windows 시작 시 자동 실행',
       promo: '위젯 홍보 박스 표시',
       controllerProfile: '컨트롤러 프로필',
-      auto: '자동 감지',
+      auto: '그 외 컨트롤러',
       keyboard: 'BM으로 하라고 만든 게임을 꾸역꾸역 키보드로 하는 멍청이',
       account: 'beatmania.app 계정',
       apiPlaceholder: 'API 토큰 붙여 넣기',
@@ -130,7 +130,7 @@ const translations = {
       autoUploadOnQuit: '종료할 때 남은 타건 기록 자동 전송',
       autoUploadHint: 'beatmania.app 토큰이 있어야 동작합니다.',
       keyboardMapping: '키보드 매핑 (저는 KB를 하는 바보입니다)',
-      genericMapping: 'AUTO 일반 컨트롤러 매핑',
+      genericMapping: '그 외 컨트롤러 버튼 매핑',
       genericHelp: '각 칸을 클릭한 다음 원하는 컨트롤러 버튼을 누르세요. 칸을 비우면 매핑이 해제됩니다. 마지막에 저장을 누르세요.',
       mappingReady: '매핑할 컨트롤러: {device}',
       mappingDedicated: '{device}는 전용 컨트롤러라 매핑 없이 인식됩니다.',
@@ -232,7 +232,7 @@ const translations = {
         'rhombus9 : special key mapping for KB mode\n' +
         '멘탈바사삭 : FPS EMP Gen2 controller support\n' +
         'MellDa1024 : turntable images by spin direction\n' +
-        'Ryochobi : Korean/English, auto-detect, widget background options'
+        'Ryochobi : Korean/English, other controller support, widget background options'
     },
     records: {
       title: 'Session',
@@ -316,7 +316,7 @@ const translations = {
       autoLaunch: 'Launch automatically with Windows',
       promo: 'Show widget promotion box',
       controllerProfile: 'Controller Profile',
-      auto: 'Auto-detect',
+      auto: 'Other controllers',
       keyboard: 'Keyboard',
       account: 'beatmania.app account',
       apiPlaceholder: 'Paste your API token',
@@ -340,7 +340,7 @@ const translations = {
       autoUploadOnQuit: 'Upload remaining presses when quitting',
       autoUploadHint: 'Requires a beatmania.app token.',
       keyboardMapping: 'Keyboard mapping',
-      genericMapping: 'AUTO generic controller mapping',
+      genericMapping: 'Other controller button mapping',
       genericHelp: 'Click a field, then press the controller button to map. Clear a field to unmap it. Press Save when finished.',
       mappingReady: 'Controller to map: {device}',
       mappingDedicated: '{device} is a dedicated controller and works without mapping.',

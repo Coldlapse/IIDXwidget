@@ -7,6 +7,8 @@ body {
   font-family: 'Nanum Gothic', sans-serif;
 }
 
+.panel:last-of-type { margin-bottom: 0; }
+
 .panel {
   background-color: #1e1e1e;
   border-radius: 12px;

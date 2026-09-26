@@ -70,13 +70,23 @@ const sendTo = (win, channel, data) => {
 
 
 // 🪟 창
+// 창 크기는 화면 안쪽(내용 영역) 기준. 화면이 작으면 작업 영역 안에 들어오게 줄인다.
+function fitToScreen(width, height) {
+  const area = screen.getPrimaryDisplay().workAreaSize;
+  return { width: Math.min(width, area.width - 40), height: Math.min(height, area.height - 80) };
+}
+
 function createMainWindow() {
+  // 앱 창은 OBS 브라우저 소스 권장 크기(800×600)와 같게 보여준다
   mainWindow = new BrowserWindow({
-    width: 1000,
-    height: 800,
+    width: 800,
+    height: 600,
+    useContentSize: true,
     resizable: false,
     webPreferences: { preload: preloadPath, contextIsolation: true, nodeIntegration: false }
   });
+  // 크기 고정 창은 Windows에서 안쪽 크기가 몇 px 어긋나게 만들어지는 경우가 있어 한 번 더 맞춘다
+  mainWindow.setContentSize(800, 600);
   mainWindow.loadFile(path.join(__dirname, 'renderer/widget/index.html'));
   // 창을 닫으면 바로 꺼지지 않고 종료 절차(자동 전송, 정리)를 거친다
   mainWindow.on('close', event => {
@@ -90,14 +100,16 @@ function createMainWindow() {
 }
 
 // 메인 창에 딸린 모달 창. 이미 열려 있으면 앞으로 가져온다.
-function createChildWindow(existing, { width, height, file, resizable = true }) {
+function createChildWindow(existing, { width, height, file, resizable = true, minWidth, minHeight }) {
   if (existing && !existing.isDestroyed()) {
     existing.focus();
     return existing;
   }
   const win = new BrowserWindow({
-    width,
-    height,
+    ...fitToScreen(width, height),
+    useContentSize: true,
+    minWidth,
+    minHeight,
     parent: mainWindow,
     modal: true,
     autoHideMenuBar: true,
@@ -115,7 +127,7 @@ function createChildWindow(existing, { width, height, file, resizable = true }) 
 
 function createSettingsWindow() {
   const isNew = !settingsWindow;
-  settingsWindow = createChildWindow(settingsWindow, { width: 550, height: 400, file: 'renderer/settings/settings.html', resizable: false });
+  settingsWindow = createChildWindow(settingsWindow, { width: 560, height: 860, minWidth: 560, minHeight: 400, file: 'renderer/settings/settings.html' });
   if (isNew) {
     settingsWindow.on('closed', () => {
       settingsWindow = null;
@@ -126,19 +138,19 @@ function createSettingsWindow() {
 
 function createLogsWindow() {
   const isNew = !logsWindow;
-  logsWindow = createChildWindow(logsWindow, { width: 600, height: 400, file: 'renderer/logs/logs.html' });
+  logsWindow = createChildWindow(logsWindow, { width: 760, height: 480, minWidth: 400, minHeight: 240, file: 'renderer/logs/logs.html' });
   if (isNew) logsWindow.on('closed', () => logsWindow = null);
 }
 
 function createChatterWindow() {
   const isNew = !chatterWindow;
-  chatterWindow = createChildWindow(chatterWindow, { width: 440, height: 490, file: 'renderer/chatter/chatter.html' });
+  chatterWindow = createChildWindow(chatterWindow, { width: 440, height: 470, minWidth: 440, minHeight: 240, file: 'renderer/chatter/chatter.html' });
   if (isNew) chatterWindow.on('closed', () => chatterWindow = null);
 }
 
 function createRecordsWindow() {
   const isNew = !recordsWindow;
-  recordsWindow = createChildWindow(recordsWindow, { width: 640, height: 680, file: 'renderer/records/records.html' });
+  recordsWindow = createChildWindow(recordsWindow, { width: 640, height: 500, minWidth: 520, minHeight: 240, file: 'renderer/records/records.html' });
   if (isNew) recordsWindow.on('closed', () => recordsWindow = null);
 }
 
@@ -608,6 +620,15 @@ ipcMain.handle('upload-now', () => uploadRemaining());
 
 ipcMain.handle('request-chatter-summary', () => session?.chatter() ?? {});
 
+// 채터링·세션 기록 창은 내용 높이에 맞춘다 (전송 내역이 늘면 창도 늘어난다). 화면보다 커지면 화면에 맞추고 스크롤한다
+ipcMain.on('fit-window-height', (event, height) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (!win || (win !== chatterWindow && win !== recordsWindow) || !Number.isFinite(height)) return;
+  const [width] = win.getContentSize();
+  const fitted = fitToScreen(width, Math.max(240, Math.ceil(height)));
+  if (win.getContentSize()[1] !== fitted.height) win.setContentSize(width, fitted.height);
+});
+
 // beatmania.app 계정: 토큰은 서버에 확인한 뒤에만 저장한다 (틀린 토큰으로 조용히 실패하지 않도록).
 // 결과: { ok: true, username } 또는 { ok: false, error: 'unauthorized' | 'network' | 'encryption', detail? }
 ipcMain.handle('get-account', () => accountState());
@@ -657,8 +678,9 @@ app.whenReady().then(() => {
   startServers();
   inputs.start(settings);
 
-  createMainWindow();
+  // 메뉴를 먼저 만든다. 창을 만든 뒤에 메뉴가 붙으면 창 안쪽 크기가 800×600에서 어긋난다
   createStatusMenu();
+  createMainWindow();
   if (!loaded.existed) mainWindow.webContents.once('did-finish-load', showFirstRunGuide);
 });
 
