@@ -18,7 +18,7 @@ const { setupUpdater } = require('./updater');
 const { GUIDE_IDS, guideFile, loadGuide } = require('./guides');
 const { translations, normalizeLanguage, translate } = require('./localization/translations');
 const {
-  DEFAULT_SETTINGS, applyUpdate, settingsForWindow, readSettingsFile, writeSettingsFile, publicSettings, referencedImageFiles
+  DEFAULT_SETTINGS, applyUpdate, settingsForWindow, validChatterConfig, CHATTER_RANGE, readSettingsFile, writeSettingsFile, publicSettings, referencedImageFiles
 } = require('./settingsStore');
 
 
@@ -100,7 +100,7 @@ function createMainWindow() {
 
 // 메인 창에 딸린 모달 창. 이미 열려 있으면 앞으로 가져온다.
 // 크기는 고정이다. 내용이 늘어날 수 있는 부분은 창 안에서 스크롤한다 (renderer/shared/overlayScroll.js).
-function createChildWindow(existing, { width, height, file }) {
+function createChildWindow(existing, { width, height, file, parent = mainWindow, query }) {
   if (existing && !existing.isDestroyed()) {
     existing.focus();
     return existing;
@@ -108,14 +108,14 @@ function createChildWindow(existing, { width, height, file }) {
   const win = new BrowserWindow({
     ...fitToScreen(width, height),
     useContentSize: true,
-    parent: mainWindow,
+    parent,
     modal: true,
     autoHideMenuBar: true,
     resizable: false,
     maximizable: false,
     webPreferences: { preload: preloadPath, contextIsolation: true, nodeIntegration: false }
   });
-  win.loadFile(path.join(__dirname, file));
+  win.loadFile(path.join(__dirname, file), query ? { query } : undefined);
   // 새 창 열기는 막고, beatmania.app 링크만 기본 브라우저로 연다
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith('https://beatmania.app/')) shell.openExternal(url);
@@ -141,9 +141,17 @@ function createLogsWindow() {
   if (isNew) logsWindow.on('closed', () => logsWindow = null);
 }
 
-function createChatterWindow() {
-  const isNew = !chatterWindow;
-  chatterWindow = createChildWindow(chatterWindow, { width: 440, height: byLanguage({ ko: 443, en: 463 }), file: 'renderer/chatter/chatter.html' });
+// view: 'settings'면 채터링 감지 설정 화면으로 연다 (설정 창의 링크). parent: 연 창 위에 뜨도록
+function createChatterWindow({ view, parent } = {}) {
+  const isNew = !chatterWindow || chatterWindow.isDestroyed();
+  if (!isNew && view) sendTo(chatterWindow, 'show-chatter-view', view);
+  chatterWindow = createChildWindow(chatterWindow, {
+    parent: parent && !parent.isDestroyed() ? parent : mainWindow,
+    query: view ? { view } : undefined,
+    width: 440,
+    height: byLanguage({ ko: 484, en: 503 }),
+    file: 'renderer/chatter/chatter.html'
+  });
   if (isNew) chatterWindow.on('closed', () => chatterWindow = null);
 }
 
@@ -218,8 +226,13 @@ function broadcastStats(stats) {
   broadcastControllerData([{ type: 'stats', stats }]);
 }
 
-function currentMALengths() {
-  return { global: settings.widget.globalMALength, perButton: settings.widget.perButtonMALength };
+// 세션 통계 계산 기준: 릴리즈 표본 수, CN 판정 시간, 채터링 기준
+function currentStatsConfig() {
+  return {
+    maLengths: { global: settings.widget.globalMALength, perButton: settings.widget.perButtonMALength },
+    cnThresholdMs: settings.widget.cnThresholdMs,
+    chatter: settings.chatter
+  };
 }
 
 
@@ -338,7 +351,7 @@ function createStatusMenu() {
         { label: t('menu.logs'), click: createLogsWindow },
         { type: 'separator' },
         { label: t('menu.records'), click: createRecordsWindow },
-        { label: t('menu.chatter'), click: createChatterWindow },
+        { label: t('menu.chatter'), click: () => createChatterWindow() },
         { type: 'separator' },
         { label: t('menu.about'), click: () => showInfo(t('menu.about'), t('about.message', { version: appVersion })) },
         { label: t('menu.contributors'), click: () => showInfo(t('menu.contributors'), t('about.contributors')) },
@@ -444,7 +457,7 @@ function restartApp() {
 function applySettingsChange() {
   startServers();
   inputs.start(settings);
-  session.setMALengths(currentMALengths());
+  session.setConfig(currentStatsConfig());
   broadcastSettingsUpdated();
   sendTo(mainWindow, 'settings-updated');
 }
@@ -619,6 +632,19 @@ ipcMain.handle('upload-now', () => uploadRemaining());
 
 ipcMain.handle('request-chatter-summary', () => session?.chatter() ?? {});
 
+// 채터링 감지 설정 (채터링 감지 창). 저장하면 이번 세션 기록을 새 기준으로 바로 다시 센다 (재시작 필요 없음)
+ipcMain.handle('get-chatter-settings', () => ({ config: settings.chatter, range: CHATTER_RANGE }));
+ipcMain.handle('save-chatter-settings', (event, input) => {
+  const config = validChatterConfig(input);
+  if (!config) return { ok: false, error: 'invalid' };
+  settings.chatter = config;
+  const saved = persistSettings();
+  if (!saved.ok) return { ok: false, error: 'save', message: saved.error };
+  session.setConfig({ chatter: config });
+  return { ok: true, config };
+});
+ipcMain.handle('open-chatter-settings', event => createChatterWindow({ view: 'settings', parent: BrowserWindow.fromWebContents(event.sender) }));
+
 // 채터링·세션 기록 창 높이를 언어별 내용 높이에 맞춘다 (창을 연 뒤, 언어를 바꾼 뒤). 사용자가 늘리거나 줄일 수는 없다
 ipcMain.on('fit-window-height', (event, height) => {
   const win = BrowserWindow.fromWebContents(event.sender);
@@ -671,7 +697,7 @@ app.whenReady().then(() => {
   cleanupUserImages();
   applyAutoLaunch(settings.autoLaunch);
 
-  session = createSessionManager({ maLengths: currentMALengths(), onChange: broadcastStats });
+  session = createSessionManager({ config: currentStatsConfig(), onChange: broadcastStats });
 
   updater.checkOnStartup();
   startServers();

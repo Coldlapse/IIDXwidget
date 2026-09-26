@@ -119,14 +119,25 @@
         <option value="2P">2P</option>
       </select>
     </div>
+    <label class="section-label" data-i18n="settings.inputAnalysis">릴리즈·채터링 (Rag 님 위젯과 같은 기준)</label>
     <div class="setting-group">
-      <label for="GlobalReleaseMALength" data-i18n="settings.globalMA">전체 Release 수집 표본 갯수 (수치가 높을수록 변화에 둔감)</label>
-      <input type="number" id="GlobalReleaseMALength" min="10" max="1000" step="1" value="200" />
+      <label for="GlobalReleaseMALength" data-i18n="settings.globalMA">전체 Release 수집 표본 갯수 (기본 2000, 수치가 높을수록 변화에 둔감)</label>
+      <input type="number" id="GlobalReleaseMALength" min="10" max="5000" step="1" value="2000" />
     </div>
 
     <div class="setting-group">
-      <label for="PerButtonMALength" data-i18n="settings.perButtonMA">버튼별 Release 수집 표본 갯수 (수치가 높을수록 변화에 둔감)</label>
-      <input type="number" id="PerButtonMALength" min="10" max="1000" step="1" value="200" />
+      <label for="PerButtonMALength" data-i18n="settings.perButtonMA">버튼별 Release 수집 표본 갯수 (기본 300, 수치가 높을수록 변화에 둔감)</label>
+      <input type="number" id="PerButtonMALength" min="10" max="5000" step="1" value="300" />
+    </div>
+
+    <div class="setting-group">
+      <label for="cnThresholdMs" data-i18n="settings.cnThreshold">롱노트(CN) 판정 시간 (ms, 기본 200)</label>
+      <input type="number" id="cnThresholdMs" min="100" max="500" step="1" value="200" />
+      <p class="mapping-help" data-i18n="settings.cnThresholdHint"></p>
+    </div>
+
+    <div class="setting-group">
+      <button type="button" class="guide-button" id="open-chatter-settings" data-i18n="settings.chatterSettingsLink">채터링 감지 설정 열기 →</button>
     </div>
     <label class="section-label" data-i18n="settings.appearance">위젯 외관 커스터마이징</label>
     <div class="setting-group">
@@ -181,6 +192,11 @@
         <label for="color-fontColor" data-i18n="settings.font">폰트/스크래치 가로선 색상</label>
         <input type="color" id="color-fontColor" />
         <span class="color-preview" id="preview-fontColor"></span>
+      </div>
+      <div class="color-setting-row">
+        <label for="color-lnColor" data-i18n="settings.ln">롱노트(CN)로 누르고 있는 건반 색상</label>
+        <input type="color" id="color-lnColor" />
+        <span class="color-preview" id="preview-lnColor"></span>
       </div>
     </div>
 

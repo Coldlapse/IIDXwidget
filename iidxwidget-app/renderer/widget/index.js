@@ -91,8 +91,17 @@ function updateBorders(delta) {
 }
 
 // 버튼 불빛은 입력을 받는 즉시 직접 그린다 (숫자는 applyStats가 담당)
+// 롱노트(CN) 판정 시간 이상 누르고 있으면 롱노트 색으로 바꾼다 (릴리즈 평균에서도 빠지는 입력)
+let cnThresholdMs = 200;
+const longNoteTimers = {};
+
 function updateButton(id, pressed) {
-  document.getElementById(`button-${id}`)?.classList.toggle('active', pressed);
+  const key = document.getElementById(`button-${id}`);
+  if (!key) return;
+  key.classList.toggle('active', pressed);
+  clearTimeout(longNoteTimers[id]);
+  if (pressed) longNoteTimers[id] = setTimeout(() => key.classList.add('long'), cnThresholdMs);
+  else key.classList.remove('long');
 }
 
 
@@ -283,6 +292,7 @@ function applySettings(settings) {
     applyDiscImage(settings);
     applyPromoBox(settings);
     applyCustomColors(settings.widget.colors, settings.widget.transparentContainer);
+    cnThresholdMs = settings.widget.cnThresholdMs || 200;
     // 건반 위 릴리즈 숫자 표시 (설정에 없으면 표시)
     document.body.classList.toggle('hide-key-release', settings.widget.showKeyRelease === false);
   }
@@ -341,6 +351,7 @@ function applyCustomColors(colors, transparentContainer = false) {
   document.documentElement.style.setProperty('--accent-color', colors.accent || '#444444');
   document.documentElement.style.setProperty('--font-color', colors.fontColor || '#cccccc');
   document.documentElement.style.setProperty('--active-color', colors.activeColor || '#ffffff');
+  document.documentElement.style.setProperty('--ln-color', colors.lnColor || '#ffb74d');
 }
 
 function applyPromoBox(settings) {

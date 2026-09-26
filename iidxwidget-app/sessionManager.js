@@ -5,8 +5,8 @@ const { createSessionStats } = require('./sessionStats');
 const BROADCAST_DELAY_MS = 50;     // 연타할 때 위젯 갱신을 묶는 간격
 const KPS_REFRESH_MS = 250;        // 입력이 멈춘 뒤 KPS가 0으로 떨어지는 것을 보여주는 간격
 
-function createSessionManager({ maLengths, onChange = () => {}, now = Date.now }) {
-  const stats = createSessionStats({ now: now(), maLengths });
+function createSessionManager({ config, onChange = () => {}, now = Date.now }) {
+  const stats = createSessionStats({ now: now(), config });
   let broadcastTimer = null;
 
   function broadcast() {
@@ -30,8 +30,9 @@ function createSessionManager({ maLengths, onChange = () => {}, now = Date.now }
       stats.recordUpload(count, dailyTotal, now());
       broadcast();
     },
-    setMALengths(lengths) {
-      stats.setMALengths(lengths);
+    // 표본 수, CN 판정 시간, 채터링 기준. 이번 세션 기록을 새 기준으로 다시 계산해서 바로 알린다
+    setConfig(config) {
+      stats.setConfig(config);
       broadcast();
     },
     snapshot: () => stats.snapshot(now()),

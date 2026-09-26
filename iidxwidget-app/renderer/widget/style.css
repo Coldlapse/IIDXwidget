@@ -4,6 +4,7 @@
   --accent-color: #444444;
   --font-color: #cccccc;
   --active-color: #ffffff;
+  --ln-color: #ffb74d;
 }
 
 body {
@@ -164,6 +165,11 @@ body {
 
 .key.active {
   background-color: var(--active-color);
+}
+
+/* 롱노트(CN) 판정 시간 이상 누르고 있는 건반 */
+.key.active.long {
+  background-color: var(--ln-color);
 }
 
 /* 🔥 release-container */

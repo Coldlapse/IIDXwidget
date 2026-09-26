@@ -74,3 +74,27 @@ assert.equal(forWindow.serverPort, merged.serverPort);
 assert.equal(store.DEFAULT_SETTINGS.apiTokenEnc, null);
 assert.equal('apiToken' in store.DEFAULT_SETTINGS, false);
 console.log('settingsStore account tests passed');
+
+// 3.0.0: 릴리즈 표본 기본값 2000/300 (Rag 원본과 같음). 2.x 기본값(200/200)을 쓰던 파일만 바꾸고, 직접 바꾼 값은 유지
+assert.equal(store.DEFAULT_SETTINGS.widget.globalMALength, 2000);
+assert.equal(store.DEFAULT_SETTINGS.widget.perButtonMALength, 300);
+assert.equal(store.DEFAULT_SETTINGS.widget.cnThresholdMs, 200);
+const v2Defaults = store.withDefaults({ widget: { globalMALength: 200, perButtonMALength: 200 } });
+assert.equal(v2Defaults.widget.globalMALength, 2000);
+assert.equal(v2Defaults.widget.perButtonMALength, 300);
+const v2Custom = store.withDefaults({ widget: { globalMALength: 500, perButtonMALength: 200 } });
+assert.equal(v2Custom.widget.globalMALength, 500);
+const v3Chosen = store.withDefaults({ widget: { globalMALength: 200, perButtonMALength: 200, cnThresholdMs: 200 } });
+assert.equal(v3Chosen.widget.globalMALength, 200); // 3.0.0에서 직접 200을 고른 경우
+assert.equal(v2Defaults.widget.colors.lnColor, store.DEFAULT_SETTINGS.widget.colors.lnColor);
+assert.deepEqual(v2Defaults.chatter, { preset: 'rag', upperMs: 30, lowerMs: 10 });
+
+// 채터링 설정 검사
+assert.deepEqual(store.validChatterConfig({ preset: 'sadang', upperMs: 30, lowerMs: 10 }), { preset: 'sadang', upperMs: 30, lowerMs: 10 });
+assert.equal(store.validChatterConfig({ preset: 'sadang', upperMs: 10, lowerMs: 10 }), null);
+assert.deepEqual(store.validChatterConfig({ preset: 'rag', upperMs: 30, lowerMs: 40 }), { preset: 'rag', upperMs: 30, lowerMs: 40 }); // Rag는 하한을 쓰지 않음
+assert.equal(store.validChatterConfig({ preset: 'x', upperMs: 30, lowerMs: 10 }), null);
+assert.equal(store.validChatterConfig({ preset: 'rag', upperMs: 0, lowerMs: 10 }), null);
+assert.equal(store.validChatterConfig({ preset: 'rag', upperMs: 101, lowerMs: 10 }), null);
+assert.equal(store.validChatterConfig({ preset: 'rag', upperMs: 12.5, lowerMs: 10 }), null);
+console.log('settingsStore release/chatter tests passed');

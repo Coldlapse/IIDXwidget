@@ -39,19 +39,30 @@ const DEFAULT_SETTINGS = {
     showPromoBox: false,
     transparentContainer: false,
     showKeyRelease: true,    // 건반 위에 버튼별 평균 릴리즈(ms) 표시
-    globalMALength: 200,
-    perButtonMALength: 200,
+    globalMALength: 2000,    // 전체 평균 릴리즈 표본 (Rag 원본과 같은 최근 2000개)
+    perButtonMALength: 300,  // 건반별 평균 릴리즈 표본 (Rag 원본과 같은 최근 300개)
+    cnThresholdMs: 200,      // 이 시간 이상 누르면 롱노트(CN)로 보고 릴리즈 평균에서 빼며, 건반을 롱노트 색으로 표시
     colors: {
       containerBackground: '#000000',
       background: '#000000',
       accent: '#444444',
       fontColor: '#cccccc',
-      activeColor: '#ffffff'
+      activeColor: '#ffffff',
+      lnColor: '#ffb74d'     // 롱노트(CN)로 누르고 있는 건반 색
     }
+  },
+  // 채터링 감지 기준 (채터링 감지 창에서 설정). 뗀 뒤 다시 누르기까지의 간격으로 판단한다
+  chatter: {
+    preset: 'rag',   // 'rag': upperMs 미만 전부 / 'sadang': lowerMs 초과 upperMs 미만만
+    upperMs: 30,
+    lowerMs: 10
   }
 };
 
-const MA_LENGTH_RANGE = { min: 10, max: 1000 };
+const MA_LENGTH_RANGE = { min: 10, max: 5000 };
+const CN_THRESHOLD_RANGE = { min: 100, max: 500 };
+const CHATTER_RANGE = { min: 1, max: 100 };
+const CHATTER_PRESET_IDS = ['rag', 'sadang'];
 const MAPPING_KINDS = ['KB', 'GENERIC'];
 
 const clone = value => JSON.parse(JSON.stringify(value));
@@ -89,6 +100,13 @@ function migrateSettings(raw) {
 
     for (const key of ['discImagePath', 'downDiscImagePath']) {
       if (key in widget) widget[key] = toRelativeImagePath(widget[key]);
+    }
+
+    // 2.x 설정: 릴리즈 표본 기본값이 200/200이었다. 3.0.0부터 Rag 원본과 같은 2000/300이 기본값이므로,
+    // 2.x 기본값을 그대로 쓰던 경우만 새 기본값으로 바꾼다 (직접 바꾼 값은 유지). CN 설정이 없으면 2.x 파일이다
+    if (!('cnThresholdMs' in widget) && widget.globalMALength === 200 && widget.perButtonMALength === 200) {
+      widget.globalMALength = 2000;
+      widget.perButtonMALength = 300;
     }
   }
   return settings;
@@ -141,6 +159,17 @@ function publicSettings(settings) {
   };
 }
 
+// 채터링 감지 창에서 받은 값 검사. 올바르면 { preset, upperMs, lowerMs }, 아니면 null
+function validChatterConfig(input) {
+  const preset = input?.preset;
+  const upperMs = Number(input?.upperMs);
+  const lowerMs = Number(input?.lowerMs);
+  const inRange = v => Number.isInteger(v) && v >= CHATTER_RANGE.min && v <= CHATTER_RANGE.max;
+  if (!CHATTER_PRESET_IDS.includes(preset) || !inRange(upperMs) || !inRange(lowerMs)) return null;
+  if (preset === 'sadang' && lowerMs >= upperMs) return null;
+  return { preset, upperMs, lowerMs };
+}
+
 // 설정 창에 보내는 설정. 토큰(암호화된 값 포함)은 화면으로 보내지 않는다. 계정 표시는 get-account로 따로 받는다.
 function settingsForWindow(settings) {
   const copy = clone(settings);
@@ -159,6 +188,10 @@ function referencedImageFiles(settings) {
 module.exports = {
   DEFAULT_SETTINGS,
   MA_LENGTH_RANGE,
+  CN_THRESHOLD_RANGE,
+  CHATTER_RANGE,
+  CHATTER_PRESET_IDS,
+  validChatterConfig,
   deepMerge,
   toRelativeImagePath,
   migrateSettings,

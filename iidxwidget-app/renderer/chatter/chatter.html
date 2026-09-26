@@ -9,9 +9,13 @@
   <link rel="stylesheet" href="chatter.css" />
 </head>
 <body>
-  <section class="panel">
-    <h2 data-i18n="chatter.title">채터링 감지기</h2>
-    <p class="muted note" data-i18n="chatter.description">떼는 시간이 15ms 이하인 입력을 이중 인식(채터링)으로 셉니다. 이번 세션 기준이며, 이 창을 닫아 두어도 계속 집계합니다.</p>
+  <section class="panel" id="main-view">
+    <div class="panel-head">
+      <h2 data-i18n="chatter.title">채터링 감지기</h2>
+      <button type="button" id="open-settings" class="icon-button" data-i18n="chatter.settings">⚙ 설정</button>
+    </div>
+    <!-- 설명은 지금 기준(프리셋, ms)에 맞춰 chatter.js가 채운다 -->
+    <p class="muted note" id="description"></p>
 
     <!-- IIDX 건반 배치: 위 2·4·6(검은 건반), 아래 1·3·5·7(흰 건반). 숫자는 건반 위에 표시 -->
     <div class="keyboard">
@@ -34,7 +38,40 @@
     </div>
 
     <div class="guide-link">
-      <button type="button" id="open-guide" class="guide-button" data-i18n="guide.chatterButton">❓ 채터링 감지 가이드</button>
+      <button type="button" class="guide-button" data-open-guide data-i18n="guide.chatterButton">❓ 채터링 감지 가이드</button>
+    </div>
+  </section>
+
+  <!-- 채터링 감지 설정. 저장하면 이번 세션 기록을 새 기준으로 바로 다시 센다 (재시작 필요 없음) -->
+  <section class="panel" id="settings-view" hidden>
+    <h2 data-i18n="chatter.settingsTitle">채터링 감지 설정</h2>
+
+    <div class="field-label" data-i18n="chatter.preset">감지 방식</div>
+    <label class="preset">
+      <input type="radio" name="preset" value="rag" />
+      <span><strong>Rag</strong> <span class="muted" data-i18n="chatter.presetRagHint"></span></span>
+    </label>
+    <label class="preset">
+      <input type="radio" name="preset" value="sadang" />
+      <span><strong>Sadang</strong> <span class="muted" data-i18n="chatter.presetSadangHint"></span></span>
+    </label>
+
+    <div class="ms-row">
+      <label for="upperMs" data-i18n="chatter.upperMs">감지 기준 (ms)</label>
+      <input type="number" id="upperMs" min="1" max="100" step="1" />
+    </div>
+    <div class="ms-row" id="lower-row">
+      <label for="lowerMs" data-i18n="chatter.lowerMs">하한 (ms)</label>
+      <input type="number" id="lowerMs" min="1" max="100" step="1" />
+    </div>
+    <p class="muted rule" id="rule"></p>
+
+    <p id="settings-status" class="settings-status" aria-live="polite"></p>
+    <div class="settings-buttons">
+      <button type="button" class="guide-button" data-open-guide data-i18n="guide.chatterButton">❓ 채터링 감지 가이드</button>
+      <span class="spacer"></span>
+      <button type="button" id="back-button" class="guide-button" data-i18n="chatter.back">돌아가기</button>
+      <button type="button" id="save-button" class="save-button" data-i18n="chatter.save">저장</button>
     </div>
   </section>
 

@@ -12,11 +12,11 @@ If you are connecting to OBS for the first time, start with the [connection guid
 The app window and the OBS widget **always show the same screen and the same numbers**. What you see in the app window is what goes on stream.
 
 - **Turntable** : The disc spins with your turntable. You can use your own image.
-- **Keys** : Light up while pressed. The number above each key is that key's average release (ms).
+- **Keys** : Light up while pressed. When held long enough to be a long note (CN), the key switches to the long note color. The number above each key is that key's average release (ms).
 - **Session info**
   - **Session** : Presses in this session
   - **Uptime** : Time since the app started
-  - **Release** : Average release (ms) across all keys
+  - **Release** : Average release (ms) across all keys. Long-note presses are left out (same as [Rag](https://rag-oji.com/dakendisplay/)'s widget)
   - **KPS** : Presses in the last second
 
 > 📌 A **session** runs from when you start the app until you quit it. Every number starts at 0 when the app starts and is gone when you quit.
@@ -31,7 +31,7 @@ For what release means, see the [RELEASE guide](RELEASE.en.md).
   - **Settings** : Change the [settings](#-settings) below.
   - **Logs** : Whether your controller was detected, and any errors. Look here first when something goes wrong.
   - **Session** : Presses, sent and remaining counts for this session, and uploading to [beatmania.app](https://beatmania.app).
-  - **Chatter detector** : Chatter (double input) counts per key. See the [chatter guide](CHATTER.en.md).
+  - **Chatter detector** : Chatter (double input) counts per key. Change the detection preset (Rag / Sadang) and thresholds with **⚙ Settings** at the top right of the window. See the [chatter guide](CHATTER.en.md).
   - **About / Contributors** : App version and the people who made it
   - **Check for updates** : Check for a new version now. The app also checks on startup.
   - **Restart** : Reopens the servers and controller connection. Session numbers carry on.
@@ -88,8 +88,19 @@ Only change these if another program already uses the port. The [connection guid
 |---|---|
 | **Session information position** | Put session info above or below the widget, or hide it. |
 | **Button layout** | 1P (turntable on the left) / 2P (turntable on the right) |
-| **Global release sample count** | How many recent presses the overall average release uses. Default 200. Higher values change more slowly. |
-| **Per-button release sample count** | How many recent presses each key's release number uses. Default 200. |
+
+### Release and chatter
+
+Release is calculated with the same rules as [Rag](https://rag-oji.com/dakendisplay/)'s widget. See the [RELEASE guide](RELEASE.en.md) for details.
+
+| Setting | Meaning |
+|---|---|
+| **Global release sample count** | How many recent presses the overall average release uses. Default 2000 (same as Rag's widget). Higher values change more slowly. |
+| **Per-button release sample count** | How many recent presses each key's release number uses. Default 300 (same as Rag's widget). |
+| **Long note (CN) threshold** | Presses held this long or longer count as long notes and are left out of the release average. The key shows the long note color while held. Default 200ms, 100–500ms. |
+| **Open chatter detection settings** | Opens the settings view of the chatter window. For presets and thresholds, see the [chatter guide](CHATTER.en.md). |
+
+When you save a new sample count or long note threshold, this session is recalculated with it right away.
 
 ### Widget appearance
 
@@ -99,7 +110,7 @@ Only change these if another program already uses the port. The [connection guid
 | **Show release value on each key** | Shows or hides the release number above each key. On by default. |
 | **Turntable image mode** | **Single image** : one image spins with the turntable. **Two images** : a different image for each spin direction. |
 | **Custom turntable image** | The image used for the disc. **Delete** goes back to the default disc. |
-| **Colors** | Widget background, turntable background, idle/active colors and text color. |
+| **Colors** | Widget background, turntable background, idle/active colors, text color, and the color of a key held as a long note. |
 
 ---
 

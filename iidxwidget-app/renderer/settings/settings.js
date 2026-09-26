@@ -1,4 +1,4 @@
-const { buildGenericMapping, validatePorts, validateMALength, MA_LENGTH_RANGE } = window.formLogic;
+const { buildGenericMapping, validatePorts, validateMALength, validateCnThreshold, MA_LENGTH_RANGE, CN_THRESHOLD_RANGE } = window.formLogic;
 const $ = id => document.getElementById(id);
 
 let loadedSettings = null;
@@ -20,6 +20,7 @@ $('save-button').addEventListener('click', async () => {
   const webSocketPort = parseInt($('webSocketPort').value, 10);
   const globalMALength = parseInt($('GlobalReleaseMALength').value, 10);
   const perButtonMALength = parseInt($('PerButtonMALength').value, 10);
+  const cnThresholdMs = parseInt($('cnThresholdMs').value, 10);
   const controllerProfile = $('controllerProfile').value;
 
   if (!validatePorts(serverPort, webSocketPort)) {
@@ -28,6 +29,10 @@ $('save-button').addEventListener('click', async () => {
   }
   if (!validateMALength(globalMALength) || !validateMALength(perButtonMALength)) {
     showStatus(window.i18n.t('settings.invalidMALength', MA_LENGTH_RANGE), { error: true });
+    return;
+  }
+  if (!validateCnThreshold(cnThresholdMs)) {
+    showStatus(window.i18n.t('settings.invalidCnThreshold', CN_THRESHOLD_RANGE), { error: true });
     return;
   }
 
@@ -69,12 +74,14 @@ $('save-button').addEventListener('click', async () => {
       showKeyRelease: $('showKeyRelease').checked,
       globalMALength,
       perButtonMALength,
+      cnThresholdMs,
       colors: {
         containerBackground: $('color-container-background').value,
         background: $('color-background').value,
         accent: $('color-accent').value,
         fontColor: $('color-fontColor').value,
-        activeColor: $('color-activeColor').value
+        activeColor: $('color-activeColor').value,
+        lnColor: $('color-lnColor').value
       }
     }
   };
@@ -158,6 +165,7 @@ for (const slotName of Object.keys(discSlots)) {
   updateContainerColorAvailability();
   $('GlobalReleaseMALength').value = settings.widget.globalMALength;
   $('PerButtonMALength').value = settings.widget.perButtonMALength;
+  $('cnThresholdMs').value = settings.widget.cnThresholdMs;
 
   // 키 매핑은 프로필과 상관없이 채워 둔다 (프로필을 바꿨다 돌아와도 입력한 값이 남도록)
   const kbMap = settings.keyMapping.KB || {};
@@ -172,6 +180,7 @@ for (const slotName of Object.keys(discSlots)) {
   $('color-accent').value = colors.accent;
   $('color-fontColor').value = colors.fontColor;
   $('color-activeColor').value = colors.activeColor;
+  $('color-lnColor').value = colors.lnColor;
 
   const discImageMode = settings.widget.discImageMode === 'dual' ? 'dual' : 'single';
   $('discImageMode').value = discImageMode;
@@ -179,7 +188,7 @@ for (const slotName of Object.keys(discSlots)) {
   setDiscImage('up', settings.widget.discImagePath);
   setDiscImage('down', settings.widget.downDiscImagePath);
 
-  for (const name of ['container-background', 'background', 'accent', 'fontColor', 'activeColor']) {
+  for (const name of ['container-background', 'background', 'accent', 'fontColor', 'activeColor', 'lnColor']) {
     bindColorPreview(`color-${name}`, `preview-${name}`);
   }
 
@@ -383,3 +392,6 @@ window.electronAPI.getAccount().then(state => {
   account = state;
   renderAccount();
 });
+
+// 채터링 감지 설정은 채터링 감지 창에 있다. 여기서는 그 화면을 열기만 한다
+$('open-chatter-settings').addEventListener('click', () => window.electronAPI.openChatterSettings());

@@ -30,6 +30,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getRecords: () => ipcRenderer.invoke('get-records'),
   uploadNow: () => ipcRenderer.invoke('upload-now'),
   requestChatterSummary: () => ipcRenderer.invoke('request-chatter-summary'),
+  // 채터링 감지 설정: { config: { preset, upperMs, lowerMs }, range }. 저장하면 이번 세션 기록을 바로 다시 센다
+  getChatterSettings: () => ipcRenderer.invoke('get-chatter-settings'),
+  saveChatterSettings: (config) => ipcRenderer.invoke('save-chatter-settings', config),
+  openChatterSettings: () => ipcRenderer.invoke('open-chatter-settings'),
+  onShowChatterView: (callback) => ipcRenderer.on('show-chatter-view', (_, view) => callback(view)),
   // 창 높이를 이 언어의 내용 높이에 맞춘다 (채터링·세션 기록 창)
   fitWindowHeight: (height) => ipcRenderer.send('fit-window-height', height),
   // beatmania.app 계정: { username, hasToken, tokenInvalid }. 토큰은 서버에 확인한 뒤 암호화해서 바로 저장된다

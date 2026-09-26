@@ -1,7 +1,8 @@
 // 설정 화면의 입력 검증. 브라우저에서는 window.formLogic, node(테스트)에서는 module.exports로 쓴다.
 (function (root) {
   const PORT_RANGE = { min: 1024, max: 65535 };
-  const MA_LENGTH_RANGE = { min: 10, max: 1000 };
+  const MA_LENGTH_RANGE = { min: 10, max: 5000 };
+  const CN_THRESHOLD_RANGE = { min: 100, max: 500 };
   const MAX_PHYSICAL_BUTTON = 64;
 
   const inRange = (value, { min, max }) => Number.isInteger(value) && value >= min && value <= max;
@@ -35,7 +36,11 @@
     return inRange(value, MA_LENGTH_RANGE);
   }
 
-  const api = { buildGenericMapping, validatePorts, validateMALength, PORT_RANGE, MA_LENGTH_RANGE, MAX_PHYSICAL_BUTTON };
+  function validateCnThreshold(value) {
+    return inRange(value, CN_THRESHOLD_RANGE);
+  }
+
+  const api = { buildGenericMapping, validatePorts, validateMALength, validateCnThreshold, PORT_RANGE, MA_LENGTH_RANGE, CN_THRESHOLD_RANGE, MAX_PHYSICAL_BUTTON };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.formLogic = api;
 })(typeof window !== 'undefined' ? window : globalThis);
