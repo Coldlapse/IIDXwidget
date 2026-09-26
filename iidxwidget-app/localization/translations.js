@@ -18,7 +18,11 @@ const translations = {
     common: { ok: '확인', yes: '예', no: '아니오', later: '다음에 하기', error: '오류', notice: '알림' },
     about: {
       message: 'IIDXwidget v{version}\n개발자: Sadang\nhttps://github.com/Coldlapse/IIDXwidget',
-      contributors: '기여자 : rhombus9, 멘탈바사삭'
+      contributors:
+        'rhombus9 : KB 모드 특수키 입력 매핑\n' +
+        '멘탈바사삭 : FPS EMP 2세대 컨트롤러 지원\n' +
+        'MellDa1024 : 스크래치 회전 방향별 이미지\n' +
+        'Ryochobi : 한국어/영어 지원, 자동 감지, 위젯 배경 설정'
     },
     upload: {
       noToken: 'API 토큰이 설정되지 않았습니다.',
@@ -163,7 +167,11 @@ const translations = {
     common: { ok: 'OK', yes: 'Yes', no: 'No', later: 'Later', error: 'Error', notice: 'Notice' },
     about: {
       message: 'IIDXwidget v{version}\nDeveloper: Sadang\nhttps://github.com/Coldlapse/IIDXwidget',
-      contributors: 'Contributors: rhombus9, 멘탈바사삭'
+      contributors:
+        'rhombus9 : special key mapping for KB mode\n' +
+        '멘탈바사삭 : FPS EMP Gen2 controller support\n' +
+        'MellDa1024 : turntable images by spin direction\n' +
+        'Ryochobi : Korean/English, auto-detect, widget background options'
     },
     upload: {
       noToken: 'API token is not configured.',
