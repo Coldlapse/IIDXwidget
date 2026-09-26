@@ -24,7 +24,7 @@ const defaultSettings = {
   apiToken: "",
   serverPort: 8080,
   webSocketPort: 5678,
-  controllerProfile: 'AUTO',
+  controllerProfile: 'PHOENIXWAN',
   lr2ModeEnabled: false,
   autoLaunch: false,
   keyMapping: {

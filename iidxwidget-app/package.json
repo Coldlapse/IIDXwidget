@@ -20,7 +20,8 @@
             "!dist{,/**}",
             "!dist-*/**",
             "!dist-rebuild{,/**}",
-            "!dist-fixed{,/**}"
+            "!dist-fixed{,/**}",
+            "!test{,/**}"
         ],
         "directories": {
             "buildResources": "build"

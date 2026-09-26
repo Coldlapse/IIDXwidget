@@ -98,7 +98,7 @@ function toggleKeyMappingUI(profile) {
   } else {
     keyMapping.style.display = 'none';
     genericMapping.style.display = profile === 'AUTO' ? 'block' : 'none';
-    lr2Row.style.display = profile === 'AUTO' ? 'none' : 'block';
+    lr2Row.style.display = 'block'; // AUTO도 주작콘/FPS를 잡으면 LR2 감지가 적용됨
   }
 }
 
@@ -123,7 +123,7 @@ document.getElementById('discImageMode').addEventListener('change', (e) => {
     document.getElementById('apiToken').value = settings.apiToken || '';
     document.getElementById('serverPort').value = settings.serverPort || 8080;
     document.getElementById('webSocketPort').value = settings.webSocketPort || 5678;
-    document.getElementById('controllerProfile').value = settings.controllerProfile || 'AUTO';
+    document.getElementById('controllerProfile').value = settings.controllerProfile || 'PHOENIXWAN';
     document.getElementById('infoPosition').value = settings.widget?.infoPosition || 'bottom';
     document.getElementById('buttonLayout').value = settings.widget?.buttonLayout || '1P';
     document.getElementById('lr2ModeEnabled').checked = !!settings.lr2ModeEnabled;
@@ -134,7 +134,7 @@ document.getElementById('discImageMode').addEventListener('change', (e) => {
     document.getElementById('GlobalReleaseMALength').value = settings.widget?.globalMALength || 200;
     document.getElementById('PerButtonMALength').value = settings.widget?.perButtonMALength || 200;
 
-    toggleKeyMappingUI(settings.controllerProfile || 'AUTO');
+    toggleKeyMappingUI(settings.controllerProfile || 'PHOENIXWAN');
 
     if (settings.controllerProfile === 'KB') {
       const kbMap = settings.keyMapping?.KB || {};
