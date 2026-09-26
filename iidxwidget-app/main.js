@@ -41,8 +41,9 @@ const defaultSettings = {
   widget: {
     infoPosition: "bottom",
     buttonLayout: "1P",
-    upDiscImagePath: null,
-    downDiscImagePath: null,
+    discImageMode: 'single', // 'single' | 'dual' (회전 방향별 이미지)
+    discImagePath: null,     // 1장 모드 이미지 / 2장 모드의 기본·윗방향 이미지
+    downDiscImagePath: null, // 2장 모드의 아랫방향 이미지
     showPromoBox: false,
     GlobalReleaseMALength: 200,
     PerButtonMALength: 200,

@@ -151,9 +151,13 @@ function updateKPSDisplay() {
 setInterval(updateKPSDisplay, 100);
 
 function applyDiscImage(settings) {
-  let upDiscImagePath = settings.widget.upDiscImagePath;
-  let downDiscImagePath = settings.widget.downDiscImagePath;
-  
+  const upDiscImagePath = settings.widget.discImagePath;
+  // 아랫방향 이미지는 2장 모드에서만 사용 (1장 모드면 방향 전환이 일어나지 않음)
+  const downDiscImagePath = settings.widget.discImageMode === 'dual' ? settings.widget.downDiscImagePath : null;
+
+  // 이미지를 다시 적용하면 윗방향 상태로 초기화
+  isLatestDiscDirectionUp = true;
+
   if (upDiscImagePath) {
     upImg.classList.add("img-available");
     upImg.src = upDiscImagePath;
@@ -172,6 +176,8 @@ function applyDiscImage(settings) {
     downImg.style.display = 'none';
   } else {
     downImg.classList.remove("img-available");
+    downImg.src = '';
+    downImg.style.display = 'none';
   }
 }
 

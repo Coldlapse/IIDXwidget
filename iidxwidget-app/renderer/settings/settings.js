@@ -14,6 +14,7 @@ document.getElementById('save-button').addEventListener('click', async () => {
   const buttonLayout = document.getElementById('buttonLayout').value;
   const lr2ModeEnabled = document.getElementById('lr2ModeEnabled').checked;
   const showPromoBox = document.getElementById('showPromoBox').checked;
+  const discImageMode = document.getElementById('discImageMode').value;
   const globalMALength = parseInt(document.getElementById('GlobalReleaseMALength').value, 10);
   const perButtonMALength = parseInt(document.getElementById('PerButtonMALength').value, 10);
   const widgetColors = {
@@ -58,7 +59,8 @@ document.getElementById('save-button').addEventListener('click', async () => {
     widget: {
       infoPosition,
       buttonLayout,
-      upDiscImagePath: uploadedUpDiscImagePath,
+      discImageMode,
+      discImagePath: uploadedUpDiscImagePath,
       downDiscImagePath: uploadedDownDiscImagePath,
       showPromoBox,
       globalMALength,
@@ -84,6 +86,19 @@ function toggleKeyMappingUI(profile) {
     lr2Row.style.display = 'block';
   }
 }
+
+// ✅ 스크래치 이미지 모드 UI 토글 함수
+function toggleDiscImageModeUI(mode) {
+  const isDual = mode === 'dual';
+  document.getElementById('up-disc-label').textContent = isDual
+    ? '기본 / 윗방향 스크래치 커스텀 이미지 업로드'
+    : '스크래치 커스텀 이미지 업로드';
+  document.getElementById('down-disc-group').style.display = isDual ? 'block' : 'none';
+}
+
+document.getElementById('discImageMode').addEventListener('change', (e) => {
+  toggleDiscImageModeUI(e.target.value);
+});
 
 // ✅ 초기 설정 불러오기
 (async () => {
@@ -129,7 +144,11 @@ function toggleKeyMappingUI(profile) {
     document.getElementById('color-fontColor').value = mergedColors.fontColor;
     document.getElementById('color-activeColor').value = mergedColors.activeColor;
 
-    uploadedUpDiscImagePath = settings.widget?.upDiscImagePath || null;
+    const discImageMode = settings.widget?.discImageMode === 'dual' ? 'dual' : 'single';
+    document.getElementById('discImageMode').value = discImageMode;
+    toggleDiscImageModeUI(discImageMode);
+
+    uploadedUpDiscImagePath = settings.widget?.discImagePath || null;
     uploadedDownDiscImagePath = settings.widget?.downDiscImagePath || null;
 
     if (uploadedUpDiscImagePath) {
