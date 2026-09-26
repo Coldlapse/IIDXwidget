@@ -20,7 +20,9 @@
 - ⏱ [RELEASE 수치](./GUIDE/RELEASE.md) : 건반 위 숫자와 평균 릴리즈가 뜻하는 것, 계산 방식 (Rag 님 위젯과 동일)
 - 🔍 [채터링 감지](./GUIDE/CHATTER.md) : 채터링(이중 인식)을 어떻게 세는지, 감지 방식(Rag / Sadang), 게임별 입력 처리, 숫자가 높을 때 할 일
 
-English guides: [Connection](./GUIDE/CONNECTION.en.md) · [Usage](./GUIDE/USAGE.en.md) · [Release](./GUIDE/RELEASE.en.md) · [Chatter](./GUIDE/CHATTER.en.md)
+2.x에서 업데이트하셨다면 👉 [3.0.0 업데이트 안내](./GUIDE/WHATSNEW.md) (바뀐 점, OBS 새로고침 방법). 업데이트 후 앱을 처음 켤 때도 자동으로 열립니다.
+
+English guides: [What's new in 3.0.0](./GUIDE/WHATSNEW.en.md) · [Connection](./GUIDE/CONNECTION.en.md) · [Usage](./GUIDE/USAGE.en.md) · [Release](./GUIDE/RELEASE.en.md) · [Chatter](./GUIDE/CHATTER.en.md)
 
 ---
 

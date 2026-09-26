@@ -15,7 +15,7 @@ const { createSessionManager } = require('./sessionManager');
 const { uploadInChunks, whoami } = require('./uploader');
 const { createShutdown } = require('./shutdown');
 const { setupUpdater } = require('./updater');
-const { GUIDE_IDS, guideFile, loadGuide } = require('./guides');
+const { GUIDE_IDS, UPDATE_GUIDE_VERSION, guideFile, loadGuide } = require('./guides');
 const { translations, normalizeLanguage, translate } = require('./localization/translations');
 const {
   DEFAULT_SETTINGS, applyUpdate, settingsForWindow, validChatterConfig, CHATTER_RANGE, readSettingsFile, writeSettingsFile, publicSettings, referencedImageFiles
@@ -207,9 +207,23 @@ async function readLocalGuide(file) {
   return { text, baseUrl: pathToFileURL(GUIDE_LOCAL_DIR).href + '/' };
 }
 
-// 처음 설치한 뒤 첫 실행: 연결 가이드를 먼저 보여주고, 닫으면 다른 가이드가 어디 있는지 알려준다
-function showFirstRunGuide() {
-  openGuide('CONNECTION', {
+// 처음 설치한 뒤 첫 실행: 연결 가이드를 먼저 보여주고, 닫으면 다른 가이드가 어디 있는지 알려준다.
+// 업데이트한 뒤 첫 실행: 업데이트 안내(바뀐 점, OBS 캐시 새로고침)를 한 번 보여준다.
+// 새로 설치한 사람에게는 업데이트 안내를 보여주지 않는다 (이미 본 것으로 기록).
+function showStartupGuide(freshInstall) {
+  if (freshInstall) {
+    settings.seenUpdateGuide = UPDATE_GUIDE_VERSION;
+    persistSettings();
+    showGuideWithMenuNotice('CONNECTION');
+  } else if (settings.seenUpdateGuide !== UPDATE_GUIDE_VERSION) {
+    settings.seenUpdateGuide = UPDATE_GUIDE_VERSION;
+    persistSettings();
+    showGuideWithMenuNotice('WHATSNEW');
+  }
+}
+
+function showGuideWithMenuNotice(id) {
+  openGuide(id, {
     onClosed: () => {
       if (quitReady || shutdown.started || !mainWindow || mainWindow.isDestroyed()) return;
       dialog.showMessageBox(mainWindow, { type: 'info', title: t('guide.menu'), message: t('guide.tutorialDone'), buttons: [t('common.ok')] });
@@ -369,7 +383,11 @@ function createStatusMenu() {
     },
     {
       label: t('guide.menu'),
-      submenu: GUIDE_IDS.map(id => ({ label: t(`guide.title.${id}`), click: () => openGuide(id) }))
+      submenu: [
+        ...GUIDE_IDS.filter(id => id !== 'WHATSNEW').map(id => ({ label: t(`guide.title.${id}`), click: () => openGuide(id) })),
+        { type: 'separator' },
+        { label: t('guide.title.WHATSNEW'), click: () => openGuide('WHATSNEW') }
+      ]
     }
   ]);
   Menu.setApplicationMenu(menu);
@@ -705,7 +723,7 @@ app.whenReady().then(() => {
 
   createMainWindow();
   createStatusMenu();
-  if (!loaded.existed) mainWindow.webContents.once('did-finish-load', showFirstRunGuide);
+  mainWindow.webContents.once('did-finish-load', () => showStartupGuide(!loaded.existed));
 });
 
 

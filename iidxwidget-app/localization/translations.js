@@ -219,7 +219,8 @@ const translations = {
         USAGE: '사용법과 설정',
         CONNECTION: '연결 가이드 (처음이라면 여기부터)',
         RELEASE: 'RELEASE 수치',
-        CHATTER: '채터링 감지'
+        CHATTER: '채터링 감지',
+        WHATSNEW: '3.0.0 업데이트 안내 (바뀐 점)'
       },
       loading: '가이드를 불러오는 중...',
       failed: '가이드를 불러오지 못했습니다. 인터넷 연결을 확인하거나 GitHub에서 보기를 눌러주세요.',
@@ -449,7 +450,8 @@ const translations = {
         USAGE: 'Usage and settings',
         CONNECTION: 'Connection guide (start here)',
         RELEASE: 'RELEASE value',
-        CHATTER: 'Chatter detection'
+        CHATTER: 'Chatter detection',
+        WHATSNEW: "What's new in 3.0.0"
       },
       loading: 'Loading guide...',
       failed: 'Could not load the guide. Check your internet connection or press Open on GitHub.',

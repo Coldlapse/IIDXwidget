@@ -37,7 +37,7 @@ For what release means, see the [RELEASE guide](RELEASE.en.md).
   - **Restart** : Reopens the servers and controller connection. Session numbers carry on.
   - **Quit** : Quits the app.
 - **Language** : 한국어 / English
-- **Guides** : All guides, including this one, inside the app.
+- **Guides** : All guides, including this one and [What's new in 3.0.0](WHATSNEW.en.md), inside the app.
 
 ---
 

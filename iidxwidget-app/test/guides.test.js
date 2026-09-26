@@ -79,3 +79,13 @@ test('가이드 안의 #링크와 다른 가이드 링크가 실제로 있는 �
     }
   }
 });
+
+// 굵은 글씨: 닫는 ** 앞이 문장부호이고 뒤가 글자이면 GitHub·뷰어 모두 굵게 표시되지 않는다 (예: "(게임 PC)**에서")
+test('가이드와 README에 닫히지 않는 굵은 글씨가 없다', () => {
+  const files = [...fs.readdirSync(GUIDE_DIR).filter(isGuideFile).map(f => path.join(GUIDE_DIR, f)), path.join(GUIDE_DIR, '..', 'README.md')];
+  for (const file of files) {
+    fs.readFileSync(file, 'utf8').split('\n').forEach((line, i) => {
+      assert.ok(!/[)\].?!]\*\*[\p{L}\p{N}]/u.test(line), `${path.basename(file)}:${i + 1}: ${line.trim()}`);
+    });
+  }
+});
