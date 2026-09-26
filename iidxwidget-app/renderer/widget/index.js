@@ -216,15 +216,40 @@ function applyKBIndicatorPosition(position) {
   kbIndicator.style.top = (position === 'top') ? '-26.8%' : '102%';
 }
 
+const WS_RECONNECT_DELAY = 1000;
+let wsPort = 5678;
+let wsReconnectTimer = null;
+
 function connectWebSocket(port) {
+  wsPort = port;
   const wsHost = location.hostname || '127.0.0.1';
   const ws = new WebSocket(`ws://${wsHost}:${port}`);
   ws.onopen = () => console.log(`[WS] Connected to ws://${wsHost}:${port}`);
   ws.onerror = (e) => console.error("[WS] Error", e);
+  // 앱 재시작/설정 변경으로 연결이 끊기면 자동으로 다시 연결
+  ws.onclose = () => scheduleReconnect();
   ws.onmessage = (event) => {
-    const dataList = JSON.parse(event.data);
-    if (Array.isArray(dataList)) dataList.forEach(handleData);
+    let dataList;
+    try {
+      dataList = JSON.parse(event.data);
+    } catch (e) {
+      console.error('[WS] Invalid message', e);
+      return;
+    }
+    if (!Array.isArray(dataList)) return;
+    if (dataList.some(data => data.type === 'settings-updated')) refreshSettings();
+    dataList.forEach(handleData);
   };
+}
+
+function scheduleReconnect() {
+  if (wsReconnectTimer) return;
+  wsReconnectTimer = setTimeout(async () => {
+    wsReconnectTimer = null;
+    // 앱이 다시 켜지면서 설정(웹소켓 포트 포함)이 바뀌었을 수 있으니 먼저 다시 불러옴
+    const settings = await refreshSettings();
+    connectWebSocket(settings?.webSocketPort || wsPort);
+  }, WS_RECONNECT_DELAY);
 }
 
 function applyReleaseContainerSettings(infoPosition) {
@@ -241,19 +266,26 @@ function applyButtonLayout(layout) {
   is2PMode = layout === '2P';
 }
 
-(async () => {
-  let settings = null;
-  if (window.electronAPI?.loadSettings) {
-    settings = await window.electronAPI.loadSettings();
-  } else {
-    try {
-      const res = await fetch('/settings');
-      settings = await res.json();
-    } catch (e) {
-      console.error('❌ settings.json load failed');
-    }
-  }
+async function loadSettings() {
+  if (window.electronAPI?.loadSettings) return window.electronAPI.loadSettings();
+  const res = await fetch('/settings', { cache: 'no-store' });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
 
+// 설정을 다시 불러와 적용. 세션 기록(타건 수 등)은 유지된다.
+async function refreshSettings() {
+  try {
+    const settings = await loadSettings();
+    applySettings(settings);
+    return settings;
+  } catch (e) {
+    console.error('❌ settings.json load failed', e);
+    return null;
+  }
+}
+
+function applySettings(settings) {
   if (settings?.widget) {
     applyReleaseContainerSettings(settings.widget.infoPosition || 'bottom');
     applyButtonLayout(settings.widget.buttonLayout || '1P');
@@ -270,10 +302,19 @@ function applyButtonLayout(layout) {
     window.electronAPI?.startKeyboardReader?.();
   } else {
     window.currentProfile = 'PHOENIXWAN';
+    DISC_UPDATE_INTERVAL = 20;
   }
 
   applyKBIndicatorPosition(settings?.widget?.infoPosition || 'bottom');
-  connectWebSocket(settings?.webSocketPort || 5678);
+}
+
+(async () => {
+  const settings = await refreshSettings();
+
+  // 앱 창은 IPC로 입력을 받으므로 웹소켓은 브라우저(OBS)에서만 연결
+  if (!window.electronAPI?.onControllerData) {
+    connectWebSocket(settings?.webSocketPort || 5678);
+  }
 })();
 
 if (window.electronAPI?.onControllerData) {
@@ -283,6 +324,8 @@ if (window.electronAPI?.onControllerData) {
     }
   });
 }
+
+window.electronAPI?.onSettingsUpdated?.(refreshSettings);
 
 window.addEventListener('DOMContentLoaded', async () => {
   startUptimeTimer();

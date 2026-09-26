@@ -10,6 +10,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   requestLogBuffer: () => ipcRenderer.invoke('request-log-buffer'),
   loadSettings: () => ipcRenderer.invoke('load-settings'),
   saveSettings: (newSettings) => ipcRenderer.invoke('save-settings', newSettings), // ✅ 이거 필요
+  // Main -> Renderer: 설정이 바뀌었으니 다시 불러오라는 알림
+  onSettingsUpdated: (callback) => ipcRenderer.on('settings-updated', () => callback()),
   saveUserImage: (filePath) => ipcRenderer.invoke('save-user-image', filePath),
   sendChatterData: (data) => ipcRenderer.send('chatter-data', data),
   onChatterData: (callback) => ipcRenderer.on('chatter-data', (_, data) => callback(data)),

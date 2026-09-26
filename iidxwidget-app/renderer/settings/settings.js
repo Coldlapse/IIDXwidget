@@ -70,7 +70,10 @@ document.getElementById('save-button').addEventListener('click', async () => {
   };
 
   await window.electronAPI.saveSettings(newSettings);
-  alert('저장 완료! OBS의 브라우저 소스 속성에서 "현재 페이지의 캐시를 새로고침" 버튼을 눌러주세요!');
+  const portChanged = serverPort !== settings?.serverPort;
+  alert(portChanged
+    ? '저장 완료! 서버 포트가 바뀌었으니 OBS 브라우저 소스의 주소도 새 포트로 바꿔주세요.'
+    : '저장 완료! 위젯에 바로 반영됩니다.');
   window.close();
 });
 

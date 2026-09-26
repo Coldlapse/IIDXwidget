@@ -6,7 +6,7 @@ const fetch = require('node-fetch');
 const SETTINGS_FILE = path.join(app.getPath('userData'), 'settings.json');
 
 const { startServer, stopServer } = require('./server');
-const { startWebSocketServer, stopWebSocketServer, broadcastControllerData } = require('./wsServer');
+const { startWebSocketServer, stopWebSocketServer, broadcastControllerData, broadcastSettingsUpdated } = require('./wsServer');
 const { startControllerReader } = require('./controller/controllerReader');
 const { startGlobalKeyboardReader } = require('./controller/keyboardReader');
 
@@ -59,8 +59,6 @@ const defaultSettings = {
 let settings = structuredClone(defaultSettings);
 let currentKBReader = null;
 let currentHIDDevice = null;
-let controllerInstance = null;
-let keyboardInstance = null;
 
 const logBuffer = [];
 const appVersion = app.getVersion();
@@ -244,53 +242,53 @@ function createStatusMenu() {
   Menu.setApplicationMenu(menu);
 }
 
+// 메뉴의 '재시작': 서버와 입력 장치를 모두 다시 연다.
+// 기존 위젯 연결은 끊기고, 위젯이 스스로 재연결한다.
 function restartApp() {
   console.log('🔄 Restarting app...');
   stopServer();
   stopWebSocketServer();
-
-  if (controllerInstance && controllerInstance.close) {
-    try { controllerInstance.close(); } catch (e) {}
-    controllerInstance = null;
-  }
-  if (keyboardInstance && keyboardInstance.stop) {
-    try { keyboardInstance.stop(); } catch (e) {}
-    keyboardInstance = null;
-  }
+  stopInputReader();
 
   setTimeout(() => {
     const userImageDir = path.join(app.getPath('userData'), 'userImages');
     serverInstance = startServer(settings.serverPort, userImageDir);
     webSocketInstance = startWebSocketServer(settings.webSocketPort);
-
-    if (settings.controllerProfile === 'PHOENIXWAN' || settings.controllerProfile === 'FPS EMP Gen2') {
-      const { startControllerReader } = require('./controller/controllerReader');
-      controllerInstance = startControllerReader(settings.controllerProfile, data => {
-        if (mainWindow) mainWindow.webContents.send('controller-data', data);
-        broadcastControllerData(data);
-      }, { lr2ModeEnabled: settings.lr2ModeEnabled });
-
-      currentHIDDevice = controllerInstance;  // ✅ 이거 추가!
-    } else if (settings.controllerProfile === 'KB') {
-      const defaultMap = {
-        SCup: "ShiftLeft",
-        SCdown: "ControlLeft",
-        "1": "KeyS",
-        "2": "KeyD",
-        "3": "KeyF",
-        "4": "Space",
-        "5": "KeyJ",
-        "6": "KeyK",
-        "7": "KeyL"
-      };
-      const map = Object.assign({}, defaultMap, settings.keyMapping?.KB || {});
-      keyboardInstance = startGlobalKeyboardReader(map, data => {
-        if (mainWindow) mainWindow.webContents.send('controller-data', [data]);
-      });
-    }
+    startInputReader();
 
     if (mainWindow) mainWindow.reload();
   }, 300);
+}
+
+// 설정 저장 후 적용: 포트가 그대로면 서버와 기존 위젯 연결을 유지하고,
+// 위젯에는 설정을 다시 불러오라고 알린다.
+function applySettingsChange() {
+  const userImageDir = path.join(app.getPath('userData'), 'userImages');
+  serverInstance = startServer(settings.serverPort, userImageDir);
+  webSocketInstance = startWebSocketServer(settings.webSocketPort);
+  startInputReader();
+
+  broadcastSettingsUpdated();
+  if (mainWindow) mainWindow.webContents.send('settings-updated');
+}
+
+function startInputReader() {
+  if (settings.controllerProfile === 'KB') {
+    startKBMode();
+  } else {
+    startPHOENIXWANMode(settings.controllerProfile, settings.lr2ModeEnabled);
+  }
+}
+
+function stopInputReader() {
+  if (currentHIDDevice?.close) {
+    try { currentHIDDevice.close(); } catch (e) {}
+    currentHIDDevice = null;
+  }
+  if (currentKBReader?.stop) {
+    try { currentKBReader.stop(); } catch (e) {}
+    currentKBReader = null;
+  }
 }
 
 // 🌐 로그 리디렉션
@@ -325,12 +323,6 @@ ipcMain.handle('save-settings', async (event, newSettings) => {
     fs.writeFileSync(SETTINGS_FILE, JSON.stringify(newSettings, null, 2));
     settings = newSettings;
 
-    if (settings.controllerProfile === 'KB') {
-      startKBMode();
-    } else {
-      startPHOENIXWANMode(settings.controllerProfile, settings.lr2ModeEnabled); // ✅ 수정
-    }
-
     app.setLoginItemSettings({
       openAtLogin: newSettings.autoLaunch,
       path: app.getPath('exe')
@@ -339,7 +331,7 @@ ipcMain.handle('save-settings', async (event, newSettings) => {
     console.log(`[AutoLaunch 설정 저장 시 적용됨] ${newSettings.autoLaunch ? '✅ 등록됨' : '❎ 해제됨'}`);
 
 
-    restartApp(); // 서버 재시작 및 프론트 리로드
+    applySettingsChange();
   } catch (err) {
     console.error('❌ Failed to save settings.json:', err);
   }
@@ -640,12 +632,7 @@ app.whenReady().then(() => {
   const userImageDir = path.join(app.getPath('userData'), 'userImages');
   serverInstance = startServer(settings.serverPort, userImageDir);
   webSocketInstance = startWebSocketServer(settings.webSocketPort);
-
-  if (settings.controllerProfile === 'KB') {
-    startKBMode();
-  } else {
-    startPHOENIXWANMode(settings.controllerProfile, settings.lr2ModeEnabled);
-  }
+  startInputReader();
 
   createMainWindow();
   createStatusMenu();
@@ -660,23 +647,7 @@ app.on('before-quit', async () => {
   console.log('🛑 App is quitting, cleaning up...');
 
   // HID, 키보드 종료
-  if (currentHIDDevice) {
-    try {
-      currentHIDDevice.removeAllListeners?.();
-      currentHIDDevice.close?.();
-    } catch (e) {}
-    currentHIDDevice = null;
-  }
-
-  if (currentKBReader?.stop) {
-    try { currentKBReader.stop(); } catch (e) {}
-    currentKBReader = null;
-  }
-
-  if (keyboardInstance?.stop) {
-    try { keyboardInstance.stop(); } catch (e) {}
-    keyboardInstance = null;
-  }
+  stopInputReader();
 
   // ✅ 서버 정리 - await 로 기다림
   stopServer?.();

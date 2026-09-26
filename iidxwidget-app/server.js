@@ -5,8 +5,13 @@ const fs = require('fs');
 const SETTINGS_FILE = path.join(app.getPath('userData'), 'settings.json');
 
 let serverInstance = null;
+let serverPort = null;
 
 function startServer(port, userImagePath) {
+  // 같은 포트로 이미 떠 있으면 그대로 유지
+  if (serverInstance && serverPort === port) return serverInstance;
+  stopServer();
+
   const app = express();
   app.use('/widget', express.static(path.join(__dirname, 'renderer/widget')));
   app.use('/userImages', express.static(userImagePath));
@@ -23,16 +28,24 @@ function startServer(port, userImagePath) {
   serverInstance = app.listen(port, '0.0.0.0', () => {
     console.log(`🟢 HTTP Server started at http://0.0.0.0:${port}/widget`);
   });
+  serverInstance.on('error', (error) => {
+    console.error(`❌ HTTP Server Error: ${error.message}`);
+  });
+  serverPort = port;
 
   return serverInstance;
 }
 
 function stopServer() {
   if (serverInstance) {
-    serverInstance.close(() => {
+    const server = serverInstance;
+    serverInstance = null;
+    serverPort = null;
+    server.close(() => {
       console.log('🛑 HTTP Server closed.');
     });
-    serverInstance = null;
+    // keep-alive 연결이 남아 있으면 close가 끝나지 않으므로 함께 정리
+    server.closeAllConnections();
   }
 }
 
