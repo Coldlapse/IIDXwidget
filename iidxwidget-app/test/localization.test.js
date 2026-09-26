@@ -19,7 +19,7 @@ delete translations.ko.__fallbackTest;
 
 // 코드와 HTML에서 쓰는 번역 키를 모두 모아 두 언어에 다 있는지 확인
 const sources = [
-  'main.js',
+  'main.js', 'updater.js',
   'renderer/settings/settings.html', 'renderer/settings/settings.js',
   'renderer/chatter/chatter.html', 'renderer/chatter/chatter.js',
   'renderer/logs/logs.html'

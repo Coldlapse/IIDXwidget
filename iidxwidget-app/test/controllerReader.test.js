@@ -31,7 +31,6 @@ assert.deepEqual(events.map(e => e.type), ['physical-button']);
 events = parseGenericControllerData(button2, { SCdown: 2 }, turntableState);
 assert.equal(events.find(e => e.type === 'axis').discRaw, 128);
 assert.equal(events.find(e => e.type === 'axis').direction, '-');
-assert.ok(!parseGenericControllerData.toString().includes('detectLR2Mode'));
 const report = Buffer.from([128, 0, 1]);
 const pState = createDedicatedParserState(), fState = createDedicatedParserState();
 assert.deepEqual(parseControllerData(report, pState).map(e => e.type), ['button','axis']);
@@ -63,6 +62,43 @@ console.log('controllerReader tests passed');
   assert.deepEqual(pressed(parseGenericControllerData(Buffer.from([0, 0, 0, 0]), mapping, s)), []);
   assert.equal(s.hasReportId, false);
   assert.deepEqual(pressed(parseGenericControllerData(Buffer.from([2, 0, 0, 0]), mapping, s)), ['button 2 down']);
+}
+
+// 버튼 5–8번째 바이트(33–64번 버튼)도 읽는다
+{
+  const { createGenericParserState } = require('../controller/controllerReader');
+  const st = createGenericParserState();
+  parseGenericControllerData(Buffer.from([0, 0, 0, 0, 0, 0]), { 1: 33 }, st);
+  const ev = parseGenericControllerData(Buffer.from([0, 0, 0, 0, 1, 0]), { 1: 33 }, st);
+  assert.deepEqual(ev.filter(e => e.type === 'button').map(e => e.button), ['button 1']);
+}
+
+// M6: 학습한 축 바이트는 턴테이블 값으로 쓰고 버튼으로 읽지 않는다
+{
+  const { createGenericParserState } = require('../controller/controllerReader');
+  const st = createGenericParserState(1); // report ID 없이 1번 바이트가 축
+  let ev = parseGenericControllerData(Buffer.from([0, 128, 0]), { 1: 1 }, st);
+  assert.deepEqual(ev, []);
+  ev = parseGenericControllerData(Buffer.from([0, 131, 0]), { 1: 1 }, st);
+  assert.deepEqual(ev.map(e => [e.type, e.discRaw, e.direction]), [['axis', 131, '+']]);
+  ev = parseGenericControllerData(Buffer.from([0, 10, 0]), { 1: 1 }, st); // 131→10은 뒤로 121칸
+  assert.equal(ev[0].direction, '-');
+  assert.equal(ev.some(e => e.type === 'physical-button'), false);
+
+  // 첫 바이트가 축인 게임패드: report ID로 오인하지 않는다
+  const st0 = createGenericParserState(0);
+  // 축 바이트도 번호 자리를 차지하므로 두 번째 바이트의 첫 비트가 9번 버튼
+  parseGenericControllerData(Buffer.from([128, 0]), { 1: 9 }, st0);
+  ev = parseGenericControllerData(Buffer.from([128, 1]), { 1: 9 }, st0);
+  assert.deepEqual(ev.filter(e => e.type === 'button').map(e => e.button), ['button 1']);
+}
+
+// 축 학습: 가장 많은 값을 보인 바이트를 고른다
+{
+  const { findAxisByte } = require('../controller/controllerReader');
+  const reports = Array.from({ length: 40 }, (_, i) => Buffer.from([3, i % 2, (i * 7) % 256]));
+  assert.deepEqual(findAxisByte(reports), { byteIndex: 2, distinct: 40 });
+  assert.equal(findAxisByte(reports.slice(0, 3)), null);
 }
 
 console.log('controllerReader report-id tests passed');

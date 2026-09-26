@@ -1,8 +1,9 @@
-let lastDiscValue = 128;
+const { pushSample, average, discDelta } = window.widgetLogic;
+
+let lastDiscValue = null; // 첫 입력은 기준값으로만 쓴다
 let discRotation = 0;
 let lastDiscUpdateTime = 0;
 let is2PMode = false;
-let uptimeSeconds = 0;
 
 let DISC_UPDATE_INTERVAL = 20; // 기본값
 const buttonStates = {};
@@ -113,16 +114,10 @@ function updateButton(id, pressed) {
         });
       }
 
-      perButtonReleases[id] = perButtonReleases[id] || [];
-      perButtonReleases[id].push(releaseDuration);
-      if (perButtonReleases[id].length > perButtonMALength) perButtonReleases[id].shift();
+      perButtonReleases[id] = pushSample(perButtonReleases[id] || [], releaseDuration, perButtonMALength);
+      updateButtonReleaseLabel(id);
 
-      const avg = perButtonReleases[id].reduce((a, b) => a + b, 0) / perButtonReleases[id].length;
-      const label = el.querySelector('.release-label');
-      if (label) label.textContent = `${avg.toFixed(0)}`;
-
-      releaseDurations.push(releaseDuration);
-      if (releaseDurations.length > globalMALength) releaseDurations.shift();
+      pushSample(releaseDurations, releaseDuration, globalMALength);
       updateReleaseDisplay();
     }
     buttonStates[id] = false;
@@ -130,11 +125,28 @@ function updateButton(id, pressed) {
 
 }
 
+function updateButtonReleaseLabel(id) {
+  const label = document.querySelector(`#button-${id} .release-label`);
+  if (label && perButtonReleases[id]?.length) label.textContent = `${average(perButtonReleases[id]).toFixed(0)}`;
+}
+
 function updateReleaseDisplay() {
   const display = document.getElementById('release-display');
   if (!display || releaseDurations.length === 0) return;
-  const avg = releaseDurations.reduce((a, b) => a + b, 0) / releaseDurations.length;
-  display.textContent = `${avg.toFixed(0)} ms`;
+  display.textContent = `${average(releaseDurations).toFixed(0)} ms`;
+}
+
+// 표본 개수 설정이 줄면 저장 즉시 오래된 표본을 버리고 평균을 다시 계산한다
+function applyMALengths(globalLength, perButtonLength) {
+  globalMALength = globalLength;
+  perButtonMALength = perButtonLength;
+  if (releaseDurations.length > globalMALength) releaseDurations.splice(0, releaseDurations.length - globalMALength);
+  Object.keys(perButtonReleases).forEach(id => {
+    const samples = perButtonReleases[id];
+    if (samples.length > perButtonMALength) samples.splice(0, samples.length - perButtonMALength);
+    updateButtonReleaseLabel(id);
+  });
+  updateReleaseDisplay();
 }
 
 function updateSessionDisplay() {
@@ -151,9 +163,10 @@ function updateKPSDisplay() {
 setInterval(updateKPSDisplay, 100);
 
 function applyDiscImage(settings) {
-  const upDiscImagePath = settings.widget.discImagePath;
+  const resolve = p => window.imageUrl.resolveImageUrl(p, { protocol: location.protocol, serverPort: settings.serverPort });
+  const upDiscImagePath = resolve(settings.widget.discImagePath);
   // 아랫방향 이미지는 2장 모드에서만 사용 (1장 모드면 방향 전환이 일어나지 않음)
-  const downDiscImagePath = settings.widget.discImageMode === 'dual' ? settings.widget.downDiscImagePath : null;
+  const downDiscImagePath = settings.widget.discImageMode === 'dual' ? resolve(settings.widget.downDiscImagePath) : '';
 
   // 이미지를 다시 적용하면 윗방향 상태로 초기화
   isLatestDiscDirectionUp = true;
@@ -187,8 +200,7 @@ function handleData(data) {
     if (now - lastDiscUpdateTime >= DISC_UPDATE_INTERVAL) {
       const newValue = data.discRaw;
       if (lastDiscValue !== null) {
-        let delta = (newValue - lastDiscValue + 256) % 256;
-        if (delta > 127) delta -= 256;
+        const delta = discDelta(lastDiscValue, newValue);
         rotateDisc(delta);
         changeDiscImage(delta);
         updateBorders(delta);
@@ -291,15 +303,13 @@ function applySettings(settings) {
     applyButtonLayout(settings.widget.buttonLayout || '1P');
     applyDiscImage(settings);
     applyPromoBox(settings);
-    globalMALength = settings.widget.globalMALength || 200;
-    perButtonMALength = settings.widget.perButtonMALength || 200;
+    applyMALengths(settings.widget.globalMALength || 200, settings.widget.perButtonMALength || 200);
     applyCustomColors(settings.widget.colors, settings.widget.transparentContainer);
   }
 
   if (settings?.controllerProfile === 'KB') {
     window.currentProfile = 'KB';
     DISC_UPDATE_INTERVAL = 5;
-    window.electronAPI?.startKeyboardReader?.();
   } else {
     window.currentProfile = 'PHOENIXWAN';
     DISC_UPDATE_INTERVAL = 20;
@@ -327,8 +337,12 @@ if (window.electronAPI?.onControllerData) {
 
 window.electronAPI?.onSettingsUpdated?.(refreshSettings);
 
-window.addEventListener('DOMContentLoaded', async () => {
+window.addEventListener('DOMContentLoaded', () => {
   startUptimeTimer();
+});
+
+window.iidxapi?.getAppVersion?.().then(version => {
+  document.title = `IIDXwidget v${version} by Sadang`;
 });
 
 function applyCustomColors(colors, transparentContainer = false) {
@@ -381,13 +395,3 @@ if (window.electronAPI?.onResetSessionCount) {
     });
 }
 
-/*
-// 디버깅용: ` 키를 누르면 카운트 500 증가
-window.addEventListener('keydown', (event) => {
-    if (event.code === 'Backquote') {
-        totalKeyPresses += 500;
-        updateSessionDisplay();
-        console.log(`[DEBUG] Count increased by 500. Current: ${totalKeyPresses}`);
-    }
-});
-*/

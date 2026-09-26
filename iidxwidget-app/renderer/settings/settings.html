@@ -2,8 +2,10 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
+  <!-- 미리보기 이미지는 앱의 HTTP 서버(127.0.0.1)에서 받는다 -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: http://127.0.0.1:*" />
   <title data-i18n="settings.title">설정</title>
-  <link href="https://fonts.googleapis.com/earlyaccess/nanumgothic.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../shared/fonts.css" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -54,20 +56,27 @@
 
     <div id="generic-mapping-container" class="setting-group" style="display: none;">
       <label data-i18n="settings.genericMapping">AUTO 일반 컨트롤러 매핑</label>
-      <p class="mapping-help" data-i18n="settings.genericHelp">Auto-detect를 저장한 뒤 설정을 다시 열고, 각 필드를 클릭한 다음 원하는 컨트롤러 버튼을 누르세요. 마지막에 저장을 누르세요.</p>
+      <p class="mapping-help" data-i18n="settings.genericHelp">각 칸을 클릭한 다음 원하는 컨트롤러 버튼을 누르세요. 칸을 비우면 매핑이 해제됩니다. 마지막에 저장을 누르세요.</p>
       <table id="generic-mapping-table">
         <tbody>
-          <tr><td data-i18n="settings.logicalKey">IIDX 키 1</td><td><input type="number" min="1" max="32" data-key="1"></td></tr>
-          <tr><td>IIDX 키 2</td><td><input type="number" min="1" max="32" data-key="2"></td></tr>
-          <tr><td>IIDX 키 3</td><td><input type="number" min="1" max="32" data-key="3"></td></tr>
-          <tr><td>IIDX 키 4</td><td><input type="number" min="1" max="32" data-key="4"></td></tr>
-          <tr><td>IIDX 키 5</td><td><input type="number" min="1" max="32" data-key="5"></td></tr>
-          <tr><td>IIDX 키 6</td><td><input type="number" min="1" max="32" data-key="6"></td></tr>
-          <tr><td>IIDX 키 7</td><td><input type="number" min="1" max="32" data-key="7"></td></tr>
-          <tr><td>턴테이블 시계 방향</td><td><input type="number" min="1" max="32" data-key="SCup"></td></tr>
-          <tr><td>턴테이블 반시계 방향</td><td><input type="number" min="1" max="32" data-key="SCdown"></td></tr>
+          <tr><td>IIDX 키 1</td><td><input type="number" min="1" max="64" data-key="1"></td></tr>
+          <tr><td>IIDX 키 2</td><td><input type="number" min="1" max="64" data-key="2"></td></tr>
+          <tr><td>IIDX 키 3</td><td><input type="number" min="1" max="64" data-key="3"></td></tr>
+          <tr><td>IIDX 키 4</td><td><input type="number" min="1" max="64" data-key="4"></td></tr>
+          <tr><td>IIDX 키 5</td><td><input type="number" min="1" max="64" data-key="5"></td></tr>
+          <tr><td>IIDX 키 6</td><td><input type="number" min="1" max="64" data-key="6"></td></tr>
+          <tr><td>IIDX 키 7</td><td><input type="number" min="1" max="64" data-key="7"></td></tr>
+          <tr><td>턴테이블 시계 방향</td><td><input type="number" min="1" max="64" data-key="SCup"></td></tr>
+          <tr><td>턴테이블 반시계 방향</td><td><input type="number" min="1" max="64" data-key="SCdown"></td></tr>
         </tbody>
       </table>
+      <div class="axis-row">
+        <span data-i18n="settings.turntableAxis">턴테이블 (축)</span>
+        <span id="generic-axis-value"></span>
+        <button type="button" id="learn-axis-button" data-i18n="settings.learnAxis">학습</button>
+        <button type="button" id="clear-axis-button" data-i18n="settings.clearAxis">지우기</button>
+      </div>
+      <p class="mapping-help" data-i18n="settings.axisHelp">턴테이블이 축으로 동작하는 기판이라면 '학습'을 누르고 2초 동안 턴테이블을 돌리세요.</p>
       <div id="mapping-status" aria-live="polite"></div>
     </div>
 
@@ -116,18 +125,18 @@
     <div class="setting-group">
       <label id="up-disc-label">스크래치 커스텀 이미지 업로드</label>
       <div class="input-with-delete">
-        <input type="file" id="up-disc-image-upload" accept="image/*">
-        <button id="delete-up-disc-button" data-i18n="settings.delete">삭제</button>
+        <button type="button" id="pick-up-disc-button" data-i18n="settings.pickImage">이미지 선택</button>
+        <button type="button" id="delete-up-disc-button" data-i18n="settings.delete">삭제</button>
       </div>
-      <img id="up-disc-preview" style="margin-top: 10px; max-width: 100%; border-radius: 10px;" />
+      <img id="up-disc-preview" class="disc-preview" alt="" />
     </div>
     <div class="setting-group" id="down-disc-group" style="display: none;">
       <label data-i18n="settings.discImageDown">아랫방향 스크래치 커스텀 이미지 업로드</label>
       <div class="input-with-delete">
-        <input type="file" id="down-disc-image-upload" accept="image/*">
-        <button id="delete-down-disc-button" data-i18n="settings.delete">삭제</button>
+        <button type="button" id="pick-down-disc-button" data-i18n="settings.pickImage">이미지 선택</button>
+        <button type="button" id="delete-down-disc-button" data-i18n="settings.delete">삭제</button>
       </div>
-      <img id="down-disc-preview" style="margin-top: 10px; max-width: 100%; border-radius: 10px;" />
+      <img id="down-disc-preview" class="disc-preview" alt="" />
     </div>
     <div class="setting-group">
       <div class="color-setting-row">
@@ -157,11 +166,15 @@
       </div>
     </div>
 
+    <div id="form-status" role="alert"></div>
     <div class="button-row">
       <button id="save-button" data-i18n="settings.save">저장</button><button id="cancel-button" data-i18n="settings.cancel">저장하지 않고 종료</button>
     </div>
   </div>
 
-  <script src="../shared/i18n.js"></script><script src="settings.js"></script>
+  <script src="../shared/i18n.js"></script>
+  <script src="../shared/imageUrl.js"></script>
+  <script src="formLogic.js"></script>
+  <script src="settings.js"></script>
 </body>
 </html>

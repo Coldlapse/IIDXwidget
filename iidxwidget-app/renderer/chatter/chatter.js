@@ -3,6 +3,7 @@ const chatterCounts = {};
 
 // UI 업데이트 함수
 function updateUI() {
+  if (!window.i18n.ready) return; // 사전을 받으면 'i18n-changed'로 다시 불린다
   let output = '';
   Object.keys(chatterCounts).forEach(btn => {
     output += `${window.i18n.t('chatter.count', { button: btn, count: chatterCounts[btn] })}\n`;

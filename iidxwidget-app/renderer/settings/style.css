@@ -94,3 +94,11 @@ body {
 .mapping-help { color: #aaa; font-size: 12px; line-height: 1.5; margin: 4px 0; }
 #mapping-status { min-height: 20px; color: #00c853; font-size: 13px; }
 #generic-mapping-table input { width: 100%; box-sizing: border-box; }
+.input-with-delete { display: flex; gap: 8px; }
+.input-with-delete button { flex: 1; background-color: #333; color: #fff; }
+.disc-preview { display: none; margin-top: 10px; max-width: 100%; border-radius: 10px; }
+.axis-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 14px; color: #aaa; }
+.axis-row button { padding: 6px 10px; font-size: 13px; background-color: #333; color: #fff; }
+#generic-axis-value { flex: 1; color: #fff; }
+#mapping-status.warning, #form-status.error { color: #ff5252; }
+#form-status { min-height: 20px; font-size: 14px; color: #00c853; }

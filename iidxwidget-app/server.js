@@ -1,38 +1,41 @@
 const express = require('express');
-const { app } = require('electron'); // server.js가 별도 프로세스면 이건 불가
 const path = require('path');
-const fs = require('fs');
-const SETTINGS_FILE = path.join(app.getPath('userData'), 'settings.json');
 
 let serverInstance = null;
 let serverPort = null;
 
-function startServer(port, userImagePath) {
+// options.userImagePath: 사용자 이미지 폴더
+// options.getPublicSettings(): 위젯에 내보낼 설정 (토큰 등 제외)
+// options.onError(error, port): 포트 충돌 등 서버 오류 알림
+function startServer(port, { userImagePath, getPublicSettings, onError } = {}) {
   // 같은 포트로 이미 떠 있으면 그대로 유지
   if (serverInstance && serverPort === port) return serverInstance;
   stopServer();
 
   const app = express();
   app.use('/widget', express.static(path.join(__dirname, 'renderer/widget')));
+  app.use('/shared', express.static(path.join(__dirname, 'renderer/shared')));
   app.use('/userImages', express.static(userImagePath));
   app.get('/settings', (req, res) => {
-    try {
-      const data = fs.readFileSync(SETTINGS_FILE, 'utf8');
-      res.setHeader('Content-Type', 'application/json');
-      res.send(data);
-    } catch (err) {
-      res.status(500).send({ error: 'Failed to load settings' });
-    }
+    res.set('Cache-Control', 'no-store');
+    res.json(getPublicSettings());
   });
-  
-  serverInstance = app.listen(port, '0.0.0.0', () => {
+
+  const server = app.listen(port, '0.0.0.0', () => {
     console.log(`🟢 HTTP Server started at http://0.0.0.0:${port}/widget`);
   });
-  serverInstance.on('error', (error) => {
+  server.on('error', (error) => {
     console.error(`❌ HTTP Server Error: ${error.message}`);
+    // 서버가 뜨지 못했으면 상태를 비워서, 다음에 같은 포트로 저장할 때 다시 시도하게 한다
+    if (serverInstance === server) {
+      serverInstance = null;
+      serverPort = null;
+    }
+    onError?.(error, port);
   });
-  serverPort = port;
 
+  serverInstance = server;
+  serverPort = port;
   return serverInstance;
 }
 

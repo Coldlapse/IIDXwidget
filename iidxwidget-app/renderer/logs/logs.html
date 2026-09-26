@@ -2,19 +2,22 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:" />
   <title data-i18n="logs.title">로그 보기</title>
   <style>
+    html, body { height: 100%; }
     body {
       background: #000;
       color: #0f0;
       font-family: monospace;
       margin: 0;
-      padding: 10px;
     }
     #log-container {
+      box-sizing: border-box;
       white-space: pre-wrap;
       overflow-y: auto;
-      height: 100vh;
+      height: 100%;
+      padding: 10px;
     }
   </style>
 </head>

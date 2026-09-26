@@ -2,10 +2,11 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>IIDXwidget Browser Sourse Page</title>
+  <!-- 앱 창(file://)은 이미지를 앱의 HTTP 서버에서 받고, OBS(http://)는 같은 서버에서 받는다 -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: http://127.0.0.1:*; connect-src 'self' ws: wss:" />
+  <title>IIDXwidget Browser Source Page</title>
+  <link rel="stylesheet" href="../shared/fonts.css" />
   <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/earlyaccess/nanumgothic.css" rel="stylesheet" />
-
 </head>
 <body>
   <div class="container">
@@ -56,12 +57,9 @@
   </div> <!-- container 닫기 -->
 
 
+  <script src="../shared/imageUrl.js"></script>
+  <script src="logic.js"></script>
   <script src="index.js"></script>
-  <script>
-    window.iidxapi?.getAppVersion?.().then(version => {
-      document.title = `IIDXwidget v${version} by Sadang`;
-    });
-  </script>
 </body>
 
 

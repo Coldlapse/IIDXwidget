@@ -48,16 +48,24 @@ function describeDevice(device) {
 }
 
 // ─── 일반(GENERIC) 컨트롤러 ────────────────────────────────
+//
+// 일반 컨트롤러는 보고서 형식을 모르기 때문에 다음처럼 읽는다.
+// - 버튼: 보고서 앞쪽 최대 8바이트(64개)를 비트 단위로 읽는다. 물리 버튼 번호 = 비트 순서 + 1
+// - 턴테이블: 버튼 매핑(SCup/SCdown) 또는 학습한 축 바이트(axisByte, 보고서 안의 절대 위치)
+//   축 바이트는 버튼으로 읽지 않는다.
 
-function createGenericParserState() {
+const MAX_BUTTON_BYTES = 8;
+
+function createGenericParserState(axisByte = null) {
   // hasReportId: 보고서 첫 바이트가 report ID인지 (null = 아직 모름)
-  return { previousButtons: 0, currentDiscRaw: 128, hasReportId: null };
+  return { previousButtons: 0n, currentDiscRaw: 128, hasReportId: axisByte === 0 ? false : null, axisByte, lastAxisValue: null };
 }
 
 // 첫 바이트가 report ID인지 판단한다.
 // report ID를 쓰는 장치는 첫 바이트가 항상 0이 아닌 같은 값이고,
 // report ID를 안 쓰는 장치는 첫 바이트가 버튼 데이터라서 버튼을 모두 떼면 0이 된다.
 // 따라서 첫 바이트가 한 번이라도 0이면 report ID가 없는 장치로 확정한다.
+// (첫 바이트가 축인 장치는 축을 학습하면 axisByte = 0으로 확정된다)
 function updateReportIdGuess(buffer, state) {
   if (state.hasReportId === false) return false;
   if (buffer[0] === 0) {
@@ -69,10 +77,11 @@ function updateReportIdGuess(buffer, state) {
   return false;
 }
 
-function readButtons(buffer, offset) {
-  let buttons = 0;
-  for (let i = 0; i < Math.min(4, buffer.length - offset); i++) {
-    buttons = (buttons | ((buffer[offset + i] || 0) << (i * 8))) >>> 0;
+function readButtons(buffer, offset, axisByte) {
+  let buttons = 0n;
+  for (let i = 0; i < Math.min(MAX_BUTTON_BYTES, buffer.length - offset); i++) {
+    if (offset + i === axisByte) continue;
+    buttons |= BigInt(buffer[offset + i] || 0) << BigInt(i * 8);
   }
   return buttons;
 }
@@ -80,28 +89,41 @@ function readButtons(buffer, offset) {
 function parseGenericControllerData(buffer, mapping = {}, state = createGenericParserState()) {
   if (!buffer?.length) return [];
   if (!Number.isInteger(state.currentDiscRaw)) state.currentDiscRaw = 128;
+  state.previousButtons = BigInt(state.previousButtons || 0);
+  const axisByte = Number.isInteger(state.axisByte) ? state.axisByte : null;
+  if (axisByte === 0) state.hasReportId = false;
 
   const events = [];
   const timestamp = Date.now();
 
   if (updateReportIdGuess(buffer, state)) {
     // 판단이 바뀌면 지금까지 눌린 것으로 본 버튼은 잘못 읽은 것이므로 모두 뗀 것으로 처리
-    events.push(...buttonEvents(state.previousButtons, 0, mapping, state, timestamp));
-    state.previousButtons = 0;
+    events.push(...buttonEvents(state.previousButtons, 0n, mapping, state, timestamp));
+    state.previousButtons = 0n;
   }
 
-  const buttons = readButtons(buffer, state.hasReportId ? 1 : 0);
+  const buttons = readButtons(buffer, state.hasReportId ? 1 : 0, axisByte);
   events.push(...buttonEvents(state.previousButtons, buttons, mapping, state, timestamp));
   state.previousButtons = buttons;
+
+  if (axisByte !== null && axisByte < buffer.length) {
+    const value = buffer[axisByte];
+    if (state.lastAxisValue !== null && value !== state.lastAxisValue) {
+      let delta = (value - state.lastAxisValue + 256) % 256;
+      if (delta > 127) delta -= 256;
+      events.push({ type: 'axis', axis: 'X', direction: delta > 0 ? '+' : '-', discRaw: value, timestamp });
+    }
+    state.lastAxisValue = value;
+  }
   return events;
 }
 
 function buttonEvents(previousButtons, buttons, mapping, state, timestamp) {
   const events = [];
-  const changed = (buttons ^ (previousButtons >>> 0)) >>> 0;
+  const changed = buttons ^ previousButtons;
 
-  for (let i = 0; i < 32; i++) {
-    const mask = (1 << i) >>> 0;
+  for (let i = 0; i < MAX_BUTTON_BYTES * 8; i++) {
+    const mask = 1n << BigInt(i);
     if (!(changed & mask)) continue;
 
     const physicalButton = i + 1;
@@ -118,6 +140,24 @@ function buttonEvents(previousButtons, buttons, mapping, state, timestamp) {
     }
   }
   return events;
+}
+
+// 턴테이블을 돌리는 동안 받은 보고서들에서 축 바이트를 찾는다.
+// 가장 많은 서로 다른 값을 보인 바이트를 축으로 본다 (최소 minDistinct개).
+function findAxisByte(reports, minDistinct = 8) {
+  const distinct = [];
+  for (const report of reports) {
+    for (let i = 0; i < report.length; i++) {
+      (distinct[i] ||= new Set()).add(report[i]);
+    }
+  }
+  let best = null;
+  distinct.forEach((values, index) => {
+    if (values && values.size >= minDistinct && (!best || values.size > best.distinct)) {
+      best = { byteIndex: index, distinct: values.size };
+    }
+  });
+  return best;
 }
 
 // ─── 전용 컨트롤러 (주작콘 / FPS EMP) ──────────────────────
@@ -156,7 +196,7 @@ function parseControllerData(buffer, state) {
   return events;
 }
 
-function detectLR2Mode(buffer, callback, state, logger) {
+function detectLR2Mode(buffer, state, logger) {
   const isStatic = [0x80, 0x7F, 0x00].includes(buffer[0]);
 
   if (isStatic) {
@@ -168,7 +208,6 @@ function detectLR2Mode(buffer, callback, state, logger) {
     if (!state.isLR2Active && state.lr2PatternCount >= LR2_ACTIVATE_THRESHOLD && duration < 500) {
       state.isLR2Active = true;
       logger('log', 'lr2Activated');
-      callback([{ type: 'log', message: '🔵 LR2 모드 활성화됨', timestamp: Date.now() }]);
     }
   } else {
     state.lr2PatternCount = 0;
@@ -178,14 +217,13 @@ function detectLR2Mode(buffer, callback, state, logger) {
     if (state.isLR2Active && state.normalPatternCount >= LR2_DEACTIVATE_THRESHOLD) {
       state.isLR2Active = false;
       logger('log', 'lr2Deactivated');
-      callback([{ type: 'log', message: '⚪ LR2 모드 비활성화됨', timestamp: Date.now() }]);
     }
   }
 }
 
 function handleDedicatedData(buffer, callback, state, logger) {
   const xRaw = buffer[0];
-  if (state.lr2DetectEnabled) detectLR2Mode(buffer, callback, state, logger);
+  if (state.lr2DetectEnabled) detectLR2Mode(buffer, state, logger);
 
   const parsed = parseControllerData(buffer, state);
 
@@ -228,9 +266,11 @@ function openReader(selection, callback, options) {
 
   const dedicatedState = createDedicatedParserState();
   dedicatedState.lr2DetectEnabled = selection.parser !== 'GENERIC' && !!options.lr2ModeEnabled;
-  const genericState = createGenericParserState();
+  const genericState = createGenericParserState(Number.isInteger(options.genericAxis) ? options.genericAxis : null);
+  const rawListeners = new Set();
 
   device.on('data', buffer => {
+    rawListeners.forEach(listener => listener(buffer));
     try {
       if (selection.parser === 'GENERIC') {
         const events = parseGenericControllerData(buffer, options.genericMapping, genericState);
@@ -247,7 +287,14 @@ function openReader(selection, callback, options) {
 
   return {
     parser: selection.parser,
+    deviceName,
+    // 원시 보고서를 받는다 (턴테이블 축 학습용). 구독 해제 함수를 돌려준다
+    addRawListener(listener) {
+      rawListeners.add(listener);
+      return () => rawListeners.delete(listener);
+    },
     close() {
+      rawListeners.clear();
       try {
         device.removeAllListeners();
         device.close();
@@ -285,6 +332,7 @@ module.exports = {
   findAutoController,
   describeDevice,
   createGenericParserState,
+  findAxisByte,
   parseGenericControllerData,
   parseControllerData,
   createDedicatedParserState

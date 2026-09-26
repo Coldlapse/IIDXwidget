@@ -1,229 +1,271 @@
-let uploadedUpDiscImagePath = null;
-let uploadedDownDiscImagePath = null;
+const { buildGenericMapping, validatePorts, validateMALength, MA_LENGTH_RANGE } = window.formLogic;
+const $ = id => document.getElementById(id);
 
-document.getElementById('cancel-button').addEventListener('click', () => {
+let loadedSettings = null;
+let genericAxis = null; // 일반 컨트롤러의 턴테이블 축 바이트 위치
+
+// ✅ 화면 안 메시지 (alert 대신)
+function showStatus(message, { error = false } = {}) {
+  const status = $('form-status');
+  status.textContent = message;
+  status.classList.toggle('error', error);
+}
+
+$('cancel-button').addEventListener('click', () => {
   window.close();
 });
 
-document.getElementById('save-button').addEventListener('click', async () => {
-  const apiToken = document.getElementById('apiToken').value;
-  const serverPort = parseInt(document.getElementById('serverPort').value, 10);
-  const webSocketPort = parseInt(document.getElementById('webSocketPort').value, 10);
-  const controllerProfile = document.getElementById('controllerProfile').value;
-  const infoPosition = document.getElementById('infoPosition').value;
-  const buttonLayout = document.getElementById('buttonLayout').value;
-  const lr2ModeEnabled = document.getElementById('lr2ModeEnabled').checked;
-  const showPromoBox = document.getElementById('showPromoBox').checked;
-  const discImageMode = document.getElementById('discImageMode').value;
-  const transparentContainer = document.getElementById('transparent-container').checked;
-  const globalMALength = parseInt(document.getElementById('GlobalReleaseMALength').value, 10);
-  const perButtonMALength = parseInt(document.getElementById('PerButtonMALength').value, 10);
-  const widgetColors = {
-    containerBackground: document.getElementById('color-container-background').value,
-    background: document.getElementById('color-background').value,
-    accent: document.getElementById('color-accent').value,
-    fontColor: document.getElementById('color-fontColor').value,
-    activeColor: document.getElementById('color-activeColor').value,
-  };
+$('save-button').addEventListener('click', async () => {
+  const serverPort = parseInt($('serverPort').value, 10);
+  const webSocketPort = parseInt($('webSocketPort').value, 10);
+  const globalMALength = parseInt($('GlobalReleaseMALength').value, 10);
+  const perButtonMALength = parseInt($('PerButtonMALength').value, 10);
+  const controllerProfile = $('controllerProfile').value;
 
-  if (
-    isNaN(serverPort) || isNaN(webSocketPort) ||
-    serverPort < 1024 || serverPort > 65535 ||
-    webSocketPort < 1024 || webSocketPort > 65535
-  ) {
-    alert(window.i18n.t('settings.invalidPort'));
+  if (!validatePorts(serverPort, webSocketPort)) {
+    showStatus(window.i18n.t('settings.invalidPort'), { error: true });
+    return;
+  }
+  if (!validateMALength(globalMALength) || !validateMALength(perButtonMALength)) {
+    showStatus(window.i18n.t('settings.invalidMALength', MA_LENGTH_RANGE), { error: true });
     return;
   }
 
-  const settings = await window.electronAPI.loadSettings();
-  const existingKeyMapping = settings?.keyMapping?.KB || {};
-  const existingGenericMapping = settings?.keyMapping?.GENERIC || {};
-
-  // ✅ 키 매핑 저장
-  let kbMapping = {};
-  if (controllerProfile === 'KB') {
-    document.querySelectorAll('#key-mapping-table input').forEach(input => {
-      const action = input.dataset.key;
-      const value = input.value.trim();
-      if (value) kbMapping[action] = value;
-    });
+  const generic = buildGenericMapping(
+    [...document.querySelectorAll('#generic-mapping-table input')].map(input => ({ key: input.dataset.key, value: input.value }))
+  );
+  if (controllerProfile === 'AUTO' && (generic.invalid.length || generic.duplicates.length)) {
+    const keys = generic.invalid.length ? generic.invalid : generic.duplicates[0];
+    showStatus(window.i18n.t('settings.invalidGenericMapping', { keys: keys.map(getMappingLabel).join(', ') }), { error: true });
+    return;
   }
-  const genericMapping = { ...existingGenericMapping };
-  if (controllerProfile === 'AUTO') document.querySelectorAll('#generic-mapping-table input').forEach(input => {
-    const value = Number(input.value); if (value >= 1 && value <= 32) genericMapping[input.dataset.key] = value;
+
+  const kbMapping = {};
+  document.querySelectorAll('#key-mapping-table input').forEach(input => {
+    const value = input.value.trim();
+    if (value) kbMapping[input.dataset.key] = value;
   });
 
   const newSettings = {
-    apiToken,
+    apiToken: $('apiToken').value,
     serverPort,
     webSocketPort,
     controllerProfile,
-    lr2ModeEnabled,
-    autoLaunch: document.getElementById('autoLaunch').checked,
+    lr2ModeEnabled: $('lr2ModeEnabled').checked,
+    autoLaunch: $('autoLaunch').checked,
     keyMapping: {
-      KB: controllerProfile === 'KB' ? kbMapping : existingKeyMapping,
-      GENERIC: genericMapping
+      KB: kbMapping,
+      GENERIC: generic.mapping,
+      GENERIC_AXIS: genericAxis
     },
     widget: {
-      infoPosition,
-      buttonLayout,
-      discImageMode,
-      discImagePath: uploadedUpDiscImagePath,
-      downDiscImagePath: uploadedDownDiscImagePath,
-      showPromoBox,
-      transparentContainer,
+      infoPosition: $('infoPosition').value,
+      buttonLayout: $('buttonLayout').value,
+      discImageMode: $('discImageMode').value,
+      discImagePath: discSlots.up.path,
+      downDiscImagePath: discSlots.down.path,
+      showPromoBox: $('showPromoBox').checked,
+      transparentContainer: $('transparent-container').checked,
       globalMALength,
       perButtonMALength,
-      colors: widgetColors
+      colors: {
+        containerBackground: $('color-container-background').value,
+        background: $('color-background').value,
+        accent: $('color-accent').value,
+        fontColor: $('color-fontColor').value,
+        activeColor: $('color-activeColor').value
+      }
     }
   };
 
-  await window.electronAPI.saveSettings(newSettings);
-  const portChanged = serverPort !== settings?.serverPort;
-  alert(window.i18n.t(portChanged ? 'settings.savedPortChanged' : 'settings.saved'));
+  const saveButton = $('save-button');
+  saveButton.disabled = true;
+  const result = await window.electronAPI.saveSettings(newSettings);
+  saveButton.disabled = false;
+
+  if (!result?.ok) {
+    showStatus(window.i18n.t('settings.saveFailed', { message: result?.error ?? '' }), { error: true });
+    return;
+  }
+  if (result.portChanged) {
+    // 포트를 바꾼 경우는 사용자가 OBS 주소를 고쳐야 하므로 창을 닫지 않고 안내한다
+    showStatus(window.i18n.t('settings.savedPortChanged'));
+    return;
+  }
   window.close();
 });
 
 // ✅ 키 매핑 UI 토글 함수
 function toggleKeyMappingUI(profile) {
-  const keyMapping = document.getElementById('key-mapping-container');
-  const genericMapping = document.getElementById('generic-mapping-container');
-  const lr2Row = document.getElementById('lr2-detect-row');
-  if (profile === 'KB') {
-    keyMapping.style.display = 'block';
-    genericMapping.style.display = 'none';
-    lr2Row.style.display = 'none';
-  } else {
-    keyMapping.style.display = 'none';
-    genericMapping.style.display = profile === 'AUTO' ? 'block' : 'none';
-    lr2Row.style.display = 'block'; // AUTO도 주작콘/FPS를 잡으면 LR2 감지가 적용됨
-  }
+  $('key-mapping-container').style.display = profile === 'KB' ? 'block' : 'none';
+  $('generic-mapping-container').style.display = profile === 'AUTO' ? 'block' : 'none';
+  // AUTO도 주작콘/FPS를 잡으면 LR2 감지가 적용됨
+  $('lr2-detect-row').style.display = profile === 'KB' ? 'none' : 'block';
 }
 
 // ✅ 스크래치 이미지 모드 UI 토글 함수
 function toggleDiscImageModeUI(mode) {
   const isDual = mode === 'dual';
-  document.getElementById('up-disc-label').textContent =
-    window.i18n.t(isDual ? 'settings.discImageUp' : 'settings.discImage');
-  document.getElementById('down-disc-group').style.display = isDual ? 'block' : 'none';
+  if (window.i18n.ready) $('up-disc-label').textContent = window.i18n.t(isDual ? 'settings.discImageUp' : 'settings.discImage');
+  $('down-disc-group').style.display = isDual ? 'block' : 'none';
 }
 
-document.getElementById('discImageMode').addEventListener('change', (e) => {
-  toggleDiscImageModeUI(e.target.value);
-});
-document.addEventListener('i18n-changed', () => {
-  toggleDiscImageModeUI(document.getElementById('discImageMode').value);
-});
+$('discImageMode').addEventListener('change', (e) => toggleDiscImageModeUI(e.target.value));
+document.addEventListener('i18n-changed', () => toggleDiscImageModeUI($('discImageMode').value));
+
+
+// ✅ 스크래치 이미지 (1장 모드/윗방향 = up, 아랫방향 = down)
+const discSlots = {
+  up: { path: null, preview: $('up-disc-preview') },
+  down: { path: null, preview: $('down-disc-preview') }
+};
+
+function setDiscImage(slotName, imagePath) {
+  const slot = discSlots[slotName];
+  slot.path = imagePath || null;
+  const url = window.imageUrl.resolveImageUrl(slot.path, { protocol: location.protocol, serverPort: loadedSettings?.serverPort });
+  slot.preview.src = url;
+  slot.preview.style.display = url ? 'block' : 'none';
+}
+
+for (const slotName of Object.keys(discSlots)) {
+  $(`pick-${slotName}-disc-button`).addEventListener('click', async () => {
+    const imagePath = await window.electronAPI.pickUserImage();
+    if (imagePath) setDiscImage(slotName, imagePath);
+  });
+  $(`delete-${slotName}-disc-button`).addEventListener('click', () => setDiscImage(slotName, null));
+}
+
 
 // ✅ 초기 설정 불러오기
 (async () => {
   const settings = await window.electronAPI.loadSettings();
+  if (!settings) return;
+  loadedSettings = settings;
 
-  if (settings) {
-    document.getElementById('apiToken').value = settings.apiToken || '';
-    document.getElementById('serverPort').value = settings.serverPort || 8080;
-    document.getElementById('webSocketPort').value = settings.webSocketPort || 5678;
-    document.getElementById('controllerProfile').value = settings.controllerProfile || 'PHOENIXWAN';
-    document.getElementById('infoPosition').value = settings.widget?.infoPosition || 'bottom';
-    document.getElementById('buttonLayout').value = settings.widget?.buttonLayout || '1P';
-    document.getElementById('lr2ModeEnabled').checked = !!settings.lr2ModeEnabled;
-    document.getElementById('autoLaunch').checked = settings.autoLaunch || false;
-    document.getElementById('showPromoBox').checked = !!settings.widget?.showPromoBox;
-    document.getElementById('transparent-container').checked = !!settings.widget?.transparentContainer;
-    updateContainerColorAvailability();
-    document.getElementById('GlobalReleaseMALength').value = settings.widget?.globalMALength || 200;
-    document.getElementById('PerButtonMALength').value = settings.widget?.perButtonMALength || 200;
+  $('apiToken').value = settings.apiToken || '';
+  $('serverPort').value = settings.serverPort;
+  $('webSocketPort').value = settings.webSocketPort;
+  $('controllerProfile').value = settings.controllerProfile;
+  $('infoPosition').value = settings.widget.infoPosition;
+  $('buttonLayout').value = settings.widget.buttonLayout;
+  $('lr2ModeEnabled').checked = !!settings.lr2ModeEnabled;
+  $('autoLaunch').checked = !!settings.autoLaunch;
+  $('showPromoBox').checked = !!settings.widget.showPromoBox;
+  $('transparent-container').checked = !!settings.widget.transparentContainer;
+  updateContainerColorAvailability();
+  $('GlobalReleaseMALength').value = settings.widget.globalMALength;
+  $('PerButtonMALength').value = settings.widget.perButtonMALength;
 
-    toggleKeyMappingUI(settings.controllerProfile || 'PHOENIXWAN');
+  // 키 매핑은 프로필과 상관없이 채워 둔다 (프로필을 바꿨다 돌아와도 입력한 값이 남도록)
+  const kbMap = settings.keyMapping.KB || {};
+  document.querySelectorAll('#key-mapping-table input').forEach(input => input.value = kbMap[input.dataset.key] || '');
+  const genericMap = settings.keyMapping.GENERIC || {};
+  document.querySelectorAll('#generic-mapping-table input').forEach(input => input.value = genericMap[input.dataset.key] ?? '');
+  setGenericAxis(settings.keyMapping.GENERIC_AXIS);
 
-    if (settings.controllerProfile === 'KB') {
-      const kbMap = settings.keyMapping?.KB || {};
-      document.querySelectorAll('#key-mapping-table input').forEach(input => {
-        const action = input.dataset.key;
-        input.value = kbMap[action] || '';
-      });
-    }
-    const genericMap = settings.keyMapping?.GENERIC || {};
-    document.querySelectorAll('#generic-mapping-table input').forEach(input => input.value = genericMap[input.dataset.key] || '');
+  const colors = settings.widget.colors;
+  $('color-container-background').value = colors.containerBackground;
+  $('color-background').value = colors.background;
+  $('color-accent').value = colors.accent;
+  $('color-fontColor').value = colors.fontColor;
+  $('color-activeColor').value = colors.activeColor;
 
-    const defaultColors = {
-      containerBackground: '#000000',
-      background: '#000000',
-      accent: '#444444',
-      fontColor: '#cccccc',
-      activeColor: '#ffffff'
-    };
+  const discImageMode = settings.widget.discImageMode === 'dual' ? 'dual' : 'single';
+  $('discImageMode').value = discImageMode;
+  toggleDiscImageModeUI(discImageMode);
+  setDiscImage('up', settings.widget.discImagePath);
+  setDiscImage('down', settings.widget.downDiscImagePath);
 
-    const mergedColors = {
-      ...defaultColors,
-      ...(settings.widget?.colors || {})
-    };
-
-    document.getElementById('color-container-background').value = mergedColors.containerBackground;
-    document.getElementById('color-background').value = mergedColors.background;
-    document.getElementById('color-accent').value = mergedColors.accent;
-    document.getElementById('color-fontColor').value = mergedColors.fontColor;
-    document.getElementById('color-activeColor').value = mergedColors.activeColor;
-
-    const discImageMode = settings.widget?.discImageMode === 'dual' ? 'dual' : 'single';
-    document.getElementById('discImageMode').value = discImageMode;
-    toggleDiscImageModeUI(discImageMode);
-
-    uploadedUpDiscImagePath = settings.widget?.discImagePath || null;
-    uploadedDownDiscImagePath = settings.widget?.downDiscImagePath || null;
-
-    if (uploadedUpDiscImagePath) {
-      const upDiscPreviewImg = document.getElementById('up-disc-preview');
-      upDiscPreviewImg.src = uploadedUpDiscImagePath;
-      upDiscPreviewImg.style.display = 'block';
-    }
-
-    if (uploadedDownDiscImagePath) {
-      const downDiscPreviewImg = document.getElementById('down-disc-preview');
-      downDiscPreviewImg.src = uploadedDownDiscImagePath;
-      downDiscPreviewImg.style.display = 'block';
-    }
-
-    bindColorPreview('color-container-background', 'preview-container-background');
-    bindColorPreview('color-background', 'preview-background');
-    bindColorPreview('color-accent', 'preview-accent');
-    bindColorPreview('color-fontColor', 'preview-fontColor');
-    bindColorPreview('color-activeColor', 'preview-activeColor');
+  for (const name of ['container-background', 'background', 'accent', 'fontColor', 'activeColor']) {
+    bindColorPreview(`color-${name}`, `preview-${name}`);
   }
+
+  onProfileChanged(settings.controllerProfile);
 })();
 
 // ✅ 프로필 변경 시 키 매핑 UI 토글
-document.getElementById('controllerProfile').addEventListener('change', async (e) => {
-  const value = e.target.value;
-  toggleKeyMappingUI(value);
+$('controllerProfile').addEventListener('change', (e) => onProfileChanged(e.target.value));
 
-  if (value === 'KB') {
-    const settings = await window.electronAPI.loadSettings();
-    const kbMap = settings?.keyMapping?.KB || {};
-    document.querySelectorAll('#key-mapping-table input').forEach(input => {
-      const action = input.dataset.key;
-      input.value = kbMap[action] || '';
-    });
-  }
-});
+function onProfileChanged(profile) {
+  toggleKeyMappingUI(profile);
+  if (profile === 'AUTO') startMappingSession();
+  else stopMappingSession();
+}
 
+
+// ✅ AUTO 일반 컨트롤러 매핑 학습 (저장하지 않아도 바로 동작)
 let learningInput = null;
+let mappingSession = null;
+
+function setMappingStatus(message, { warning = false } = {}) {
+  const status = $('mapping-status');
+  status.textContent = message;
+  status.classList.toggle('warning', warning);
+}
+
+async function startMappingSession() {
+  mappingSession = await window.electronAPI.startMappingSession();
+  renderMappingSessionStatus();
+}
+
+function renderMappingSessionStatus() {
+  if (!mappingSession || !window.i18n.ready) return;
+  if (mappingSession.status === 'none') setMappingStatus(window.i18n.t('settings.mappingNoDevice'), { warning: true });
+  else if (mappingSession.status === 'dedicated') setMappingStatus(window.i18n.t('settings.mappingDedicated', { device: mappingSession.device }));
+  else setMappingStatus(window.i18n.t('settings.mappingReady', { device: mappingSession.device }));
+}
+
+function stopMappingSession() {
+  learningInput = null;
+  if (!mappingSession) return;
+  mappingSession = null;
+  window.electronAPI.stopMappingSession();
+}
+
 document.querySelectorAll('#generic-mapping-table input').forEach(input => {
   input.addEventListener('focus', () => {
-    if (document.getElementById('controllerProfile').value !== 'AUTO') return;
+    if ($('controllerProfile').value !== 'AUTO') return;
     learningInput = input;
-    document.getElementById('mapping-status').textContent = window.i18n.t('settings.listening', { key: getMappingLabel(input.dataset.key) });
+    setMappingStatus(window.i18n.t('settings.listening', { key: getMappingLabel(input.dataset.key) }));
+  });
+  // 다른 곳으로 옮기면 학습을 멈춘다 (누른 버튼이 이전 칸에 들어가지 않도록)
+  input.addEventListener('blur', () => {
+    if (learningInput === input) learningInput = null;
   });
 });
+
 window.electronAPI.onControllerData(events => {
-  if (!learningInput || document.getElementById('controllerProfile').value !== 'AUTO') return;
+  if (!learningInput || $('controllerProfile').value !== 'AUTO') return;
   const event = events.find(item => item.type === 'physical-button' && item.pressed);
   if (!event) return;
-  const key = learningInput.dataset.key;
-  learningInput.value = event.physicalButton;
-  learningInput = null;
-  document.getElementById('mapping-status').textContent = window.i18n.t('settings.mapped', { key: getMappingLabel(key), button: event.physicalButton });
+  const input = learningInput;
+  input.value = event.physicalButton;
+  setMappingStatus(window.i18n.t('settings.mapped', { key: getMappingLabel(input.dataset.key), button: event.physicalButton }));
+  input.blur();
 });
+
+function setGenericAxis(byteIndex) {
+  genericAxis = Number.isInteger(byteIndex) ? byteIndex : null;
+  $('generic-axis-value').textContent = genericAxis === null
+    ? (window.i18n.ready ? window.i18n.t('settings.axisNone') : '')
+    : window.i18n.t('settings.axisByte', { index: genericAxis });
+}
+
+$('learn-axis-button').addEventListener('click', async () => {
+  const button = $('learn-axis-button');
+  button.disabled = true;
+  setMappingStatus(window.i18n.t('settings.axisLearning'));
+  const result = await window.electronAPI.learnTurntableAxis();
+  button.disabled = false;
+  if (result) {
+    setGenericAxis(result.byteIndex);
+    setMappingStatus(window.i18n.t('settings.axisLearned', { index: result.byteIndex }));
+  } else {
+    setMappingStatus(window.i18n.t('settings.axisNotFound'), { warning: true });
+  }
+});
+$('clear-axis-button').addEventListener('click', () => setGenericAxis(null));
 
 function getMappingLabel(key) {
   if (key === 'SCup') return window.i18n.t('settings.turntableClockwise');
@@ -233,8 +275,10 @@ function getMappingLabel(key) {
 
 function localizeMappingLabels() {
   document.querySelectorAll('#generic-mapping-table tr').forEach(row => {
-    const input = row.querySelector('input'); row.cells[0].textContent = getMappingLabel(input.dataset.key);
+    row.cells[0].textContent = getMappingLabel(row.querySelector('input').dataset.key);
   });
+  setGenericAxis(genericAxis);
+  renderMappingSessionStatus();
 }
 document.addEventListener('i18n-changed', localizeMappingLabels);
 
@@ -244,69 +288,14 @@ document.querySelectorAll('#key-mapping-table input').forEach(input => {
   input.addEventListener('keydown', (e) => {
     e.preventDefault();
     // Normalize Enter and NumpadEnter to the same value
-    let normalizedCode = (e.code === 'NumpadEnter' || e.code === 'Enter') ? 'Enter' : e.code;
-    input.value = normalizedCode;
+    input.value = (e.code === 'NumpadEnter' || e.code === 'Enter') ? 'Enter' : e.code;
   });
-});
-
-document.getElementById('up-disc-image-upload').addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const filePath = file.path;
-  const savedPath = await window.electronAPI.saveUserImage(filePath);
-
-  if (savedPath) {
-    uploadedUpDiscImagePath = savedPath;
-
-    const previewImg = document.getElementById('up-disc-preview');
-    previewImg.src = savedPath;
-    previewImg.style.display = 'block';
-  }
-});
-
-document.getElementById('delete-up-disc-button').addEventListener('click', () => {
-  uploadedUpDiscImagePath = null;
-
-  const previewImg = document.getElementById('up-disc-preview');
-  previewImg.src = '';
-  previewImg.style.display = 'none';
-
-  // 파일 선택 input 초기화
-  document.getElementById('up-disc-image-upload').value = '';
-});
-
-document.getElementById('down-disc-image-upload').addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const filePath = file.path;
-  const savedPath = await window.electronAPI.saveUserImage(filePath);
-
-  if (savedPath) {
-    uploadedDownDiscImagePath = savedPath;
-
-    const previewImg = document.getElementById('down-disc-preview');
-    previewImg.src = savedPath;
-    previewImg.style.display = 'block';
-  }
-});
-
-document.getElementById('delete-down-disc-button').addEventListener('click', () => {
-  uploadedDownDiscImagePath = null;
-
-  const previewImg = document.getElementById('down-disc-preview');
-  previewImg.src = '';
-  previewImg.style.display = 'none';
-
-  // 파일 선택 input 초기화
-  document.getElementById('down-disc-image-upload').value = '';
 });
 
 
 function bindColorPreview(inputId, previewId) {
-  const input = document.getElementById(inputId);
-  const preview = document.getElementById(previewId);
+  const input = $(inputId);
+  const preview = $(previewId);
   if (!input || !preview) return;
 
   const updatePreview = () => {
@@ -318,9 +307,9 @@ function bindColorPreview(inputId, previewId) {
 }
 
 function updateContainerColorAvailability() {
-  const transparent = document.getElementById('transparent-container').checked;
-  document.getElementById('color-container-background').disabled = transparent;
-  document.getElementById('preview-container-background').style.opacity = transparent ? '0.35' : '1';
+  const transparent = $('transparent-container').checked;
+  $('color-container-background').disabled = transparent;
+  $('preview-container-background').style.opacity = transparent ? '0.35' : '1';
 }
 
-document.getElementById('transparent-container').addEventListener('change', updateContainerColorAvailability);
+$('transparent-container').addEventListener('change', updateContainerColorAvailability);

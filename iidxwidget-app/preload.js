@@ -1,10 +1,6 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
-console.log('[PRELOAD] preload.js loaded');
-
 contextBridge.exposeInMainWorld('electronAPI', {
-  startKeyboardReader: () => ipcRenderer.send('start-keyboard-reader'),
-  getWebSocketPort: () => ipcRenderer.invoke('get-websocket-port'),
   onControllerData: (callback) => ipcRenderer.on('controller-data', (event, data) => callback(data)),
   getLanguage: () => ipcRenderer.invoke('get-language'),
   getTranslations: () => ipcRenderer.invoke('get-translations'),
@@ -16,12 +12,18 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onNewLog: (callback) => ipcRenderer.on('new-log', (event, message) => callback(message)),
   requestLogBuffer: () => ipcRenderer.invoke('request-log-buffer'),
   loadSettings: () => ipcRenderer.invoke('load-settings'),
-  saveSettings: (newSettings) => ipcRenderer.invoke('save-settings', newSettings), // ✅ 이거 필요
+  // 결과: { ok: true, portChanged } 또는 { ok: false, error }
+  saveSettings: (newSettings) => ipcRenderer.invoke('save-settings', newSettings),
   // Main -> Renderer: 설정이 바뀌었으니 다시 불러오라는 알림
   onSettingsUpdated: (callback) => ipcRenderer.on('settings-updated', () => callback()),
-  saveUserImage: (filePath) => ipcRenderer.invoke('save-user-image', filePath),
+  // 파일 선택 창을 열어 이미지를 복사하고 '/userImages/<파일>'을 돌려준다 (취소하면 null)
+  pickUserImage: () => ipcRenderer.invoke('pick-user-image'),
+  // AUTO 매핑 학습: 결과 { status: 'generic' | 'dedicated' | 'none', device? }
+  startMappingSession: () => ipcRenderer.invoke('start-mapping-session'),
+  stopMappingSession: () => ipcRenderer.invoke('stop-mapping-session'),
+  // 턴테이블을 돌리는 동안 축 바이트를 찾는다. 결과 { byteIndex, distinct } 또는 null
+  learnTurntableAxis: () => ipcRenderer.invoke('learn-turntable-axis'),
   sendChatterData: (data) => ipcRenderer.send('chatter-data', data),
-  onChatterData: (callback) => ipcRenderer.on('chatter-data', (_, data) => callback(data)),
   requestChatterSummary: () => ipcRenderer.invoke('request-chatter-summary'),
   // Main -> Renderer: "카운트 알려줘" 요청을 받을 리스너
   requestSessionCount: (callback) => ipcRenderer.on('request-session-count', () => callback()),

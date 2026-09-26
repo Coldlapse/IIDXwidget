@@ -64,9 +64,6 @@ body {
   width: 168px;
   height: 168px;
   background: var(--background-color);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
   border-radius: 50%;
   overflow: hidden;
   position: absolute;
@@ -122,7 +119,7 @@ body {
 }
 
 .lit {
-  background-color: var(--active-color) !important;
+  background-color: var(--active-color);
 }
 
 /* 버튼 */
@@ -152,7 +149,7 @@ body {
 
 .release-label {
   font-size: 18px; /* 숫자만 보여줄거니까 조금 더 크고 선명하게 */
-  color: #ccc;
+  color: var(--font-color);
   pointer-events: none;
   text-shadow:
   -1px -1px 0 #000,

@@ -3,7 +3,9 @@ const WebSocket = require('ws');
 let wss = null;
 let wssPort = null;
 
-function startWebSocketServer(port = 5678) {
+// options.isAllowedOrigin(origin): 브라우저 연결의 Origin 허용 여부
+// options.onError(error, port): 포트 충돌 등 서버 오류 알림
+function startWebSocketServer(port = 5678, { isAllowedOrigin = () => true, onError } = {}) {
   // 같은 포트로 이미 떠 있으면 기존 연결(OBS 등)을 그대로 유지
   if (wss && wssPort === port) return wss;
 
@@ -12,15 +14,26 @@ function startWebSocketServer(port = 5678) {
     closeServer(wss);
   }
 
-  wss = new WebSocket.Server({ port });
-  wssPort = port;
+  const server = new WebSocket.Server({
+    port,
+    // 브라우저는 항상 Origin을 보내므로, 아무 웹페이지가 입력 스트림을 받아가지 못하게 막는다.
+    // Origin이 없는 연결(브라우저가 아닌 도구)은 허용한다.
+    verifyClient: ({ origin }) => !origin || isAllowedOrigin(origin)
+  });
 
   console.log(`🟢 WebSocket server running at ws://0.0.0.0:${port}`);
 
-  wss.on('error', (error) => {
+  server.on('error', (error) => {
     console.error(`❌ WebSocket Server Error: ${error.message}`);
+    if (wss === server) {
+      wss = null;
+      wssPort = null;
+    }
+    onError?.(error, port);
   });
 
+  wss = server;
+  wssPort = port;
   return wss;
 }
 
@@ -32,19 +45,11 @@ function closeServer(server, callback) {
 }
 
 function stopWebSocketServer() {
-  return new Promise((resolve) => {
-    if (wss) {
-      const server = wss;
-      wss = null;
-      wssPort = null;
-      closeServer(server, () => {
-        console.log('🛑 WebSocket Server closed.');
-        resolve();
-      });
-    } else {
-      resolve();
-    }
-  });
+  if (!wss) return;
+  const server = wss;
+  wss = null;
+  wssPort = null;
+  closeServer(server, () => console.log('🛑 WebSocket Server closed.'));
 }
 
 

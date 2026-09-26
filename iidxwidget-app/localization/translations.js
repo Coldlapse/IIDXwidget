@@ -29,7 +29,11 @@ const translations = {
       invalidToken: '잘못된 토큰입니다.',
       success: '전송 성공',
       successMessage: '완료되었습니다. (일일 총 타건 수: {count})',
-      error: '오류가 발생했습니다: {message}'
+      error: '오류가 발생했습니다: {message}',
+      noResponse: '위젯에서 타건 수를 받지 못했습니다. 잠시 후 다시 시도해 주세요.'
+    },
+    server: {
+      portInUse: '{port}번 포트를 다른 프로그램이 쓰고 있어서 서버를 열지 못했습니다. 그 프로그램을 끄거나 설정에서 포트를 바꾼 뒤 저장해 주세요.'
     },
     update: {
       availableTitle: '업데이트 알림',
@@ -69,7 +73,20 @@ const translations = {
       lr2: 'LR2 모드 감지 (주작콘 전용)',
       keyboardMapping: '키보드 매핑 (저는 KB를 하는 바보입니다)',
       genericMapping: 'AUTO 일반 컨트롤러 매핑',
-      genericHelp: 'Auto-detect를 저장한 뒤 설정을 다시 열고, 각 필드를 클릭한 다음 원하는 컨트롤러 버튼을 누르세요. 마지막에 저장을 누르세요.',
+      genericHelp: '각 칸을 클릭한 다음 원하는 컨트롤러 버튼을 누르세요. 칸을 비우면 매핑이 해제됩니다. 마지막에 저장을 누르세요.',
+      mappingReady: '매핑할 컨트롤러: {device}',
+      mappingDedicated: '{device}는 전용 컨트롤러라 매핑 없이 인식됩니다.',
+      mappingNoDevice: '연결된 컨트롤러를 찾지 못했습니다. 컨트롤러를 연결한 뒤 프로필을 다시 선택해 주세요.',
+      turntableAxis: '턴테이블 (축)',
+      learnAxis: '학습',
+      clearAxis: '지우기',
+      axisHelp: "턴테이블이 축으로 동작하는 기판이라면 '학습'을 누르고 2초 동안 턴테이블을 돌리세요.",
+      axisNone: '사용 안 함',
+      axisByte: '보고서 {index}번째 바이트',
+      axisLearning: '턴테이블을 2초 동안 돌려 주세요...',
+      axisLearned: '턴테이블 축을 찾았습니다 (보고서 {index}번째 바이트).',
+      axisNotFound: '축을 찾지 못했습니다. 턴테이블을 계속 돌리면서 다시 시도해 주세요.',
+      invalidGenericMapping: '매핑을 확인해 주세요: {keys} (1–64 사이의 서로 다른 버튼 번호)',
       logicalKey: 'IIDX 키 {key}',
       turntableClockwise: '턴테이블 시계 방향',
       turntableCounterclockwise: '턴테이블 반시계 방향',
@@ -90,6 +107,8 @@ const translations = {
       discImageSingle: '1장',
       discImageDual: '2장 (회전 방향에 따라 변경)',
       discImage: '스크래치 커스텀 이미지 업로드',
+      pickImage: '이미지 선택',
+      imageFiles: '이미지 파일',
       discImageUp: '기본 / 윗방향 스크래치 커스텀 이미지 업로드',
       discImageDown: '아랫방향 스크래치 커스텀 이미지 업로드',
       delete: '삭제',
@@ -100,8 +119,9 @@ const translations = {
       font: '폰트/스크래치 가로선 색상',
       save: '저장',
       cancel: '저장하지 않고 종료',
-      invalidPort: '❗ 포트 번호는 1024 ~ 65535 사이여야 합니다.',
-      saved: '저장 완료! 위젯에 바로 반영됩니다.',
+      invalidPort: '❗ 포트 번호는 1024 ~ 65535 사이의 서로 다른 값이어야 합니다.',
+      invalidMALength: '❗ 표본 갯수는 {min} ~ {max} 사이여야 합니다.',
+      saveFailed: '❗ 설정을 저장하지 못했습니다: {message}',
       savedPortChanged: '저장 완료! 서버 포트가 바뀌었으니 OBS 브라우저 소스의 주소도 새 포트로 바꿔주세요.'
     },
     chatter: {
@@ -154,7 +174,11 @@ const translations = {
       invalidToken: 'The token is invalid.',
       success: 'Upload successful',
       successMessage: 'Complete. (Daily total: {count})',
-      error: 'An error occurred: {message}'
+      error: 'An error occurred: {message}',
+      noResponse: 'Could not get the play count from the widget. Please try again in a moment.'
+    },
+    server: {
+      portInUse: 'Port {port} is used by another program, so the server could not start. Close that program or change the port in Settings, then save.'
     },
     update: {
       availableTitle: 'Update available',
@@ -194,7 +218,20 @@ const translations = {
       lr2: 'Detect LR2 mode (dedicated controller only)',
       keyboardMapping: 'Keyboard mapping',
       genericMapping: 'AUTO generic controller mapping',
-      genericHelp: 'Save Auto-detect, reopen Settings, click each field, and press the desired controller button. Press Save when finished.',
+      genericHelp: 'Click a field, then press the controller button to map. Clear a field to unmap it. Press Save when finished.',
+      mappingReady: 'Controller to map: {device}',
+      mappingDedicated: '{device} is a dedicated controller and works without mapping.',
+      mappingNoDevice: 'No controller found. Connect your controller and select the profile again.',
+      turntableAxis: 'Turntable (axis)',
+      learnAxis: 'Learn',
+      clearAxis: 'Clear',
+      axisHelp: "If your board reports the turntable as an axis, press 'Learn' and spin the turntable for 2 seconds.",
+      axisNone: 'Not used',
+      axisByte: 'Report byte {index}',
+      axisLearning: 'Spin the turntable for 2 seconds...',
+      axisLearned: 'Found the turntable axis (report byte {index}).',
+      axisNotFound: 'No axis found. Keep spinning the turntable and try again.',
+      invalidGenericMapping: 'Check the mapping: {keys} (distinct button numbers from 1 to 64)',
       logicalKey: 'IIDX key {key}',
       turntableClockwise: 'Turntable clockwise',
       turntableCounterclockwise: 'Turntable counterclockwise',
@@ -215,6 +252,8 @@ const translations = {
       discImageSingle: 'Single image',
       discImageDual: 'Two images (switch with spin direction)',
       discImage: 'Upload custom turntable image',
+      pickImage: 'Choose image',
+      imageFiles: 'Image files',
       discImageUp: 'Default / upward-spin turntable image',
       discImageDown: 'Downward-spin turntable image',
       delete: 'Delete',
@@ -225,8 +264,9 @@ const translations = {
       font: 'Font/turntable line color',
       save: 'Save',
       cancel: 'Close without saving',
-      invalidPort: '❗ Port numbers must be between 1024 and 65535.',
-      saved: 'Saved! Changes apply to the widget right away.',
+      invalidPort: '❗ Ports must be two different numbers between 1024 and 65535.',
+      invalidMALength: '❗ Sample counts must be between {min} and {max}.',
+      saveFailed: '❗ Could not save settings: {message}',
       savedPortChanged: 'Saved! The server port changed, so update the URL of the OBS browser source to the new port.'
     },
     chatter: {
