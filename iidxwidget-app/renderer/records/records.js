@@ -1,7 +1,7 @@
 const { formatUptime } = window.widgetLogic;
 const $ = id => document.getElementById(id);
 
-let records = null;
+let data = null;              // { session, hasToken, autoUploadOnQuit }
 let lastUploadResult = null;
 let uploading = false;
 
@@ -9,89 +9,80 @@ const formatDuration = ms => formatUptime(Math.floor((ms || 0) / 1000));
 const formatRelease = value => value === null || value === undefined ? '-' : `${value} ms`;
 const formatTime = iso => new Date(iso).toLocaleTimeString();
 
-function cell(text) {
-  const td = document.createElement('td');
-  td.textContent = text;
-  return td;
-}
-
-function fillTable(tableId, rows, emptyId) {
-  const tbody = document.querySelector(`#${tableId} tbody`);
-  tbody.replaceChildren(...rows.map(values => {
-    const tr = document.createElement('tr');
-    tr.append(...values.map(cell));
-    return tr;
-  }));
-  $(tableId).hidden = rows.length === 0;
-  $(emptyId).hidden = rows.length > 0;
-}
-
-function renderToday(today) {
-  $('today-date').textContent = today.date;
-  $('today-presses').textContent = today.presses;
-  $('today-uploaded').textContent = today.uploaded;
-  $('today-pending').textContent = today.pending;
-  $('today-active').textContent = formatDuration(today.activeMs);
-  $('today-release').textContent = formatRelease(today.releaseAvg);
-  $('today-chatter').textContent = today.chatter;
+function renderNumbers() {
+  const s = data.session;
+  $('presses').textContent = s.presses;
+  $('sent').textContent = s.sent;
+  $('remaining').textContent = s.remaining;
+  $('uptime').textContent = formatDuration(s.activeMs);
+  $('release').textContent = formatRelease(s.releaseAvg);
+  $('chatter').textContent = s.chatter;
   renderUploadButton();
 }
 
 function renderUploadButton() {
-  if (!records || !window.i18n.ready) return;
-  const pending = records.today.pending;
+  if (!data || !window.i18n.ready) return;
   const button = $('upload-button');
-  if (!uploading) button.textContent = window.i18n.t('records.uploadNow', { count: pending });
-  button.disabled = uploading || !records.hasToken || pending <= 0;
-  $('token-hint').hidden = records.hasToken;
+  if (!uploading) button.textContent = window.i18n.t('records.uploadNow', { count: data.session.remaining });
+  button.disabled = uploading || !data.hasToken || data.session.remaining <= 0;
+  $('token-hint').hidden = data.hasToken;
 }
 
 function render() {
-  if (!records || !window.i18n.ready) return;
-  renderToday(records.today);
-  $('auto-upload-state').textContent = window.i18n.t(records.autoUploadOnQuit ? 'records.autoUploadOn' : 'records.autoUploadOff');
+  if (!data || !window.i18n.ready) return;
+  const s = data.session;
+  $('started-at').textContent = window.i18n.t('records.startedAt', { time: new Date(s.startedAt).toLocaleString() });
+  renderNumbers();
+  $('auto-upload-state').textContent = window.i18n.t(data.autoUploadOnQuit ? 'records.autoUploadOn' : 'records.autoUploadOff');
+  $('server-total').hidden = s.lastDailyTotal === null;
+  if (s.lastDailyTotal !== null) $('server-total').textContent = window.i18n.t('records.serverTotal', { total: s.lastDailyTotal });
 
-  fillTable('uploads-table', records.today.uploads.slice().reverse().map(u => [
-    formatTime(u.at), u.count, u.dailyTotal ?? '-'
-  ]), 'no-uploads');
-
-  fillTable('history-table', records.days.map(d => [
-    d.date, d.presses, d.uploaded, d.pending, formatDuration(d.activeMs), formatRelease(d.releaseAvg), d.chatter
-  ]), 'no-history');
+  const rows = s.uploads.slice().reverse().map(u => [formatTime(u.at), u.count, u.dailyTotal ?? '-']);
+  $('uploads-table').querySelector('tbody').replaceChildren(...rows.map(values => {
+    const tr = document.createElement('tr');
+    tr.append(...values.map(text => {
+      const td = document.createElement('td');
+      td.textContent = text;
+      return td;
+    }));
+    return tr;
+  }));
+  $('uploads-table').hidden = rows.length === 0;
+  $('no-uploads').hidden = rows.length > 0;
 
   renderUploadStatus();
 }
 
 function renderUploadStatus() {
   const status = $('upload-status');
-  if (!lastUploadResult) {
+  const result = lastUploadResult;
+  if (!result) {
     status.textContent = '';
     return;
   }
-  const result = lastUploadResult;
   status.classList.toggle('error', !result.ok);
-  status.textContent = result.ok
-    ? window.i18n.t('records.uploadedMessage', { count: result.count, total: result.dailyTotal ?? '-' })
-    : window.i18n.t(`records.error.${result.reason}`);
+  if (result.ok) {
+    status.textContent = window.i18n.t('records.uploadedMessage', { count: result.count, total: result.dailyTotal ?? '-' });
+  } else {
+    const error = window.i18n.t(`records.error.${result.reason}`);
+    // 나눠 보내다가 중간에 실패한 경우 보낸 양도 알려준다
+    status.textContent = result.count ? `${error} ${window.i18n.t('records.partiallySent', { count: result.count })}` : error;
+  }
 }
 
 async function load() {
-  records = await window.electronAPI.getRecords();
+  data = await window.electronAPI.getRecords();
   render();
 }
 
-// 입력이 들어오는 동안 오늘 숫자를 실시간으로 갱신한다 (날짜가 바뀌면 전체를 다시 불러옴)
+// 입력이 들어오는 동안 숫자를 실시간으로 갱신한다
 window.electronAPI.onStats(stats => {
-  if (!records) return;
-  if (stats.date !== records.today.date) {
-    load();
-    return;
-  }
-  records.today.presses = stats.presses;
-  records.today.pending = stats.pending;
-  records.today.uploaded = stats.presses - stats.pending;
-  records.today.activeMs = stats.activeMs;
-  renderToday(records.today);
+  if (!data) return;
+  data.session.presses = stats.presses;
+  data.session.remaining = stats.remaining;
+  data.session.sent = stats.presses - stats.remaining;
+  data.session.activeMs = stats.activeMs;
+  renderNumbers();
 });
 
 $('upload-button').addEventListener('click', async () => {
@@ -103,11 +94,11 @@ $('upload-button').addEventListener('click', async () => {
   await load();
 });
 
-// 활동 시간은 창을 열어 둔 동안 1초마다 늘린다
+// 업타임은 창을 열어 둔 동안 1초마다 늘린다
 setInterval(() => {
-  if (!records) return;
-  records.today.activeMs += 1000;
-  $('today-active').textContent = formatDuration(records.today.activeMs);
+  if (!data) return;
+  data.session.activeMs += 1000;
+  $('uptime').textContent = formatDuration(data.session.activeMs);
 }, 1000);
 
 document.addEventListener('i18n-changed', render);

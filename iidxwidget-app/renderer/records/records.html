@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:" />
-  <title data-i18n="records.title">기록</title>
+  <title data-i18n="records.title">세션 기록</title>
   <link rel="stylesheet" href="../shared/fonts.css" />
   <link rel="stylesheet" href="records.css" />
 </head>
 <body>
   <section class="panel">
-    <h2><span data-i18n="records.today">오늘</span> <span id="today-date" class="muted"></span></h2>
+    <h2><span data-i18n="records.session">이번 세션</span> <span id="started-at" class="muted"></span></h2>
     <div class="stat-grid">
-      <div class="stat"><span class="stat-label" data-i18n="records.presses">타건 수</span><span class="stat-value" id="today-presses">0</span></div>
-      <div class="stat"><span class="stat-label" data-i18n="records.uploaded">전송함</span><span class="stat-value" id="today-uploaded">0</span></div>
-      <div class="stat highlight"><span class="stat-label" data-i18n="records.pending">전송할 양</span><span class="stat-value" id="today-pending">0</span></div>
-      <div class="stat"><span class="stat-label" data-i18n="records.activeTime">활동 시간</span><span class="stat-value" id="today-active">0:00:00</span></div>
-      <div class="stat"><span class="stat-label" data-i18n="records.releaseAvg">평균 릴리즈</span><span class="stat-value" id="today-release">-</span></div>
-      <div class="stat"><span class="stat-label" data-i18n="records.chatter">채터링</span><span class="stat-value" id="today-chatter">0</span></div>
+      <div class="stat"><span class="stat-label" data-i18n="records.presses">타건 수</span><span class="stat-value" id="presses">0</span></div>
+      <div class="stat"><span class="stat-label" data-i18n="records.sent">전송함</span><span class="stat-value" id="sent">0</span></div>
+      <div class="stat highlight"><span class="stat-label" data-i18n="records.remaining">남은 양</span><span class="stat-value" id="remaining">0</span></div>
+      <div class="stat"><span class="stat-label" data-i18n="records.uptime">업타임</span><span class="stat-value" id="uptime">0:00:00</span></div>
+      <div class="stat"><span class="stat-label" data-i18n="records.releaseAvg">평균 릴리즈</span><span class="stat-value" id="release">-</span></div>
+      <div class="stat"><span class="stat-label" data-i18n="records.chatter">채터링</span><span class="stat-value" id="chatter">0</span></div>
     </div>
 
     <div class="upload-row">
@@ -24,34 +24,20 @@
       <span id="upload-status" role="status"></span>
     </div>
     <p id="token-hint" class="muted" data-i18n="records.noToken" hidden>설정에서 beatmania.app 타건 기록 토큰을 입력하면 전송할 수 있습니다.</p>
+    <p id="server-total" class="muted" hidden></p>
     <p id="auto-upload-state" class="muted"></p>
 
-    <h3 data-i18n="records.uploadsTitle">오늘 전송 내역</h3>
+    <h3 data-i18n="records.uploadsTitle">이번 세션 전송 내역</h3>
     <table id="uploads-table">
-      <thead><tr><th data-i18n="records.time">시각</th><th data-i18n="records.count">전송한 양</th><th data-i18n="records.dailyTotal">서버 일일 합계</th></tr></thead>
+      <thead><tr><th data-i18n="records.time">시각</th><th data-i18n="records.count">전송한 양</th><th data-i18n="records.dailyTotal">서버 오늘 합계</th></tr></thead>
       <tbody></tbody>
     </table>
     <p id="no-uploads" class="muted" data-i18n="records.noUploads">아직 전송한 기록이 없습니다.</p>
-  </section>
 
-  <section class="panel">
-    <h2 data-i18n="records.history">일별 기록</h2>
-    <table id="history-table">
-      <thead>
-        <tr>
-          <th data-i18n="records.date">날짜</th>
-          <th data-i18n="records.presses">타건 수</th>
-          <th data-i18n="records.uploaded">전송함</th>
-          <th data-i18n="records.pending">전송할 양</th>
-          <th data-i18n="records.activeTime">활동 시간</th>
-          <th data-i18n="records.releaseAvg">평균 릴리즈</th>
-          <th data-i18n="records.chatter">채터링</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-    <p id="no-history" class="muted" data-i18n="records.noHistory">지난 기록이 없습니다.</p>
-    <p class="note muted" data-i18n="records.resetNote">기록은 매일 0시(이 컴퓨터 시간)에 새로 시작합니다. 전송하지 않은 양은 그날 기록에 남습니다.</p>
+    <p class="note muted">
+      <span data-i18n="records.note">이 페이지는 이번 세션(앱을 켠 뒤부터) 기준입니다. 앱을 끄면 보내지 않은 양은 사라집니다.</span>
+      <a href="https://beatmania.app/my-page/" target="_blank" data-i18n="records.myPage">날짜별 기록은 beatmania.app 마이페이지에서 볼 수 있습니다.</a>
+    </p>
   </section>
 
   <script src="../shared/i18n.js"></script>

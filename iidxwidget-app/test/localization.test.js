@@ -37,8 +37,8 @@ for (const file of sources) {
 }
 // 조건부로 만드는 키 / 로거 코드로 만드는 키
 ['settings.savedPortChanged', 'settings.discImageUp', 'records.autoUploadOn', 'records.autoUploadOff',
- ...['busy', 'noToken', 'noData', 'unauthorized', 'server', 'network', 'timeout'].map(r => `records.error.${r}`),
- ...['save', 'upload', 'inputs', 'servers'].map(k => `shutdown.step.${k}`),
+ ...['busy', 'noToken', 'noData', 'unauthorized', 'dailyLimit', 'rejected', 'server', 'network', 'timeout'].map(r => `records.error.${r}`),
+ ...['upload', 'inputs', 'servers'].map(k => `shutdown.step.${k}`),
  ...['notFound', 'connected', 'openFailed', 'deviceError', 'closed', 'closeFailed', 'dataError', 'lr2Activated', 'lr2Deactivated'].map(c => `controller.${c}`)
 ].forEach(key => usedKeys.add(key));
 

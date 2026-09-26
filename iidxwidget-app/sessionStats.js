@@ -1,43 +1,10 @@
-// 하루(로컬 날짜) 단위 세션 통계. 앱 창과 OBS 위젯이 모두 같은 숫자를 보도록 main 프로세스에서만 계산한다.
-// Electron·파일에 의존하지 않는 순수 모듈이라 node로 바로 테스트할 수 있다.
+// 이번 세션(앱을 켜서 끌 때까지)의 통계. 앱 창과 OBS 위젯이 모두 같은 숫자를 보도록 main 프로세스에서만 계산한다.
+// 날짜별 기록은 앱이 갖지 않는다. 서버(beatmania.app)가 전송을 받은 시각(한국 시간)으로 날짜별 기록을 남긴다.
+// Electron에 의존하지 않는 순수 모듈이라 node로 바로 테스트할 수 있다.
 
 const MAX_RELEASE_MS = 99;       // 위젯에 표시하는 릴리즈 상한 (기존 위젯과 같음)
 const CHATTER_THRESHOLD_MS = 15; // 이보다 짧게 떼면 채터링(이중 인식)으로 기록
 const KPS_WINDOW_MS = 1000;
-
-// 로컬 컴퓨터 시간 기준 날짜 'YYYY-MM-DD'
-function dateKey(time) {
-  const d = new Date(time);
-  const pad = n => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
-
-// 다음 로컬 자정 시각
-function nextMidnight(time) {
-  const d = new Date(time);
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1).getTime();
-}
-
-// 'YYYY-MM-DD'의 로컬 0시
-function dayStart(date) {
-  const [y, m, d] = date.split('-').map(Number);
-  return new Date(y, m - 1, d).getTime();
-}
-
-function emptyDay(date) {
-  return {
-    date,
-    presses: 0,
-    uploaded: 0,          // 서버로 보낸 타건 수 (전송할 양 = presses - uploaded)
-    uploads: [],          // [{ at: ISO 시각, count, dailyTotal }]
-    activeMs: 0,          // 이전 실행들에서 앱이 켜져 있던 시간
-    releaseSum: 0,        // 하루 전체 평균 릴리즈 계산용
-    releaseCount: 0,
-    recentReleases: [],   // 위젯에 보이는 이동평균 표본
-    perButtonReleases: {},
-    chatter: {}           // 버튼 번호 → 채터링 횟수
-  };
-}
 
 function trim(samples, maxLength) {
   if (samples.length > maxLength) samples.splice(0, samples.length - maxLength);
@@ -45,31 +12,21 @@ function trim(samples, maxLength) {
 
 const average = samples => samples.length ? samples.reduce((a, b) => a + b, 0) / samples.length : null;
 
-// 일별 기록에 남기는 요약. extraActiveMs: 아직 저장되지 않은 이번 실행 시간
-function summarizeDay(day, extraActiveMs = 0) {
-  return {
-    date: day.date,
-    presses: day.presses,
-    uploaded: day.uploaded,
-    pending: day.presses - day.uploaded,
-    uploads: (day.uploads || []).slice(),
-    activeMs: (day.activeMs || 0) + extraActiveMs,
-    releaseAvg: day.releaseCount ? Math.round(day.releaseSum / day.releaseCount) : null,
-    chatter: Object.values(day.chatter || {}).reduce((a, b) => a + b, 0)
-  };
-}
-
-// state: 저장해 둔 오늘 상태 (없으면 새로 시작), now: 이번 실행 시작 시각
-function createSessionStats({ state = null, now, maLengths = { global: 200, perButton: 200 } }) {
-  let day = state && state.date === dateKey(now) ? { ...emptyDay(state.date), ...state } : emptyDay(dateKey(now));
-  let runStartedAt = now;
+function createSessionStats({ now, maLengths = { global: 200, perButton: 200 } }) {
+  const startedAt = now;
   let lengths = { ...maLengths };
-  const pressedAt = {};   // 버튼 → 누른 시각 (저장하지 않음)
-  let pressTimes = [];    // KPS 계산용
 
-  function activeMs(time) {
-    return day.activeMs + Math.max(0, time - runStartedAt);
-  }
+  let presses = 0;
+  let sent = 0;                    // 서버로 보낸 타건 수 (남은 양 = presses - sent)
+  const uploads = [];              // [{ at: ISO 시각, count, dailyTotal }]
+  let lastDailyTotal = null;       // 마지막 전송 때 서버가 알려준 오늘 합계
+  let releaseSum = 0;              // 세션 전체 평균 릴리즈 계산용
+  let releaseCount = 0;
+  const recentReleases = [];       // 위젯에 보이는 이동평균 표본
+  const perButtonReleases = {};
+  const chatter = {};              // 버튼 번호 → 채터링 횟수
+  const pressedAt = {};            // 버튼 → 누른 시각
+  let pressTimes = [];             // KPS 계산용
 
   // 입력 이벤트를 반영한다. 숫자가 바뀌었으면 true
   function handleEvents(events, time) {
@@ -82,20 +39,20 @@ function createSessionStats({ state = null, now, maLengths = { global: 200, perB
       if (event.pressed) {
         if (pressedAt[button] !== undefined) continue; // 이미 눌린 버튼 (중복 이벤트)
         pressedAt[button] = at;
-        day.presses++;
+        presses++;
         pressTimes.push(at);
         changed = true;
       } else if (pressedAt[button] !== undefined) {
         const duration = Math.min(Math.max(0, at - pressedAt[button]), MAX_RELEASE_MS);
         delete pressedAt[button];
-        day.releaseSum += duration;
-        day.releaseCount++;
-        day.recentReleases.push(duration);
-        trim(day.recentReleases, lengths.global);
-        const samples = (day.perButtonReleases[button] ||= []);
+        releaseSum += duration;
+        releaseCount++;
+        recentReleases.push(duration);
+        trim(recentReleases, lengths.global);
+        const samples = (perButtonReleases[button] ||= []);
         samples.push(duration);
         trim(samples, lengths.perButton);
-        if (duration <= CHATTER_THRESHOLD_MS) day.chatter[button] = (day.chatter[button] || 0) + 1;
+        if (duration <= CHATTER_THRESHOLD_MS) chatter[button] = (chatter[button] || 0) + 1;
         changed = true;
       }
     }
@@ -110,66 +67,61 @@ function createSessionStats({ state = null, now, maLengths = { global: 200, perB
   // 위젯에 보내는 현재 상태
   function snapshot(time) {
     const perButton = {};
-    for (const [button, samples] of Object.entries(day.perButtonReleases)) {
+    for (const [button, samples] of Object.entries(perButtonReleases)) {
       const avg = average(samples);
       if (avg !== null) perButton[button] = Math.round(avg);
     }
-    const releaseAvg = average(day.recentReleases);
+    const releaseAvg = average(recentReleases);
     return {
-      date: day.date,
-      presses: day.presses,
-      pending: day.presses - day.uploaded,
+      presses,
+      remaining: presses - sent,
       kps: kps(time),
       releaseAvg: releaseAvg === null ? null : Math.round(releaseAvg),
       perButton,
-      activeMs: activeMs(time)
+      activeMs: Math.max(0, time - startedAt)
     };
   }
 
   function setMALengths(next) {
     lengths = { ...next };
-    trim(day.recentReleases, lengths.global);
-    Object.values(day.perButtonReleases).forEach(samples => trim(samples, lengths.perButton));
+    trim(recentReleases, lengths.global);
+    Object.values(perButtonReleases).forEach(samples => trim(samples, lengths.perButton));
   }
 
-  function needsRollover(time) {
-    return dateKey(time) !== day.date;
-  }
-
-  // 날짜가 바뀌면 오늘 기록을 마감하고 새 날을 시작한다. 마감한 날의 요약을 돌려준다
-  function rollover(time) {
-    const dayEnd = nextMidnight(dayStart(day.date));
-    const finished = summary(Math.min(time, dayEnd));
-    day = emptyDay(dateKey(time));
-    runStartedAt = time;
-    pressTimes = [];
-    return finished;
-  }
-
-  function pending() {
-    return day.presses - day.uploaded;
+  function remaining() {
+    return presses - sent;
   }
 
   function recordUpload(count, dailyTotal, time) {
-    day.uploaded += count;
-    day.uploads.push({ at: new Date(time).toISOString(), count, dailyTotal: dailyTotal ?? null });
+    sent += count;
+    if (dailyTotal !== null && dailyTotal !== undefined) lastDailyTotal = dailyTotal;
+    uploads.push({ at: new Date(time).toISOString(), count, dailyTotal: dailyTotal ?? null });
   }
 
-  // 일별 기록에 남기는 요약
+  // 세션 기록 페이지용 요약
   function summary(time) {
-    return summarizeDay(day, Math.max(0, time - runStartedAt));
-  }
-
-  // 파일에 저장할 오늘 상태. 이번 실행 시간을 activeMs에 합쳐서 돌려준다 (자기 상태는 바꾸지 않음)
-  function persistState(time) {
-    return JSON.parse(JSON.stringify({ ...day, activeMs: activeMs(time) }));
+    return {
+      startedAt: new Date(startedAt).toISOString(),
+      presses,
+      sent,
+      remaining: presses - sent,
+      uploads: uploads.slice(),
+      lastDailyTotal,
+      activeMs: Math.max(0, time - startedAt),
+      releaseAvg: releaseCount ? Math.round(releaseSum / releaseCount) : null,
+      chatter: Object.values(chatter).reduce((a, b) => a + b, 0)
+    };
   }
 
   return {
-    get date() { return day.date; },
-    chatter: () => ({ ...day.chatter }),
-    handleEvents, snapshot, setMALengths, needsRollover, rollover, pending, recordUpload, summary, persistState
+    handleEvents,
+    snapshot,
+    setMALengths,
+    remaining,
+    recordUpload,
+    summary,
+    chatter: () => ({ ...chatter })
   };
 }
 
-module.exports = { createSessionStats, summarizeDay, dateKey, nextMidnight, MAX_RELEASE_MS, CHATTER_THRESHOLD_MS };
+module.exports = { createSessionStats, MAX_RELEASE_MS, CHATTER_THRESHOLD_MS };

@@ -1,9 +1,8 @@
-const { app, BrowserWindow, Menu, ipcMain, dialog, screen } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, dialog, screen, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
 const SETTINGS_FILE = path.join(app.getPath('userData'), 'settings.json');
-const RECORDS_FILE = path.join(app.getPath('userData'), 'records.json');
 const USER_IMAGE_DIR = path.join(app.getPath('userData'), 'userImages');
 const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp'];
 const QUIT_UPLOAD_TIMEOUT_MS = 8000;
@@ -12,7 +11,7 @@ const { startServer, stopServer } = require('./server');
 const { startWebSocketServer, stopWebSocketServer, broadcastControllerData, broadcastSettingsUpdated } = require('./wsServer');
 const { createInputManager } = require('./inputManager');
 const { createSessionManager } = require('./sessionManager');
-const { uploadTypingCount } = require('./uploader');
+const { uploadInChunks } = require('./uploader');
 const { createShutdown } = require('./shutdown');
 const { setupUpdater } = require('./updater');
 const { translations, normalizeLanguage, translate } = require('./localization/translations');
@@ -45,7 +44,7 @@ let settingsWindow = null;
 let chatterWindow = null;
 let recordsWindow = null;
 let settings = structuredClone(DEFAULT_SETTINGS);
-let session = null; // 앱이 준비되면 만든다 (오늘 통계와 일별 기록)
+let session = null; // 앱이 준비되면 만든다 (이번 세션 통계)
 
 const t = (key, replacements) => translate(settings.language, key, replacements);
 const appVersion = app.getVersion();
@@ -76,13 +75,13 @@ function createMainWindow() {
     webPreferences: { preload: preloadPath, contextIsolation: true, nodeIntegration: false }
   });
   mainWindow.loadFile(path.join(__dirname, 'renderer/widget/index.html'));
-  // 창을 닫으면 바로 꺼지지 않고 종료 절차(기록 저장, 자동 전송 등)를 거친다
+  // 창을 닫으면 바로 꺼지지 않고 종료 절차(자동 전송, 정리)를 거친다
   mainWindow.on('close', event => {
     if (quitReady) return;
     event.preventDefault();
     requestQuit();
   });
-  // Windows 로그오프·종료 때는 before-quit이 오지 않으므로 여기서 바로 저장한다
+  // Windows 로그오프·종료 때는 before-quit이 오지 않으므로 여기서 바로 정리한다
   mainWindow.on('session-end', finishImmediately);
   mainWindow.on('closed', () => mainWindow = null);
 }
@@ -103,6 +102,11 @@ function createChildWindow(existing, { width, height, file, resizable = true }) 
     webPreferences: { preload: preloadPath, contextIsolation: true, nodeIntegration: false }
   });
   win.loadFile(path.join(__dirname, file));
+  // 새 창 열기는 막고, beatmania.app 링크만 기본 브라우저로 연다
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith('https://beatmania.app/')) shell.openExternal(url);
+    return { action: 'deny' };
+  });
   return win;
 }
 
@@ -136,7 +140,7 @@ function createRecordsWindow() {
 }
 
 
-// 📊 오늘 통계 (앱 창과 OBS 위젯이 모두 같은 숫자를 받는다)
+// 📊 이번 세션 통계 (앱 창과 OBS 위젯이 모두 같은 숫자를 받는다)
 function broadcastStats(stats) {
   sendTo(mainWindow, 'stats', stats);
   sendTo(recordsWindow, 'stats', stats);
@@ -148,26 +152,30 @@ function currentMALengths() {
 }
 
 
-// ✅ 타건 기록 전송: 지난 전송 이후 늘어난 만큼만 보낸다
+// ✅ 타건 기록 전송: 이번 세션에서 아직 보내지 않은 양(남은 양)만 보낸다
 let uploadInProgress = false;
 
-// 결과: { ok: true, count, dailyTotal } 또는 { ok: false, reason }
-async function uploadPending({ timeoutMs } = {}) {
+// 결과: { ok: true, count, dailyTotal } 또는 { ok: false, reason, count(일부만 보낸 경우 보낸 양) }
+async function uploadRemaining({ timeoutMs } = {}) {
   if (uploadInProgress) return { ok: false, reason: 'busy' };
   if (!settings.apiToken) return { ok: false, reason: 'noToken' };
-  const count = session.pending();
+  const count = session.remaining();
   if (count <= 0) return { ok: false, reason: 'noData' };
 
   uploadInProgress = true;
   try {
-    const result = await uploadTypingCount({ token: settings.apiToken, count, timeoutMs });
+    const result = await uploadInChunks({
+      token: settings.apiToken,
+      count,
+      timeoutMs,
+      onSent: (sent, dailyTotal) => session.recordUpload(sent, dailyTotal)
+    });
     if (!result.ok) {
       console.error(`❌ 타건 기록 전송 실패 (${result.reason}): ${result.message}`);
-      return result;
+      return { ok: false, reason: result.reason, count: result.sent };
     }
-    session.recordUpload(count, result.dailyTotal);
-    console.log(`📤 타건 기록 ${count}회 전송 완료 (서버 일일 합계: ${result.dailyTotal})`);
-    return { ok: true, count, dailyTotal: result.dailyTotal };
+    console.log(`📤 타건 기록 ${result.sent}회 전송 완료 (서버 오늘 합계: ${result.dailyTotal})`);
+    return { ok: true, count: result.sent, dailyTotal: result.dailyTotal };
   } finally {
     uploadInProgress = false;
   }
@@ -279,7 +287,7 @@ function startServers() {
 }
 
 // 메뉴의 '재시작': 서버와 입력 장치를 모두 다시 연다.
-// 기존 위젯 연결은 끊기고, 위젯이 스스로 재연결한다. 오늘 통계는 그대로 이어진다.
+// 기존 위젯 연결은 끊기고, 위젯이 스스로 재연결한다. 앱을 끄지 않으므로 세션 통계는 그대로 이어진다.
 function restartApp() {
   console.log('🔄 Restarting app...');
   stopServer();
@@ -332,7 +340,7 @@ function controllerLogger(level, code, details = {}) {
 
 // 🛑 종료
 // 메뉴 '끝내기', 창 닫기, 그 밖의 app.quit()은 모두 requestQuit()으로 모인다.
-// 종료 창에 진행 상황을 보여주면서 기록 저장 → (설정 시) 남은 타건 기록 전송 → 입력 장치·서버 정리 순으로 진행한다.
+// 종료 창에 진행 상황을 보여주면서 (설정 시) 남은 타건 기록 전송 → 입력 장치·서버 정리 순으로 진행한다.
 let quitReady = false;
 let shutdownWindow = null;
 
@@ -340,13 +348,12 @@ const shutdown = createShutdown({
   minDurationMs: 700,
   onProgress: (key, status, detail) => sendTo(shutdownWindow, 'shutdown-progress', { key, status, detail }),
   steps: [
-    { key: 'save', run: () => { session?.saveNow(); } },
     {
       key: 'upload',
       timeoutMs: QUIT_UPLOAD_TIMEOUT_MS + 1000,
-      skip: () => !settings.autoUploadOnQuit || !settings.apiToken || !session || session.pending() <= 0,
+      skip: () => !settings.autoUploadOnQuit || !settings.apiToken || !session || session.remaining() <= 0,
       run: async () => {
-        const result = await uploadPending({ timeoutMs: QUIT_UPLOAD_TIMEOUT_MS });
+        const result = await uploadRemaining({ timeoutMs: QUIT_UPLOAD_TIMEOUT_MS });
         if (!result.ok) throw new Error(t(`records.error.${result.reason}`));
         return { detail: t('shutdown.uploaded', { count: result.count }) };
       }
@@ -357,8 +364,8 @@ const shutdown = createShutdown({
 });
 
 function shutdownSteps() {
-  const steps = ['save', 'upload', 'inputs', 'servers'];
-  return steps.map(key => ({ key, label: t(`shutdown.step.${key}`, { count: session?.pending() ?? 0 }) }));
+  const steps = ['upload', 'inputs', 'servers'];
+  return steps.map(key => ({ key, label: t(`shutdown.step.${key}`, { count: session?.remaining() ?? 0 }) }));
 }
 
 // 종료 진행 창을 띄우고, 화면이 준비되면(최대 1.5초 대기) 알려준다
@@ -394,7 +401,7 @@ async function requestQuit() {
   app.quit();
 }
 
-// 업데이트 설치·Windows 종료처럼 기다릴 수 없는 경우: 저장과 정리만 바로 하고 종료를 막지 않는다
+// 업데이트 설치·Windows 종료처럼 기다릴 수 없는 경우: 정리만 바로 하고 종료를 막지 않는다 (자동 전송은 하지 않음)
 function finishImmediately() {
   if (quitReady) return;
   quitReady = true;
@@ -464,11 +471,11 @@ ipcMain.handle('learn-turntable-axis', () => inputs.learnTurntableAxis());
 
 // 기록 페이지
 ipcMain.handle('get-records', () => ({
-  ...session.getRecords(),
+  session: session.summary(),
   hasToken: !!settings.apiToken,
   autoUploadOnQuit: !!settings.autoUploadOnQuit
 }));
-ipcMain.handle('upload-now', () => uploadPending());
+ipcMain.handle('upload-now', () => uploadRemaining());
 
 ipcMain.handle('request-chatter-summary', () => session?.chatter() ?? {});
 
@@ -485,7 +492,7 @@ app.whenReady().then(() => {
   cleanupUserImages();
   applyAutoLaunch(settings.autoLaunch);
 
-  session = createSessionManager({ file: RECORDS_FILE, maLengths: currentMALengths(), onChange: broadcastStats });
+  session = createSessionManager({ maLengths: currentMALengths(), onChange: broadcastStats });
 
   updater.checkOnStartup();
   startServers();

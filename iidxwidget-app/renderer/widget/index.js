@@ -16,7 +16,7 @@ const needle = document.getElementById('disc-needle');
 const upperIndicator = document.getElementById("upper-indicator");
 const lowerIndicator = document.getElementById("lower-indicator");
 
-// ─── 오늘 통계 (앱 본체가 계산해서 보내준다) ───────────────────
+// ─── 이번 세션 통계 (앱 본체가 계산해서 보내준다) ──────────────
 // 타건 수·릴리즈·KPS·업타임은 앱 창과 OBS 위젯이 모두 같은 값을 보여준다.
 // 업타임은 받은 값에서부터 1초마다 직접 늘리고, 앱과 연결이 끊기면 멈춘다.
 let uptimeBase = null; // { activeMs, receivedAt }

@@ -64,3 +64,5 @@ table { width: 100%; border-collapse: collapse; font-size: 13px; }
 th, td { padding: 6px 8px; text-align: right; border-bottom: 1px solid #333; font-variant-numeric: tabular-nums; }
 th:first-child, td:first-child { text-align: left; }
 th { color: #aaa; font-weight: normal; }
+a { color: #4fc3f7; }
+.note a { display: block; margin-top: 4px; }

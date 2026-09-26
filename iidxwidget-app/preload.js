@@ -23,10 +23,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   stopMappingSession: () => ipcRenderer.invoke('stop-mapping-session'),
   // 턴테이블을 돌리는 동안 축 바이트를 찾는다. 결과 { byteIndex, distinct } 또는 null
   learnTurntableAxis: () => ipcRenderer.invoke('learn-turntable-axis'),
-  // 오늘 통계 (타건 수, 릴리즈, KPS, 업타임 등). 앱 창과 OBS 위젯이 같은 값을 받는다
+  // 이번 세션 통계 (타건 수, 릴리즈, KPS, 업타임 등). 앱 창과 OBS 위젯이 같은 값을 받는다
   getStats: () => ipcRenderer.invoke('get-stats'),
   onStats: (callback) => ipcRenderer.on('stats', (_, stats) => callback(stats)),
-  // 기록 페이지: 오늘·일별 기록, 지금 전송
+  // 세션 기록 페이지: 이번 세션 숫자와 전송 내역, 지금 전송
   getRecords: () => ipcRenderer.invoke('get-records'),
   uploadNow: () => ipcRenderer.invoke('upload-now'),
   requestChatterSummary: () => ipcRenderer.invoke('request-chatter-summary'),
