@@ -8,7 +8,7 @@
     "scripts": {
         "start": "electron .",
         "build": "electron-builder",
-        "test": "node test/controllerReader.test.js && node test/localization.test.js"
+        "test": "node --test test/*.test.js"
     },
     "build": {
         "appId": "app.beatmania.iidxwidget",
@@ -16,12 +16,20 @@
         "artifactName": "IIDXwidget-Setup-${version}.${ext}",
         "npmRebuild": false,
         "files": [
-            "**/*",
-            "!dist{,/**}",
-            "!dist-*/**",
-            "!dist-rebuild{,/**}",
-            "!dist-fixed{,/**}",
-            "!test{,/**}"
+            "main.js",
+            "preload.js",
+            "server.js",
+            "wsServer.js",
+            "settingsStore.js",
+            "inputManager.js",
+            "updater.js",
+            "controller/controllerReader.js",
+            "controller/keyboardReader.js",
+            "localization/**",
+            "renderer/**",
+            "!node_modules/uiohook-napi/prebuilds/{darwin,linux}-*/**",
+            "!node_modules/uiohook-napi/prebuilds/win32-arm64/**",
+            "!node_modules/uiohook-napi/{src,libuiohook}/**"
         ],
         "directories": {
             "buildResources": "build"
@@ -46,14 +54,12 @@
         "electron-store": "^8.2.0",
         "electron-updater": "^6.6.2",
         "express": "^4.18.4",
-        "ip": "^2.0.1",
-        "node-fetch": "^2.7.0",
         "node-hid": "^2.1.2",
         "uiohook-napi": "^1.5.5",
         "ws": "^8.18.1"
     },
     "devDependencies": {
-        "electron": "^29.1.0",
+        "electron": "^44.4.5",
         "electron-builder": "^26.0.12"
     }
 }
