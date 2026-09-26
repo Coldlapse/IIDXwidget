@@ -129,7 +129,7 @@ function createLogsWindow() {
 
 function createChatterWindow() {
   const isNew = !chatterWindow;
-  chatterWindow = createChildWindow(chatterWindow, { width: 400, height: 500, file: 'renderer/chatter/chatter.html' });
+  chatterWindow = createChildWindow(chatterWindow, { width: 440, height: 460, file: 'renderer/chatter/chatter.html' });
   if (isNew) chatterWindow.on('closed', () => chatterWindow = null);
 }
 
@@ -144,6 +144,7 @@ function createRecordsWindow() {
 function broadcastStats(stats) {
   sendTo(mainWindow, 'stats', stats);
   sendTo(recordsWindow, 'stats', stats);
+  sendTo(chatterWindow, 'stats', stats);
   broadcastControllerData([{ type: 'stats', stats }]);
 }
 

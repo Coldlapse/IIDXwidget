@@ -255,3 +255,8 @@ body {
   font-size: 22px;
   color: var(--font-color);
 }
+
+/* 설정에서 "키 위에 release 수치 표시"를 끈 경우 */
+.hide-key-release .release-label {
+  visibility: hidden;
+}

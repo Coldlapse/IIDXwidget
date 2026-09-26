@@ -244,6 +244,8 @@ function applySettings(settings) {
     applyDiscImage(settings);
     applyPromoBox(settings);
     applyCustomColors(settings.widget.colors, settings.widget.transparentContainer);
+    // 건반 위 릴리즈 숫자 표시 (설정에 없으면 표시)
+    document.body.classList.toggle('hide-key-release', settings.widget.showKeyRelease === false);
   }
 
   if (settings?.controllerProfile === 'KB') {

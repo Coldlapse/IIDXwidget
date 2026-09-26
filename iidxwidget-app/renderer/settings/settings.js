@@ -67,6 +67,7 @@ $('save-button').addEventListener('click', async () => {
       downDiscImagePath: discSlots.down.path,
       showPromoBox: $('showPromoBox').checked,
       transparentContainer: $('transparent-container').checked,
+      showKeyRelease: $('showKeyRelease').checked,
       globalMALength,
       perButtonMALength,
       colors: {
@@ -155,6 +156,7 @@ for (const slotName of Object.keys(discSlots)) {
   $('autoUploadOnQuit').checked = !!settings.autoUploadOnQuit;
   $('showPromoBox').checked = !!settings.widget.showPromoBox;
   $('transparent-container').checked = !!settings.widget.transparentContainer;
+  $('showKeyRelease').checked = settings.widget.showKeyRelease !== false;
   updateContainerColorAvailability();
   $('GlobalReleaseMALength').value = settings.widget.globalMALength;
   $('PerButtonMALength').value = settings.widget.perButtonMALength;

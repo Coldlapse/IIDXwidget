@@ -1,0 +1,58 @@
+.keyboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 24px 0 8px;
+}
+
+.key-row { display: flex; gap: 14px; }
+/* 검은 건반 줄은 흰 건반 사이에 오도록 반 칸 옮긴 배치 (위젯과 같은 모양) */
+.key-row.black { gap: 14px; }
+
+.key-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 52px;
+}
+
+.count {
+  font-size: 18px;
+  font-weight: bold;
+  color: #555;
+  font-variant-numeric: tabular-nums;
+}
+
+.key {
+  width: 44px;
+  height: 64px;
+  border-radius: 6px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 6px;
+  box-sizing: border-box;
+  font-size: 12px;
+  border: 2px solid transparent;
+}
+
+.key-row.white .key { background-color: #d8d8d8; color: #555; }
+.key-row.black .key { background-color: #2f2f2f; color: #999; }
+
+/* 채터링이 있는 건반 */
+.key-slot.has-chatter .count { color: #ff5252; }
+.key-slot.has-chatter .key { border-color: #ff5252; }
+
+.total {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 16px;
+  color: #aaa;
+  font-size: 14px;
+}
+.total strong { color: #fff; font-size: 20px; font-variant-numeric: tabular-nums; }
+.total.has-chatter strong { color: #ff5252; }

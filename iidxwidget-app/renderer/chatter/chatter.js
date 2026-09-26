@@ -1,30 +1,23 @@
-const logEl = document.getElementById('log');
-const chatterCounts = {};
+// 채터링 집계는 앱 본체가 모든 입력에서 계속 하고 있다 (이 창이 닫혀 있어도).
+// 이 창은 현재 숫자를 받아서 건반 위에 보여주기만 한다.
+const slots = [...document.querySelectorAll('.key-slot')];
 
-// UI 업데이트 함수
-function updateUI() {
-  if (!window.i18n.ready) return; // 사전을 받으면 'i18n-changed'로 다시 불린다
-  let output = '';
-  Object.keys(chatterCounts).forEach(btn => {
-    output += `${window.i18n.t('chatter.count', { button: btn, count: chatterCounts[btn] })}\n`;
-  });
-  logEl.textContent = output || window.i18n.t('chatter.none');
-}
-
-// 요약 데이터 갱신 함수
-async function fetchSummary() {
-  const summary = await window.electronAPI?.requestChatterSummary?.();
-  if (summary) {
-    Object.entries(summary).forEach(([button, count]) => {
-      chatterCounts[button] = count;
-    });
-    updateUI();
+function render(counts) {
+  let total = 0;
+  for (const slot of slots) {
+    const count = counts[slot.dataset.button] || 0;
+    total += count;
+    slot.querySelector('.count').textContent = count;
+    slot.classList.toggle('has-chatter', count > 0);
   }
+  document.getElementById('total').textContent = total;
+  document.querySelector('.total').classList.toggle('has-chatter', total > 0);
 }
 
-// 초기에 한 번 로딩
-fetchSummary();
+async function refresh() {
+  render(await window.electronAPI.requestChatterSummary());
+}
 
-// 이후 1초마다 갱신
-setInterval(fetchSummary, 1000);
-document.addEventListener('i18n-changed', updateUI);
+// 입력이 들어올 때마다(묶어서 최대 초당 20번) 새 숫자를 받는다
+window.electronAPI.onStats(refresh);
+refresh();

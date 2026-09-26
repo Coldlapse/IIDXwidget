@@ -21,6 +21,9 @@ const merged = store.withDefaults(v2File);
 assert.deepEqual(merged.keyMapping.GENERIC, store.DEFAULT_SETTINGS.keyMapping.GENERIC);
 assert.equal(merged.keyMapping.KB['1'], 'KeyA');
 assert.equal(merged.keyMapping.GENERIC_AXIS, null);
+// 2.x 설정에 없던 새 옵션은 기본값으로 채워진다
+assert.equal(merged.widget.showKeyRelease, true);
+assert.equal(merged.autoUploadOnQuit, false);
 
 // M2: 절대주소 → 상대 경로, L3: MA 키 이름 통일
 assert.equal(merged.widget.discImagePath, '/userImages/disc_1.png');

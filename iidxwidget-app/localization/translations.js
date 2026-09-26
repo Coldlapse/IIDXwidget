@@ -143,6 +143,7 @@ const translations = {
       perButtonMA: '버튼별 Release 수집 표본 갯수 (수치가 높을수록 변화에 둔감)',
       appearance: '위젯 외관 커스터마이징',
       transparentContainer: '위젯 컨테이너 배경 투명하게',
+      showKeyRelease: '키 위에 release 수치 표시',
       discImageMode: '스크래치 이미지 모드',
       discImageSingle: '1장',
       discImageDual: '2장 (회전 방향에 따라 변경)',
@@ -166,9 +167,8 @@ const translations = {
     },
     chatter: {
       title: '채터링 감지기',
-      waiting: '데이터 수신 대기 중...',
-      none: '아직 감지된 채터링 없음',
-      count: '버튼 {button} : {count} 회'
+      description: '떼는 시간이 15ms 이하인 입력을 이중 인식(채터링)으로 셉니다. 이번 세션 기준이며, 이 창을 닫아 두어도 계속 집계합니다.',
+      total: '합계'
     },
     logs: { title: '로그 보기' },
     readme: {
@@ -328,6 +328,7 @@ const translations = {
       perButtonMA: 'Per-button release sample count (higher values react more slowly)',
       appearance: 'Widget appearance',
       transparentContainer: 'Transparent container background',
+      showKeyRelease: 'Show release value on each key',
       discImageMode: 'Turntable image mode',
       discImageSingle: 'Single image',
       discImageDual: 'Two images (switch with spin direction)',
@@ -351,9 +352,8 @@ const translations = {
     },
     chatter: {
       title: 'Chatter detector',
-      waiting: 'Waiting for data...',
-      none: 'No chatter detected yet',
-      count: 'Button {button}: {count}'
+      description: 'Releases of 15ms or less are counted as chatter (double input). Counts cover this session and keep going while this window is closed.',
+      total: 'Total'
     },
     logs: { title: 'Logs' },
     readme: {

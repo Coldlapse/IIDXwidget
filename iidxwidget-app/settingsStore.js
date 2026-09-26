@@ -35,6 +35,7 @@ const DEFAULT_SETTINGS = {
     downDiscImagePath: null, // 2장 모드의 아랫방향 이미지
     showPromoBox: false,
     transparentContainer: false,
+    showKeyRelease: true,    // 건반 위에 버튼별 평균 릴리즈(ms) 표시
     globalMALength: 200,
     perButtonMALength: 200,
     colors: {
