@@ -18,15 +18,15 @@
     #log-container {
       box-sizing: border-box;
       white-space: pre-wrap;
-      overflow-y: scroll;
+      overflow-y: auto;
       height: 100%;
       padding: 10px;
     }
   </style>
 </head>
 <body>
-  <div id="log-container"></div>
+  <div id="log-container" data-overlay-scroll></div>
 
-  <script src="../shared/i18n.js"></script><script src="logs.js"></script>
+  <script src="../shared/overlayScroll.js"></script><script src="../shared/i18n.js"></script><script src="logs.js"></script>
 </body>
 </html>

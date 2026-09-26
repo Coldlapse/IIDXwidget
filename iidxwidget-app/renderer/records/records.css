@@ -50,7 +50,7 @@ th { color: #aaa; font-weight: normal; }
 /* 전송 내역: 높이 고정, 넘치면 상자 안에서 스크롤 */
 .uploads-box {
   height: 132px;
-  overflow-y: scroll;
+  overflow-y: auto;
   background-color: #1a1a1a;
   border-radius: 8px;
   padding: 0 8px;

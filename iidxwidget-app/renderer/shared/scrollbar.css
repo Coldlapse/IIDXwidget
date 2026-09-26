@@ -1,10 +1,27 @@
-/* 창 안 스크롤 (설정·로그·세션 기록).
-   스크롤바 자리(10px)를 항상 둔다. 내용이 넘치지 않을 때는 빈 자리로 보이고, 넘치면 그 자리에 막대가 생긴다.
-   그래서 스크롤이 생기거나 없어져도 내용 위치가 바뀌지 않는다. 창 너비는 이 자리까지 포함해서 잡는다.
-   (scrollbar-gutter는 창에서 내용이 넘치지 않을 때 자리를 비워 두지 않는 경우가 있어 overflow: scroll을 쓴다) */
-html { overflow-y: scroll; }
+/* 창 안 스크롤 (설정·로그·세션 기록). overlayScroll.js와 함께 쓴다.
+   기본 스크롤바는 자리를 차지해서 나타날 때 내용을 밀어내므로 숨기고,
+   내용이 넘칠 때만 오른쪽 가장자리 위에 얇은 막대를 덧댄다. */
+html[data-overlay-scroll] { overflow-y: auto; }
+html[data-overlay-scroll], [data-overlay-scroll] { scrollbar-width: none; }
 
-::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #3a3a3a; border-radius: 5px; border: 2px solid transparent; background-clip: padding-box; }
-::-webkit-scrollbar-thumb:hover { background-color: #555; }
+.overlay-scrollbar {
+  position: fixed;
+  width: 10px;
+  z-index: 1000;
+  pointer-events: none;
+}
+.overlay-scrollbar-thumb {
+  position: absolute;
+  top: 0;
+  right: 2px;
+  width: 6px;
+  border-radius: 3px;
+  background-color: rgba(255, 255, 255, 0.22);
+  pointer-events: auto;
+  transition: width 0.1s, background-color 0.1s;
+}
+.overlay-scrollbar-thumb:hover,
+.overlay-scrollbar.dragging .overlay-scrollbar-thumb {
+  width: 8px;
+  background-color: rgba(255, 255, 255, 0.4);
+}

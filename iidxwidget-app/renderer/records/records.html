@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-overlay-scroll>
 <head>
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:" />
@@ -32,7 +32,7 @@
 
     <h3 data-i18n="records.uploadsTitle">이번 세션 전송 내역</h3>
     <!-- 전송 내역은 높이가 고정된 상자 안에서 스크롤한다 (내역이 늘어도 아래 내용이 밀리지 않도록) -->
-    <div class="uploads-box">
+    <div class="uploads-box" data-overlay-scroll>
       <table id="uploads-table">
         <thead><tr><th data-i18n="records.time">시각</th><th data-i18n="records.count">전송한 양</th><th data-i18n="records.dailyTotal">서버 오늘 합계</th></tr></thead>
         <tbody></tbody>
@@ -46,8 +46,10 @@
     </p>
   </section>
 
+  <script src="../shared/overlayScroll.js"></script>
   <script src="../shared/i18n.js"></script>
   <script src="../widget/logic.js"></script>
+  <script src="../shared/fitWindow.js"></script>
   <script src="records.js"></script>
 </body>
 </html>

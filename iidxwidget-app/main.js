@@ -76,6 +76,9 @@ function fitToScreen(width, height) {
   return { width: Math.min(width, area.width - 40), height: Math.min(height, area.height - 80) };
 }
 
+// 언어마다 문장 길이가 달라 내용 높이가 다른 창의 처음 높이
+const byLanguage = heights => heights[normalizeLanguage(settings.language)] ?? heights.ko;
+
 function createMainWindow() {
   mainWindow = new BrowserWindow({
     width: 1000,
@@ -96,7 +99,7 @@ function createMainWindow() {
 }
 
 // 메인 창에 딸린 모달 창. 이미 열려 있으면 앞으로 가져온다.
-// 크기는 고정이다. 내용이 늘어날 수 있는 부분은 창 안에서 스크롤한다 (renderer/shared/scrollbar.css).
+// 크기는 고정이다. 내용이 늘어날 수 있는 부분은 창 안에서 스크롤한다 (renderer/shared/overlayScroll.js).
 function createChildWindow(existing, { width, height, file }) {
   if (existing && !existing.isDestroyed()) {
     existing.focus();
@@ -123,7 +126,7 @@ function createChildWindow(existing, { width, height, file }) {
 
 function createSettingsWindow() {
   const isNew = !settingsWindow;
-  settingsWindow = createChildWindow(settingsWindow, { width: 570, height: 860, file: 'renderer/settings/settings.html' });
+  settingsWindow = createChildWindow(settingsWindow, { width: 560, height: 860, file: 'renderer/settings/settings.html' });
   if (isNew) {
     settingsWindow.on('closed', () => {
       settingsWindow = null;
@@ -140,13 +143,13 @@ function createLogsWindow() {
 
 function createChatterWindow() {
   const isNew = !chatterWindow;
-  chatterWindow = createChildWindow(chatterWindow, { width: 440, height: 463, file: 'renderer/chatter/chatter.html' });
+  chatterWindow = createChildWindow(chatterWindow, { width: 440, height: byLanguage({ ko: 443, en: 463 }), file: 'renderer/chatter/chatter.html' });
   if (isNew) chatterWindow.on('closed', () => chatterWindow = null);
 }
 
 function createRecordsWindow() {
   const isNew = !recordsWindow;
-  recordsWindow = createChildWindow(recordsWindow, { width: 640, height: 650, file: 'renderer/records/records.html' });
+  recordsWindow = createChildWindow(recordsWindow, { width: 640, height: byLanguage({ ko: 629, en: 649 }), file: 'renderer/records/records.html' });
   if (isNew) recordsWindow.on('closed', () => recordsWindow = null);
 }
 
@@ -615,6 +618,15 @@ ipcMain.handle('get-records', () => ({
 ipcMain.handle('upload-now', () => uploadRemaining());
 
 ipcMain.handle('request-chatter-summary', () => session?.chatter() ?? {});
+
+// 채터링·세션 기록 창 높이를 언어별 내용 높이에 맞춘다 (창을 연 뒤, 언어를 바꾼 뒤). 사용자가 늘리거나 줄일 수는 없다
+ipcMain.on('fit-window-height', (event, height) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (!win || (win !== chatterWindow && win !== recordsWindow) || !Number.isFinite(height)) return;
+  const [width, current] = win.getContentSize();
+  const { height: fitted } = fitToScreen(width, Math.max(200, Math.ceil(height)));
+  if (fitted !== current) win.setContentSize(width, fitted);
+});
 
 // beatmania.app 계정: 토큰은 서버에 확인한 뒤에만 저장한다 (틀린 토큰으로 조용히 실패하지 않도록).
 // 결과: { ok: true, username } 또는 { ok: false, error: 'unauthorized' | 'network' | 'encryption', detail? }
