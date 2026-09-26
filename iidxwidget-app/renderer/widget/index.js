@@ -293,7 +293,7 @@ function applySettings(settings) {
     applyPromoBox(settings);
     globalMALength = settings.widget.globalMALength || 200;
     perButtonMALength = settings.widget.perButtonMALength || 200;
-    applyCustomColors(settings.widget.colors);
+    applyCustomColors(settings.widget.colors, settings.widget.transparentContainer);
   }
 
   if (settings?.controllerProfile === 'KB') {
@@ -331,12 +331,14 @@ window.addEventListener('DOMContentLoaded', async () => {
   startUptimeTimer();
 });
 
-function applyCustomColors(colors) {
-  if (!colors) return;
-  document.documentElement.style.setProperty('--background-color', colors.background);
-  document.documentElement.style.setProperty('--accent-color', colors.accent);
-  document.documentElement.style.setProperty('--font-color', colors.fontColor);
-  document.documentElement.style.setProperty('--active-color', colors.activeColor);
+function applyCustomColors(colors, transparentContainer = false) {
+  colors = colors || {};
+  const containerBackground = transparentContainer ? 'transparent' : (colors.containerBackground || colors.background || '#000000');
+  document.documentElement.style.setProperty('--container-background-color', containerBackground);
+  document.documentElement.style.setProperty('--background-color', colors.background || '#000000');
+  document.documentElement.style.setProperty('--accent-color', colors.accent || '#444444');
+  document.documentElement.style.setProperty('--font-color', colors.fontColor || '#cccccc');
+  document.documentElement.style.setProperty('--active-color', colors.activeColor || '#ffffff');
 }
 
 function applyPromoBox(settings) {

@@ -91,3 +91,6 @@ body {
   margin-bottom: 10px;
   margin-top: 20px;
 }
+.mapping-help { color: #aaa; font-size: 12px; line-height: 1.5; margin: 4px 0; }
+#mapping-status { min-height: 20px; color: #00c853; font-size: 13px; }
+#generic-mapping-table input { width: 100%; box-sizing: border-box; }
