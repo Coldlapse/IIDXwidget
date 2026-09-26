@@ -175,6 +175,23 @@ const translations = {
       disconnected: '위젯 프로그램과 연결이 끊겼습니다',
       reconnecting: '다시 연결하는 중...'
     },
+    guide: {
+      menu: '가이드',
+      title: {
+        USAGE: '사용법과 설정',
+        CONNECTION: '연결 가이드 (처음이라면 여기부터)',
+        RELEASE: 'RELEASE 수치',
+        CHATTER: '채터링 감지'
+      },
+      loading: '가이드를 불러오는 중...',
+      failed: '가이드를 불러오지 못했습니다. 인터넷 연결을 확인하거나 GitHub에서 보기를 눌러주세요.',
+      offline: '최신 가이드를 받아오지 못해 앱에 들어 있는 가이드를 보여줍니다. 최신 내용과 다를 수 있습니다.',
+      openOnGithub: 'GitHub에서 보기',
+      tutorialDone: '모든 가이드는 상단 메뉴의 "가이드"에서 언제든 다시 볼 수 있습니다.',
+      usageButton: '📘 사용법 가이드',
+      connectionButton: '🔌 연결 가이드 (원컴/투컴 주소, IP 찾는 법)',
+      chatterButton: '❓ 채터링 감지 가이드'
+    },
     readme: {
       title: 'OBS 설정 안내',
       obsSetup: 'OBS 설정 방법',
@@ -363,6 +380,23 @@ const translations = {
     widget: {
       disconnected: 'Lost connection to IIDXwidget',
       reconnecting: 'Reconnecting...'
+    },
+    guide: {
+      menu: 'Guides',
+      title: {
+        USAGE: 'Usage and settings',
+        CONNECTION: 'Connection guide (start here)',
+        RELEASE: 'RELEASE value',
+        CHATTER: 'Chatter detection'
+      },
+      loading: 'Loading guide...',
+      failed: 'Could not load the guide. Check your internet connection or press Open on GitHub.',
+      offline: 'Could not get the latest guide, so this is the copy bundled with the app. It may be out of date.',
+      openOnGithub: 'Open on GitHub',
+      tutorialDone: 'You can find all guides at any time under "Guides" in the top menu.',
+      usageButton: '📘 Usage guide',
+      connectionButton: '🔌 Connection guide (addresses, finding your IP)',
+      chatterButton: '❓ Chatter detection guide'
     },
     readme: {
       title: 'OBS Setup Guide',

@@ -11,6 +11,9 @@
 <body>
   
   <div class="settings-container">
+    <div class="guide-row">
+      <button type="button" class="guide-button" data-guide="USAGE" data-i18n="guide.usageButton">📘 사용법 가이드</button>
+    </div>
     <div class="setting-group">
       <label class="section-label" data-i18n="settings.app">앱 기본 설정</label>
       <label><input type="checkbox" id="autoLaunch" /> <span data-i18n="settings.autoLaunch">Windows 시작 시 자동 실행</span></label>
@@ -89,6 +92,7 @@
     <div class="setting-group">
       <label for="webSocketPort" data-i18n="settings.websocketPort">웹소켓 포트</label>
       <input type="number" id="webSocketPort" min="1024" max="65535" />
+      <button type="button" class="guide-button" data-guide="CONNECTION" data-i18n="guide.connectionButton">🔌 연결 가이드 (원컴/투컴 주소, IP 찾는 법)</button>
     </div>
 
     <div class="setting-group">

@@ -27,6 +27,7 @@
             "sessionManager.js",
             "uploader.js",
             "shutdown.js",
+            "guides.js",
             "controller/controllerReader.js",
             "controller/keyboardReader.js",
             "localization/**",
@@ -34,6 +35,10 @@
             "!node_modules/uiohook-napi/prebuilds/{darwin,linux}-*/**",
             "!node_modules/uiohook-napi/prebuilds/win32-arm64/**",
             "!node_modules/uiohook-napi/{src,libuiohook}/**"
+        ],
+        "extraResources": [
+            { "from": "../GUIDE", "to": "GUIDE" },
+            { "from": "../images", "to": "images" }
         ],
         "directories": {
             "buildResources": "build"
@@ -54,10 +59,12 @@
         ]
     },
     "dependencies": {
+        "dompurify": "^3.4.16",
         "electron-log": "^5.4.1",
         "electron-store": "^8.2.0",
         "electron-updater": "^6.6.2",
         "express": "^4.18.4",
+        "marked": "^18.0.14",
         "node-hid": "^2.1.2",
         "uiohook-napi": "^1.5.5",
         "ws": "^8.18.1"

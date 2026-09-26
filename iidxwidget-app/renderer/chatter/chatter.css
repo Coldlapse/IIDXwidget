@@ -56,3 +56,17 @@
 }
 .total strong { color: #fff; font-size: 20px; font-variant-numeric: tabular-nums; }
 .total.has-chatter strong { color: #ff5252; }
+
+/* 채터링 감지 가이드 열기 */
+.guide-button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: #2f2f2f;
+  color: #ddd;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.guide-button:hover { background-color: #3a3a3a; }
+.guide-link { margin-top: 16px; text-align: center; }

@@ -1,0 +1,92 @@
+/* 가이드 뷰어: 앱의 다른 창과 같은 어두운 색 */
+body {
+  margin: 0;
+  background-color: #121212;
+  color: #ddd;
+  font-family: 'Nanum Gothic', sans-serif;
+}
+
+.toolbar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 8px 20px;
+  background-color: #1a1a1a;
+  border-bottom: 1px solid #2a2a2a;
+  z-index: 1;
+}
+
+.toolbar button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: #2f2f2f;
+  color: #ddd;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.toolbar button:hover { background-color: #3a3a3a; }
+
+.source-note {
+  margin-right: auto;
+  color: #f0b429;
+  font-size: 12px;
+}
+
+.markdown {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 16px 28px 48px;
+  line-height: 1.7;
+  font-size: 15px;
+}
+
+.markdown .status { color: #999; }
+.markdown .status.error { color: #ff6b6b; }
+
+.markdown h1 { font-size: 26px; color: #fff; border-bottom: 1px solid #333; padding-bottom: 8px; }
+.markdown h2 { font-size: 20px; color: #fff; margin-top: 32px; border-bottom: 1px solid #2a2a2a; padding-bottom: 6px; }
+.markdown h3 { font-size: 16px; color: #eee; margin-top: 24px; }
+.markdown a { color: #4fc3f7; }
+.markdown strong { color: #fff; }
+.markdown hr { border: none; border-top: 1px solid #2a2a2a; margin: 28px 0; }
+.markdown img { max-width: 100%; border-radius: 6px; }
+
+.markdown code {
+  background-color: #262626;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: Consolas, 'Nanum Gothic', monospace;
+}
+.markdown pre {
+  background-color: #1b1b1b;
+  padding: 12px 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  line-height: 1.15;
+}
+.markdown pre code { background: none; padding: 0; }
+
+.markdown blockquote {
+  margin: 16px 0;
+  padding: 4px 16px;
+  border-left: 4px solid #444;
+  background-color: #1a1a1a;
+  color: #bbb;
+}
+
+.markdown table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 14px; }
+.markdown th, .markdown td { border: 1px solid #333; padding: 8px 10px; text-align: left; vertical-align: top; }
+.markdown th { background-color: #1e1e1e; color: #fff; }
+
+/* #링크로 이동한 제목을 잠깐 표시 */
+.markdown .flash { animation: flash 1.2s ease-out; }
+@keyframes flash { from { background-color: #33415c; } to { background-color: transparent; } }
+
+/* 위의 고정 도구 막대에 가리지 않게 */
+.markdown h1, .markdown h2, .markdown h3, .markdown h4 { scroll-margin-top: 56px; }

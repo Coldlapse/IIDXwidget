@@ -30,6 +30,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getRecords: () => ipcRenderer.invoke('get-records'),
   uploadNow: () => ipcRenderer.invoke('upload-now'),
   requestChatterSummary: () => ipcRenderer.invoke('request-chatter-summary'),
+  // 가이드: 앱 언어에 맞는 문서를 뷰어로 연다 (id: USAGE, CONNECTION, RELEASE, CHATTER)
+  openGuide: (id) => ipcRenderer.invoke('open-guide', id),
+  // 가이드 뷰어: 문서 불러오기, 링크를 기본 브라우저로 열기(https만), 다른 가이드로 바꾸라는 알림
+  loadGuide: (file) => ipcRenderer.invoke('load-guide', file),
+  openExternal: (url) => ipcRenderer.invoke('open-external', url),
+  onShowGuide: (callback) => ipcRenderer.on('show-guide', (_, file) => callback(file)),
   // 종료 진행 창
   onShutdownStart: (callback) => ipcRenderer.on('shutdown-start', (_, data) => callback(data)),
   onShutdownProgress: (callback) => ipcRenderer.on('shutdown-progress', (_, data) => callback(data))

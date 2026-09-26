@@ -1,6 +1,7 @@
-const { app, BrowserWindow, Menu, ipcMain, dialog, screen, shell } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, dialog, screen, shell, net } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const { pathToFileURL } = require('url');
 
 const SETTINGS_FILE = path.join(app.getPath('userData'), 'settings.json');
 const USER_IMAGE_DIR = path.join(app.getPath('userData'), 'userImages');
@@ -14,6 +15,7 @@ const { createSessionManager } = require('./sessionManager');
 const { uploadInChunks } = require('./uploader');
 const { createShutdown } = require('./shutdown');
 const { setupUpdater } = require('./updater');
+const { GUIDE_IDS, guideFile, loadGuide } = require('./guides');
 const { translations, normalizeLanguage, translate } = require('./localization/translations');
 const {
   DEFAULT_SETTINGS, applyUpdate, readSettingsFile, writeSettingsFile, publicSettings, referencedImageFiles
@@ -43,6 +45,7 @@ let mainWindow = null;
 let settingsWindow = null;
 let chatterWindow = null;
 let recordsWindow = null;
+let guideWindow = null;
 let settings = structuredClone(DEFAULT_SETTINGS);
 let session = null; // 앱이 준비되면 만든다 (이번 세션 통계)
 
@@ -129,7 +132,7 @@ function createLogsWindow() {
 
 function createChatterWindow() {
   const isNew = !chatterWindow;
-  chatterWindow = createChildWindow(chatterWindow, { width: 440, height: 460, file: 'renderer/chatter/chatter.html' });
+  chatterWindow = createChildWindow(chatterWindow, { width: 440, height: 490, file: 'renderer/chatter/chatter.html' });
   if (isNew) chatterWindow.on('closed', () => chatterWindow = null);
 }
 
@@ -137,6 +140,62 @@ function createRecordsWindow() {
   const isNew = !recordsWindow;
   recordsWindow = createChildWindow(recordsWindow, { width: 640, height: 680, file: 'renderer/records/records.html' });
   if (isNew) recordsWindow.on('closed', () => recordsWindow = null);
+}
+
+
+// 📘 가이드 뷰어: GitHub 저장소의 GUIDE/*.md 최신본을 보여준다. 받지 못하면 앱에 들어 있는 사본을 쓴다.
+// 창은 하나만 두고, 이미 열려 있으면 그 창에서 문서만 바꾼다.
+const GUIDE_LOCAL_DIR = app.isPackaged ? path.join(process.resourcesPath, 'GUIDE') : path.join(__dirname, '..', 'GUIDE');
+
+// parent: 가이드를 연 창(설정·채터링 등). 그 창 위에 뜨되 모달은 아니어서 가이드를 보며 설정할 수 있다.
+function openGuide(id, { parent = mainWindow, onClosed } = {}) {
+  const file = guideFile(GUIDE_IDS.includes(id) ? id : 'USAGE', normalizeLanguage(settings.language));
+  if (guideWindow && !guideWindow.isDestroyed()) {
+    sendTo(guideWindow, 'show-guide', file);
+    guideWindow.focus();
+    return;
+  }
+  const workArea = screen.getPrimaryDisplay().workAreaSize;
+  guideWindow = new BrowserWindow({
+    width: Math.min(860, workArea.width - 40),
+    height: Math.min(900, workArea.height - 40),
+    minWidth: 480,
+    minHeight: 360,
+    parent: parent && !parent.isDestroyed() ? parent : undefined,
+    autoHideMenuBar: true,
+    backgroundColor: '#121212',
+    title: t('guide.menu'),
+    webPreferences: { preload: preloadPath, contextIsolation: true, nodeIntegration: false }
+  });
+  guideWindow.loadFile(path.join(__dirname, 'renderer/guide/guide.html'), { query: { file } });
+  // 링크는 화면 쪽에서 처리한다 (다른 가이드는 뷰어에서, https는 기본 브라우저로). 창 자체는 다른 곳으로 가지 않는다
+  guideWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  guideWindow.webContents.on('will-navigate', event => event.preventDefault());
+  guideWindow.on('closed', () => {
+    guideWindow = null;
+    onClosed?.();
+  });
+}
+
+async function fetchGuideText(url, timeoutMs) {
+  const response = await net.fetch(url, { signal: AbortSignal.timeout(timeoutMs), cache: 'no-store' });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  return response.text();
+}
+
+async function readLocalGuide(file) {
+  const text = await fs.promises.readFile(path.join(GUIDE_LOCAL_DIR, file), 'utf8');
+  return { text, baseUrl: pathToFileURL(GUIDE_LOCAL_DIR).href + '/' };
+}
+
+// 처음 설치한 뒤 첫 실행: 연결 가이드를 먼저 보여주고, 닫으면 다른 가이드가 어디 있는지 알려준다
+function showFirstRunGuide() {
+  openGuide('CONNECTION', {
+    onClosed: () => {
+      if (quitReady || shutdown.started || !mainWindow || mainWindow.isDestroyed()) return;
+      dialog.showMessageBox(mainWindow, { type: 'info', title: t('guide.menu'), message: t('guide.tutorialDone'), buttons: [t('common.ok')] });
+    }
+  });
 }
 
 
@@ -212,14 +271,18 @@ function createStatusMenu() {
       ]
     },
     {
-      label: 'README',
-      submenu: [{
-        label: t('readme.obsSetup'),
-        click: () => showInfo(t('readme.title'), t('readme.obsInstructions', {
-          serverPort: settings.serverPort,
-          webSocketPort: settings.webSocketPort
-        }))
-      }]
+      label: t('guide.menu'),
+      submenu: [
+        ...GUIDE_IDS.map(id => ({ label: t(`guide.title.${id}`), click: () => openGuide(id) })),
+        { type: 'separator' },
+        {
+          label: t('readme.obsSetup'),
+          click: () => showInfo(t('readme.title'), t('readme.obsInstructions', {
+            serverPort: settings.serverPort,
+            webSocketPort: settings.webSocketPort
+          }))
+        }
+      ]
     }
   ]);
   Menu.setApplicationMenu(menu);
@@ -481,6 +544,15 @@ ipcMain.handle('upload-now', () => uploadRemaining());
 
 ipcMain.handle('request-chatter-summary', () => session?.chatter() ?? {});
 
+// 가이드
+ipcMain.handle('open-guide', (event, id) => openGuide(id, { parent: BrowserWindow.fromWebContents(event.sender) }));
+ipcMain.handle('load-guide', (event, file) => loadGuide(file, { fetchText: fetchGuideText, readLocal: readLocalGuide }));
+// 가이드 안의 링크만 기본 브라우저로 연다 (https만)
+ipcMain.handle('open-external', (event, url) => {
+  if (!guideWindow || event.sender !== guideWindow.webContents) return;
+  if (typeof url === 'string' && url.startsWith('https://')) shell.openExternal(url);
+});
+
 
 // 🟢 앱 시작
 app.whenReady().then(() => {
@@ -502,6 +574,7 @@ app.whenReady().then(() => {
 
   createMainWindow();
   createStatusMenu();
+  if (!loaded.existed) mainWindow.webContents.once('did-finish-load', showFirstRunGuide);
 });
 
 

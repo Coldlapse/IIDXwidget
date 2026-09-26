@@ -21,3 +21,5 @@ async function refresh() {
 // 입력이 들어올 때마다(묶어서 최대 초당 20번) 새 숫자를 받는다
 window.electronAPI.onStats(refresh);
 refresh();
+
+document.getElementById('open-guide').addEventListener('click', () => window.electronAPI.openGuide('CHATTER'));

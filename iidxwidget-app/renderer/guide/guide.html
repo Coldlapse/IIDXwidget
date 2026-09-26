@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <!-- 문서는 main이 받아서 넘겨준다. 이미지만 GitHub(https) 또는 앱에 들어 있는 사본(file)에서 직접 불러온다 -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src https: file: data:" />
+  <title data-i18n="guide.menu">가이드</title>
+  <link rel="stylesheet" href="../shared/fonts.css" />
+  <link rel="stylesheet" href="guide.css" />
+</head>
+<body>
+  <header class="toolbar">
+    <span id="source-note" class="source-note" data-i18n="guide.offline" hidden></span>
+    <button type="button" id="open-github" data-i18n="guide.openOnGithub">GitHub에서 보기</button>
+  </header>
+  <main id="content" class="markdown">
+    <p class="status" data-i18n="guide.loading">가이드를 불러오는 중...</p>
+  </main>
+
+  <script src="../../node_modules/marked/lib/marked.umd.js"></script>
+  <script src="../../node_modules/dompurify/dist/purify.min.js"></script>
+  <script src="../shared/i18n.js"></script>
+  <script src="guideLogic.js"></script>
+  <script src="guide.js"></script>
+</body>
+</html>

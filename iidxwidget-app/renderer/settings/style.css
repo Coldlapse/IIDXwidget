@@ -102,3 +102,23 @@ body {
 #generic-axis-value { flex: 1; color: #fff; }
 #mapping-status.warning, #form-status.error { color: #ff5252; }
 #form-status { min-height: 20px; font-size: 14px; color: #00c853; }
+
+/* 가이드 열기 버튼 (오른쪽 위, 포트 설정 아래) */
+.guide-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: -10px;
+}
+
+.guide-button {
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: normal;
+  background-color: #2f2f2f;
+  color: #ddd;
+  align-self: flex-end;
+}
+
+.guide-button:hover {
+  background-color: #3a3a3a;
+}

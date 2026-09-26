@@ -317,3 +317,8 @@ function updateContainerColorAvailability() {
 }
 
 $('transparent-container').addEventListener('change', updateContainerColorAvailability);
+
+// 가이드 열기 (오른쪽 위: 사용법, 포트 아래: 연결 가이드)
+document.querySelectorAll('[data-guide]').forEach(button => {
+  button.addEventListener('click', () => window.electronAPI.openGuide(button.dataset.guide));
+});
