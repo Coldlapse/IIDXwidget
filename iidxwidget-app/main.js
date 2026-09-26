@@ -1,7 +1,6 @@
 const { app, BrowserWindow, Menu, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
-const https = require('https');
 const fetch = require('node-fetch');
 
 const SETTINGS_FILE = path.join(app.getPath('userData'), 'settings.json');
@@ -171,14 +170,12 @@ async function sendTypingCount() {
 
     // 4. API 서버로 데이터 전송
     const apiEndpoint = 'https://beatmania.app/api/v1/update-typing-count/';
-    const agent = new https.Agent({ rejectUnauthorized: false });
 
     try {
       const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Token ${token}` },
-        body: JSON.stringify({ count }),
-        agent
+        body: JSON.stringify({ count })
       });
 
       if (response.status === 401) {
@@ -673,6 +670,11 @@ app.on('before-quit', async () => {
   if (currentKBReader?.stop) {
     try { currentKBReader.stop(); } catch (e) {}
     currentKBReader = null;
+  }
+
+  if (keyboardInstance?.stop) {
+    try { keyboardInstance.stop(); } catch (e) {}
+    keyboardInstance = null;
   }
 
   // ✅ 서버 정리 - await 로 기다림

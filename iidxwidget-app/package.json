@@ -13,6 +13,7 @@
         "appId": "app.beatmania.iidxwidget",
         "productName": "IIDXwidget",
         "artifactName": "IIDXwidget-Setup-${version}.${ext}",
+        "npmRebuild": false,
         "files": [
             "**/*"
         ],
@@ -41,8 +42,8 @@
         "express": "^4.18.4",
         "ip": "^2.0.1",
         "node-fetch": "^2.7.0",
-        "node-global-key-listener": "^0.3.0",
         "node-hid": "^2.1.2",
+        "uiohook-napi": "^1.5.5",
         "ws": "^8.18.1"
     },
     "devDependencies": {
