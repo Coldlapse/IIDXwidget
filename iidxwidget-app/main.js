@@ -96,7 +96,8 @@ function createMainWindow() {
 }
 
 // 메인 창에 딸린 모달 창. 이미 열려 있으면 앞으로 가져온다.
-function createChildWindow(existing, { width, height, file, resizable = true, minWidth, minHeight }) {
+// 크기는 고정이다. 내용이 늘어날 수 있는 부분은 창 안에서 스크롤한다 (renderer/shared/scrollbar.css).
+function createChildWindow(existing, { width, height, file }) {
   if (existing && !existing.isDestroyed()) {
     existing.focus();
     return existing;
@@ -104,12 +105,11 @@ function createChildWindow(existing, { width, height, file, resizable = true, mi
   const win = new BrowserWindow({
     ...fitToScreen(width, height),
     useContentSize: true,
-    minWidth,
-    minHeight,
     parent: mainWindow,
     modal: true,
     autoHideMenuBar: true,
-    resizable,
+    resizable: false,
+    maximizable: false,
     webPreferences: { preload: preloadPath, contextIsolation: true, nodeIntegration: false }
   });
   win.loadFile(path.join(__dirname, file));
@@ -123,7 +123,7 @@ function createChildWindow(existing, { width, height, file, resizable = true, mi
 
 function createSettingsWindow() {
   const isNew = !settingsWindow;
-  settingsWindow = createChildWindow(settingsWindow, { width: 560, height: 860, minWidth: 560, minHeight: 400, file: 'renderer/settings/settings.html' });
+  settingsWindow = createChildWindow(settingsWindow, { width: 570, height: 860, file: 'renderer/settings/settings.html' });
   if (isNew) {
     settingsWindow.on('closed', () => {
       settingsWindow = null;
@@ -134,19 +134,19 @@ function createSettingsWindow() {
 
 function createLogsWindow() {
   const isNew = !logsWindow;
-  logsWindow = createChildWindow(logsWindow, { width: 760, height: 480, minWidth: 400, minHeight: 240, file: 'renderer/logs/logs.html' });
+  logsWindow = createChildWindow(logsWindow, { width: 760, height: 480, file: 'renderer/logs/logs.html' });
   if (isNew) logsWindow.on('closed', () => logsWindow = null);
 }
 
 function createChatterWindow() {
   const isNew = !chatterWindow;
-  chatterWindow = createChildWindow(chatterWindow, { width: 440, height: 470, minWidth: 440, minHeight: 240, file: 'renderer/chatter/chatter.html' });
+  chatterWindow = createChildWindow(chatterWindow, { width: 440, height: 463, file: 'renderer/chatter/chatter.html' });
   if (isNew) chatterWindow.on('closed', () => chatterWindow = null);
 }
 
 function createRecordsWindow() {
   const isNew = !recordsWindow;
-  recordsWindow = createChildWindow(recordsWindow, { width: 640, height: 500, minWidth: 520, minHeight: 240, file: 'renderer/records/records.html' });
+  recordsWindow = createChildWindow(recordsWindow, { width: 640, height: 650, file: 'renderer/records/records.html' });
   if (isNew) recordsWindow.on('closed', () => recordsWindow = null);
 }
 
@@ -615,15 +615,6 @@ ipcMain.handle('get-records', () => ({
 ipcMain.handle('upload-now', () => uploadRemaining());
 
 ipcMain.handle('request-chatter-summary', () => session?.chatter() ?? {});
-
-// 채터링·세션 기록 창은 내용 높이에 맞춘다 (전송 내역이 늘면 창도 늘어난다). 화면보다 커지면 화면에 맞추고 스크롤한다
-ipcMain.on('fit-window-height', (event, height) => {
-  const win = BrowserWindow.fromWebContents(event.sender);
-  if (!win || (win !== chatterWindow && win !== recordsWindow) || !Number.isFinite(height)) return;
-  const [width] = win.getContentSize();
-  const fitted = fitToScreen(width, Math.max(240, Math.ceil(height)));
-  if (win.getContentSize()[1] !== fitted.height) win.setContentSize(width, fitted.height);
-});
 
 // beatmania.app 계정: 토큰은 서버에 확인한 뒤에만 저장한다 (틀린 토큰으로 조용히 실패하지 않도록).
 // 결과: { ok: true, username } 또는 { ok: false, error: 'unauthorized' | 'network' | 'encryption', detail? }

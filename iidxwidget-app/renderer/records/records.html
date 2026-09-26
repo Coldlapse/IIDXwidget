@@ -6,6 +6,7 @@
   <title data-i18n="records.title">세션 기록</title>
   <link rel="stylesheet" href="../shared/fonts.css" />
   <link rel="stylesheet" href="../shared/window.css" />
+  <link rel="stylesheet" href="../shared/scrollbar.css" />
   <link rel="stylesheet" href="records.css" />
 </head>
 <body>
@@ -26,15 +27,18 @@
     </div>
     <p id="account-line" class="muted" hidden><span id="account-text"></span> <a id="profile-link" href="#" target="_blank" data-i18n="settings.myProfile" hidden>내 서열표 ↗</a></p>
     <p id="token-hint" class="muted" data-i18n="records.noToken" hidden>설정에서 beatmania.app 타건 기록 토큰을 입력하면 전송할 수 있습니다.</p>
-    <p id="server-total" class="muted" hidden></p>
+    <p id="server-total" class="muted"></p>
     <p id="auto-upload-state" class="muted"></p>
 
     <h3 data-i18n="records.uploadsTitle">이번 세션 전송 내역</h3>
-    <table id="uploads-table">
-      <thead><tr><th data-i18n="records.time">시각</th><th data-i18n="records.count">전송한 양</th><th data-i18n="records.dailyTotal">서버 오늘 합계</th></tr></thead>
-      <tbody></tbody>
-    </table>
-    <p id="no-uploads" class="muted" data-i18n="records.noUploads">아직 전송한 기록이 없습니다.</p>
+    <!-- 전송 내역은 높이가 고정된 상자 안에서 스크롤한다 (내역이 늘어도 아래 내용이 밀리지 않도록) -->
+    <div class="uploads-box">
+      <table id="uploads-table">
+        <thead><tr><th data-i18n="records.time">시각</th><th data-i18n="records.count">전송한 양</th><th data-i18n="records.dailyTotal">서버 오늘 합계</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <p id="no-uploads" class="muted" data-i18n="records.noUploads">아직 전송한 기록이 없습니다.</p>
+    </div>
 
     <p class="note muted">
       <span data-i18n="records.note">이 페이지는 이번 세션(앱을 켠 뒤부터) 기준입니다. 앱을 끄면 보내지 않은 양은 사라집니다.</span>
@@ -44,7 +48,6 @@
 
   <script src="../shared/i18n.js"></script>
   <script src="../widget/logic.js"></script>
-  <script src="../shared/fitWindow.js"></script>
   <script src="records.js"></script>
 </body>
 </html>

@@ -4,7 +4,10 @@
   <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:" />
   <title data-i18n="logs.title">로그 보기</title>
+  <link rel="stylesheet" href="../shared/scrollbar.css" />
   <style>
+    /* 로그 영역만 스크롤한다 (창 전체는 스크롤하지 않음) */
+    html { overflow: hidden; }
     html, body { height: 100%; }
     body {
       background: #000;
@@ -15,7 +18,7 @@
     #log-container {
       box-sizing: border-box;
       white-space: pre-wrap;
-      overflow-y: auto;
+      overflow-y: scroll;
       height: 100%;
       padding: 10px;
     }

@@ -57,6 +57,9 @@
 .total strong { color: #fff; font-size: 20px; font-variant-numeric: tabular-nums; }
 .total.has-chatter strong { color: #ff5252; }
 
+/* 내용 높이가 고정이라 창 안 스크롤은 쓰지 않는다 */
+html { overflow: hidden; }
+
 /* 채터링 감지 가이드 열기 */
 .guide-button {
   padding: 6px 12px;

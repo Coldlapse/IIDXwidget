@@ -46,3 +46,14 @@ th:first-child, td:first-child { text-align: left; }
 th { color: #aaa; font-weight: normal; }
 .note a { display: block; margin-top: 4px; }
 #account-line.error { color: #ff5252; }
+
+/* 전송 내역: 높이 고정, 넘치면 상자 안에서 스크롤 */
+.uploads-box {
+  height: 132px;
+  overflow-y: scroll;
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  padding: 0 8px;
+}
+.uploads-box thead th { position: sticky; top: 0; background-color: #1a1a1a; }
+.uploads-box #no-uploads { margin: 12px 0; }

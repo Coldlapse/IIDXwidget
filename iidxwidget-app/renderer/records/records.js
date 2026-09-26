@@ -47,8 +47,10 @@ function render() {
   renderNumbers();
   renderAccount();
   $('auto-upload-state').textContent = window.i18n.t(data.autoUploadOnQuit ? 'records.autoUploadOn' : 'records.autoUploadOff');
-  $('server-total').hidden = s.lastDailyTotal === null;
-  if (s.lastDailyTotal !== null) $('server-total').textContent = window.i18n.t('records.serverTotal', { total: s.lastDailyTotal });
+  // 전송 전에도 줄을 남겨 두어 첫 전송 뒤에 아래 내용이 밀리지 않게 한다
+  $('server-total').textContent = s.lastDailyTotal === null
+    ? window.i18n.t('records.serverTotalNone')
+    : window.i18n.t('records.serverTotal', { total: s.lastDailyTotal });
 
   const rows = s.uploads.slice().reverse().map(u => [formatTime(u.at), u.count, u.dailyTotal ?? '-']);
   $('uploads-table').querySelector('tbody').replaceChildren(...rows.map(values => {

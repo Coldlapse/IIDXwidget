@@ -30,8 +30,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getRecords: () => ipcRenderer.invoke('get-records'),
   uploadNow: () => ipcRenderer.invoke('upload-now'),
   requestChatterSummary: () => ipcRenderer.invoke('request-chatter-summary'),
-  // 창 높이를 내용에 맞춘다 (채터링·세션 기록 창)
-  fitWindowHeight: (height) => ipcRenderer.send('fit-window-height', height),
   // beatmania.app 계정: { username, hasToken, tokenInvalid }. 토큰은 서버에 확인한 뒤 암호화해서 바로 저장된다
   getAccount: () => ipcRenderer.invoke('get-account'),
   setApiToken: (token) => ipcRenderer.invoke('set-api-token', token),
