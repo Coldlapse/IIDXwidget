@@ -21,7 +21,7 @@
         <option value="AUTO" data-i18n="settings.auto">자동 감지</option>
         <option value="PHOENIXWAN">PHOENIXWAN+</option>
         <option value="FPS EMP Gen2">FPS EMP Gen2</option>
-        <option value="KB" data-i18n="settings.keyboard">키보드</option>
+        <option value="KB" data-i18n="settings.keyboard">BM으로 하라고 만든 게임을 꾸역꾸역 키보드로 하는 멍청이</option>
       </select>
     </div>
 
@@ -38,7 +38,7 @@
     </div>
 
     <div id="key-mapping-container" class="setting-group" style="display: none;">
-      <label data-i18n="settings.keyboardMapping">키보드 매핑</label>
+      <label data-i18n="settings.keyboardMapping">키보드 매핑 (저는 KB를 하는 바보입니다)</label>
       <table id="key-mapping-table">
         <tr><td>SCup</td><td><input type="text" data-key="SCup" readonly /></td></tr>
         <tr><td>SCdown</td><td><input type="text" data-key="SCdown" readonly /></td></tr>
@@ -107,25 +107,25 @@
       <label><input type="checkbox" id="transparent-container" /> <span data-i18n="settings.transparentContainer">위젯 컨테이너 배경 투명하게</span></label>
     </div>
     <div class="setting-group">
-      <label for="discImageMode">스크래치 이미지 모드</label>
+      <label for="discImageMode" data-i18n="settings.discImageMode">스크래치 이미지 모드</label>
       <select id="discImageMode">
-        <option value="single">1장</option>
-        <option value="dual">2장 (회전 방향에 따라 변경)</option>
+        <option value="single" data-i18n="settings.discImageSingle">1장</option>
+        <option value="dual" data-i18n="settings.discImageDual">2장 (회전 방향에 따라 변경)</option>
       </select>
     </div>
     <div class="setting-group">
       <label id="up-disc-label">스크래치 커스텀 이미지 업로드</label>
       <div class="input-with-delete">
         <input type="file" id="up-disc-image-upload" accept="image/*">
-        <button id="delete-up-disc-button">삭제</button>
+        <button id="delete-up-disc-button" data-i18n="settings.delete">삭제</button>
       </div>
       <img id="up-disc-preview" style="margin-top: 10px; max-width: 100%; border-radius: 10px;" />
     </div>
     <div class="setting-group" id="down-disc-group" style="display: none;">
-      <label>아랫방향 스크래치 커스텀 이미지 업로드</label>
+      <label data-i18n="settings.discImageDown">아랫방향 스크래치 커스텀 이미지 업로드</label>
       <div class="input-with-delete">
         <input type="file" id="down-disc-image-upload" accept="image/*">
-        <button id="delete-down-disc-button">삭제</button>
+        <button id="delete-down-disc-button" data-i18n="settings.delete">삭제</button>
       </div>
       <img id="down-disc-preview" style="margin-top: 10px; max-width: 100%; border-radius: 10px;" />
     </div>

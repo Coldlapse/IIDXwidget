@@ -80,9 +80,7 @@ document.getElementById('save-button').addEventListener('click', async () => {
 
   await window.electronAPI.saveSettings(newSettings);
   const portChanged = serverPort !== settings?.serverPort;
-  alert(portChanged
-    ? '저장 완료! 서버 포트가 바뀌었으니 OBS 브라우저 소스의 주소도 새 포트로 바꿔주세요.'
-    : '저장 완료! 위젯에 바로 반영됩니다.');
+  alert(window.i18n.t(portChanged ? 'settings.savedPortChanged' : 'settings.saved'));
   window.close();
 });
 
@@ -105,14 +103,16 @@ function toggleKeyMappingUI(profile) {
 // ✅ 스크래치 이미지 모드 UI 토글 함수
 function toggleDiscImageModeUI(mode) {
   const isDual = mode === 'dual';
-  document.getElementById('up-disc-label').textContent = isDual
-    ? '기본 / 윗방향 스크래치 커스텀 이미지 업로드'
-    : '스크래치 커스텀 이미지 업로드';
+  document.getElementById('up-disc-label').textContent =
+    window.i18n.t(isDual ? 'settings.discImageUp' : 'settings.discImage');
   document.getElementById('down-disc-group').style.display = isDual ? 'block' : 'none';
 }
 
 document.getElementById('discImageMode').addEventListener('change', (e) => {
   toggleDiscImageModeUI(e.target.value);
+});
+document.addEventListener('i18n-changed', () => {
+  toggleDiscImageModeUI(document.getElementById('discImageMode').value);
 });
 
 // ✅ 초기 설정 불러오기

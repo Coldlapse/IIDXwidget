@@ -9,7 +9,7 @@ const { startServer, stopServer } = require('./server');
 const { startWebSocketServer, stopWebSocketServer, broadcastControllerData, broadcastSettingsUpdated } = require('./wsServer');
 const { startControllerReader, startAutoControllerReader } = require('./controller/controllerReader');
 const { startGlobalKeyboardReader } = require('./controller/keyboardReader');
-const { normalizeLanguage, translate } = require('./localization/translations');
+const { translations, normalizeLanguage, translate } = require('./localization/translations');
 
 
 let mainWindow;
@@ -337,6 +337,7 @@ console.log = (...args) => {
 // 📡 IPC
 ipcMain.handle('get-websocket-port', () => settings.webSocketPort || 5678);
 ipcMain.handle('get-language', () => normalizeLanguage(settings.language));
+ipcMain.handle('get-translations', () => translations);
 ipcMain.handle('request-log-buffer', () => logBuffer);
 ipcMain.handle('get-app-version', () => {
   return app.getVersion();

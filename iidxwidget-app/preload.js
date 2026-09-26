@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getWebSocketPort: () => ipcRenderer.invoke('get-websocket-port'),
   onControllerData: (callback) => ipcRenderer.on('controller-data', (event, data) => callback(data)),
   getLanguage: () => ipcRenderer.invoke('get-language'),
+  getTranslations: () => ipcRenderer.invoke('get-translations'),
   onLanguageChanged: callback => {
     const listener = (_, language) => callback(language);
     ipcRenderer.on('language-changed', listener);
