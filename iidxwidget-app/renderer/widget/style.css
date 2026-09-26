@@ -260,3 +260,27 @@ body {
 .hide-key-release .release-label {
   visibility: hidden;
 }
+
+/* 앱과 연결이 끊겼을 때 화면 전체를 가리는 안내 (OBS·브라우저에서만) */
+#connection-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.85);
+}
+#connection-overlay[hidden] { display: none; }
+
+.connection-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  font-family: 'Nanum Gothic', sans-serif;
+  text-align: center;
+}
+.connection-box strong { font-size: 28px; }
+.connection-box span { font-size: 20px; color: #bbb; }

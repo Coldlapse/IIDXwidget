@@ -163,18 +163,57 @@ function applyKBIndicatorPosition(position) {
 }
 
 const WS_RECONNECT_DELAY = 1000;
+const DISCONNECT_NOTICE_DELAY = 2000; // 이 시간 안에 다시 연결되면(설정 저장·재시작 등) 안내를 띄우지 않는다
 let wsPort = 5678;
 let wsReconnectTimer = null;
+let disconnectNoticeTimer = null;
+
+// ─── 연결 끊김 안내 (OBS·브라우저 전용) ────────────────────────
+// 연결이 끊긴 뒤에는 앱에서 문구를 받을 수 없으므로, 연결돼 있을 때 번역 사전을 미리 받아 둔다.
+let widgetTranslations = null;
+let widgetLanguage = 'ko';
+
+async function loadWidgetTranslations() {
+  try {
+    const res = await fetch('/translations', { cache: 'no-store' });
+    if (res.ok) widgetTranslations = await res.json();
+  } catch (e) {}
+  renderConnectionTexts();
+}
+
+function renderConnectionTexts() {
+  const texts = widgetTranslations?.[widgetLanguage]?.widget || widgetTranslations?.ko?.widget;
+  if (!texts) return; // 받지 못했으면 HTML에 적힌 한국어 문구를 그대로 쓴다
+  document.getElementById('connection-title').textContent = texts.disconnected;
+  document.getElementById('connection-detail').textContent = texts.reconnecting;
+}
+
+function showDisconnected() {
+  if (disconnectNoticeTimer) return;
+  disconnectNoticeTimer = setTimeout(() => {
+    document.getElementById('connection-overlay').hidden = false;
+  }, DISCONNECT_NOTICE_DELAY);
+}
+
+function showConnected() {
+  clearTimeout(disconnectNoticeTimer);
+  disconnectNoticeTimer = null;
+  document.getElementById('connection-overlay').hidden = true;
+}
 
 function connectWebSocket(port) {
   wsPort = port;
   const wsHost = location.hostname || '127.0.0.1';
   const ws = new WebSocket(`ws://${wsHost}:${port}`);
-  ws.onopen = () => console.log(`[WS] Connected to ws://${wsHost}:${port}`);
+  ws.onopen = () => {
+    console.log(`[WS] Connected to ws://${wsHost}:${port}`);
+    showConnected();
+  };
   ws.onerror = (e) => console.error("[WS] Error", e);
   // 앱 재시작/설정 변경으로 연결이 끊기면 자동으로 다시 연결
   ws.onclose = () => {
     stopUptime();
+    showDisconnected();
     scheduleReconnect();
   };
   ws.onmessage = (event) => {
@@ -257,6 +296,11 @@ function applySettings(settings) {
   }
 
   applyKBIndicatorPosition(settings?.widget?.infoPosition || 'bottom');
+
+  if (settings?.language && settings.language !== widgetLanguage) {
+    widgetLanguage = settings.language;
+    renderConnectionTexts();
+  }
 }
 
 (async () => {
@@ -264,6 +308,7 @@ function applySettings(settings) {
 
   // 앱 창은 IPC로 입력을 받으므로 웹소켓은 브라우저(OBS)에서만 연결
   if (!window.electronAPI?.onControllerData) {
+    loadWidgetTranslations();
     connectWebSocket(settings?.webSocketPort || 5678);
   }
 })();

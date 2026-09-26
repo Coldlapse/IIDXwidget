@@ -276,7 +276,8 @@ function isAllowedOrigin(origin) {
 function startServers() {
   startServer(settings.serverPort, {
     userImagePath: USER_IMAGE_DIR,
-    getPublicSettings: () => publicSettings(settings),
+    getPublicSettings: () => ({ ...publicSettings(settings), language: normalizeLanguage(settings.language) }),
+    getTranslations: () => translations,
     onError: handleServerError
   });
   startWebSocketServer(settings.webSocketPort, {

@@ -36,7 +36,7 @@ for (const file of sources) {
   for (const pattern of keyPatterns) for (const m of text.matchAll(pattern)) usedKeys.add(m[1]);
 }
 // 조건부로 만드는 키 / 로거 코드로 만드는 키
-['settings.savedPortChanged', 'settings.discImageUp', 'records.autoUploadOn', 'records.autoUploadOff',
+['settings.savedPortChanged', 'settings.discImageUp', 'widget.disconnected', 'widget.reconnecting', 'records.autoUploadOn', 'records.autoUploadOff',
  ...['busy', 'noToken', 'noData', 'unauthorized', 'dailyLimit', 'rejected', 'server', 'network', 'timeout'].map(r => `records.error.${r}`),
  ...['upload', 'inputs', 'servers'].map(k => `shutdown.step.${k}`),
  ...['notFound', 'connected', 'openFailed', 'deviceError', 'closed', 'closeFailed', 'dataError', 'lr2Activated', 'lr2Deactivated'].map(c => `controller.${c}`)

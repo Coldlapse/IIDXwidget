@@ -6,8 +6,9 @@ let serverPort = null;
 
 // options.userImagePath: 사용자 이미지 폴더
 // options.getPublicSettings(): 위젯에 내보낼 설정 (토큰 등 제외)
+// options.getTranslations(): 위젯 문구용 번역 사전 (연결이 끊겼을 때 안내 문구 등)
 // options.onError(error, port): 포트 충돌 등 서버 오류 알림
-function startServer(port, { userImagePath, getPublicSettings, onError } = {}) {
+function startServer(port, { userImagePath, getPublicSettings, getTranslations = () => ({}), onError } = {}) {
   // 같은 포트로 이미 떠 있으면 그대로 유지
   if (serverInstance && serverPort === port) return serverInstance;
   stopServer();
@@ -19,6 +20,10 @@ function startServer(port, { userImagePath, getPublicSettings, onError } = {}) {
   app.get('/settings', (req, res) => {
     res.set('Cache-Control', 'no-store');
     res.json(getPublicSettings());
+  });
+  app.get('/translations', (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    res.json(getTranslations());
   });
 
   const server = app.listen(port, '0.0.0.0', () => {

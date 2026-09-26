@@ -171,6 +171,10 @@ const translations = {
       total: '합계'
     },
     logs: { title: '로그 보기' },
+    widget: {
+      disconnected: '위젯 프로그램과 연결이 끊겼습니다',
+      reconnecting: '다시 연결하는 중...'
+    },
     readme: {
       title: 'OBS 설정 안내',
       obsSetup: 'OBS 설정 방법',
@@ -356,6 +360,10 @@ const translations = {
       total: 'Total'
     },
     logs: { title: 'Logs' },
+    widget: {
+      disconnected: 'Lost connection to IIDXwidget',
+      reconnecting: 'Reconnecting...'
+    },
     readme: {
       title: 'OBS Setup Guide',
       obsSetup: 'How to set up OBS',
