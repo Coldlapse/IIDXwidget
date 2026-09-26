@@ -1,4 +1,4 @@
-const { pushSample, average, discDelta } = window.widgetLogic;
+const { discDelta, formatUptime } = window.widgetLogic;
 
 let lastDiscValue = null; // 첫 입력은 기준값으로만 쓴다
 let discRotation = 0;
@@ -6,15 +6,6 @@ let lastDiscUpdateTime = 0;
 let is2PMode = false;
 
 let DISC_UPDATE_INTERVAL = 20; // 기본값
-const buttonStates = {};
-const buttonPressTimes = {};
-const releaseDurations = [];
-const perButtonReleases = {};
-let totalKeyPresses = 0;
-let keyTimestamps = [];
-
-let globalMALength = 200;
-let perButtonMALength = 200;
 
 let isLatestDiscDirectionUp = true;
 
@@ -25,25 +16,37 @@ const needle = document.getElementById('disc-needle');
 const upperIndicator = document.getElementById("upper-indicator");
 const lowerIndicator = document.getElementById("lower-indicator");
 
-function formatUptime(seconds) {
-  const hrs = Math.floor(seconds / 3600);
-  const mins = Math.floor((seconds % 3600) / 60);
-  const secs = seconds % 60;
-  return `${hrs}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+// ─── 오늘 통계 (앱 본체가 계산해서 보내준다) ───────────────────
+// 타건 수·릴리즈·KPS·업타임은 앱 창과 OBS 위젯이 모두 같은 값을 보여준다.
+// 업타임은 받은 값에서부터 1초마다 직접 늘리고, 앱과 연결이 끊기면 멈춘다.
+let uptimeBase = null; // { activeMs, receivedAt }
+
+function applyStats(stats) {
+  if (!stats) return;
+  document.getElementById('session-display').textContent = `${stats.presses}`;
+  document.getElementById('kps-display').textContent = `${stats.kps} KPS`;
+  document.getElementById('release-display').textContent = stats.releaseAvg === null ? '00 ms' : `${stats.releaseAvg} ms`;
+  document.querySelectorAll('.key').forEach(key => {
+    const id = key.id.replace('button-', '');
+    key.querySelector('.release-label').textContent = stats.perButton[id] ?? 99;
+  });
+  uptimeBase = { activeMs: stats.activeMs, receivedAt: performance.now() };
+  renderUptime();
 }
 
-function startUptimeTimer() {
-  const uptimeDisplay = document.getElementById('uptime-display');
-  if (!uptimeDisplay) return;
-
-  const startTime = Date.now(); // 타이머 시작 시점의 시간을 기록
-
-  setInterval(() => {
-    // 매번 현재 시간과 시작 시간의 차이를 계산하여 경과된 시간을 구함
-    const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
-    uptimeDisplay.textContent = `${formatUptime(elapsedSeconds)}`;
-  }, 1000); // 간격은 1초로 유지
+function renderUptime() {
+  if (!uptimeBase) return;
+  const ms = uptimeBase.activeMs + (performance.now() - uptimeBase.receivedAt);
+  document.getElementById('uptime-display').textContent = formatUptime(Math.floor(ms / 1000));
 }
+
+function stopUptime() {
+  if (!uptimeBase) return;
+  renderUptime();
+  uptimeBase = null;
+}
+
+setInterval(renderUptime, 1000);
 
 function rotateDisc(delta) {
   discRotation -= delta * 2.5;
@@ -87,80 +90,11 @@ function updateBorders(delta) {
   }
 }
 
+// 버튼 불빛은 입력을 받는 즉시 직접 그린다 (숫자는 applyStats가 담당)
 function updateButton(id, pressed) {
-  const el = document.getElementById(`button-${id}`);
-  if (!el) return;
-  const now = Date.now();
-
-  if (pressed) {
-    el.classList.add("active");
-    if (!buttonStates[id]) {
-      buttonPressTimes[id] = now;
-      totalKeyPresses++;
-      keyTimestamps.push(now);
-      updateSessionDisplay();
-    }
-    buttonStates[id] = true;
-  } else {
-    el.classList.remove("active");
-    if (buttonStates[id]) {
-      const pressTime = buttonPressTimes[id];
-      const releaseDuration = Math.min(Date.now() - pressTime, 99);
-
-      if (window.electronAPI?.sendChatterData) {
-        window.electronAPI.sendChatterData({
-          button: id,
-          releaseTime: releaseDuration
-        });
-      }
-
-      perButtonReleases[id] = pushSample(perButtonReleases[id] || [], releaseDuration, perButtonMALength);
-      updateButtonReleaseLabel(id);
-
-      pushSample(releaseDurations, releaseDuration, globalMALength);
-      updateReleaseDisplay();
-    }
-    buttonStates[id] = false;
-  }
-
+  document.getElementById(`button-${id}`)?.classList.toggle('active', pressed);
 }
 
-function updateButtonReleaseLabel(id) {
-  const label = document.querySelector(`#button-${id} .release-label`);
-  if (label && perButtonReleases[id]?.length) label.textContent = `${average(perButtonReleases[id]).toFixed(0)}`;
-}
-
-function updateReleaseDisplay() {
-  const display = document.getElementById('release-display');
-  if (!display || releaseDurations.length === 0) return;
-  display.textContent = `${average(releaseDurations).toFixed(0)} ms`;
-}
-
-// 표본 개수 설정이 줄면 저장 즉시 오래된 표본을 버리고 평균을 다시 계산한다
-function applyMALengths(globalLength, perButtonLength) {
-  globalMALength = globalLength;
-  perButtonMALength = perButtonLength;
-  if (releaseDurations.length > globalMALength) releaseDurations.splice(0, releaseDurations.length - globalMALength);
-  Object.keys(perButtonReleases).forEach(id => {
-    const samples = perButtonReleases[id];
-    if (samples.length > perButtonMALength) samples.splice(0, samples.length - perButtonMALength);
-    updateButtonReleaseLabel(id);
-  });
-  updateReleaseDisplay();
-}
-
-function updateSessionDisplay() {
-  const display = document.getElementById('session-display');
-  if (display) display.textContent = `${totalKeyPresses}`;
-}
-
-function updateKPSDisplay() {
-  const display = document.getElementById('kps-display');
-  const now = Date.now();
-  keyTimestamps = keyTimestamps.filter(ts => ts >= now - 1000);
-  if (display) display.textContent = `${parseInt(keyTimestamps.length)} KPS`;
-}
-setInterval(updateKPSDisplay, 100);
 
 function applyDiscImage(settings) {
   const resolve = p => window.imageUrl.resolveImageUrl(p, { protocol: location.protocol, serverPort: settings.serverPort });
@@ -239,7 +173,10 @@ function connectWebSocket(port) {
   ws.onopen = () => console.log(`[WS] Connected to ws://${wsHost}:${port}`);
   ws.onerror = (e) => console.error("[WS] Error", e);
   // 앱 재시작/설정 변경으로 연결이 끊기면 자동으로 다시 연결
-  ws.onclose = () => scheduleReconnect();
+  ws.onclose = () => {
+    stopUptime();
+    scheduleReconnect();
+  };
   ws.onmessage = (event) => {
     let dataList;
     try {
@@ -249,8 +186,11 @@ function connectWebSocket(port) {
       return;
     }
     if (!Array.isArray(dataList)) return;
-    if (dataList.some(data => data.type === 'settings-updated')) refreshSettings();
-    dataList.forEach(handleData);
+    for (const data of dataList) {
+      if (data.type === 'settings-updated') refreshSettings();
+      else if (data.type === 'stats') applyStats(data.stats);
+      else handleData(data);
+    }
   };
 }
 
@@ -303,7 +243,6 @@ function applySettings(settings) {
     applyButtonLayout(settings.widget.buttonLayout || '1P');
     applyDiscImage(settings);
     applyPromoBox(settings);
-    applyMALengths(settings.widget.globalMALength || 200, settings.widget.perButtonMALength || 200);
     applyCustomColors(settings.widget.colors, settings.widget.transparentContainer);
   }
 
@@ -337,9 +276,11 @@ if (window.electronAPI?.onControllerData) {
 
 window.electronAPI?.onSettingsUpdated?.(refreshSettings);
 
-window.addEventListener('DOMContentLoaded', () => {
-  startUptimeTimer();
-});
+// 앱 창은 IPC로 통계를 받는다 (OBS는 웹소켓으로 받음)
+if (window.electronAPI?.onStats) {
+  window.electronAPI.onStats(applyStats);
+  window.electronAPI.getStats().then(applyStats);
+}
 
 window.iidxapi?.getAppVersion?.().then(version => {
   document.title = `IIDXwidget v${version} by Sadang`;
@@ -378,20 +319,3 @@ function applyPromoBox(settings) {
     promoBottom.style.display = 'none';
   }
 }
-
-// ✅ Main 프로세스로부터 요청이 오면 현재 타건 수를 응답
-if (window.electronAPI?.requestSessionCount) {
-  window.electronAPI.requestSessionCount(() => {
-    window.electronAPI.sendSessionCount(totalKeyPresses);
-  });
-}
-
-// ✅ Main 프로세스로부터 초기화 명령이 오면 타건 수를 0으로 리셋
-if (window.electronAPI?.onResetSessionCount) {
-    window.electronAPI.onResetSessionCount(() => {
-        totalKeyPresses = 0;
-        updateSessionDisplay();
-        console.log('Session count has been reset by the main process.');
-    });
-}
-

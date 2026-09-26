@@ -1,15 +1,9 @@
 const assert = require('assert');
-const { pushSample, average, discDelta } = require('../renderer/widget/logic');
+const { discDelta, formatUptime } = require('../renderer/widget/logic');
 const { resolveImageUrl } = require('../renderer/shared/imageUrl');
 const { buildGenericMapping, validatePorts, validateMALength } = require('../renderer/settings/formLogic');
 
-// H4: 최대 개수가 줄면 다음 표본에서 한 번에 줄어든다
-const samples = Array.from({ length: 1000 }, (_, i) => i);
-pushSample(samples, 5, 10);
-assert.equal(samples.length, 10);
-assert.equal(samples[9], 5);
-assert.equal(average([10, 20, 30]), 20);
-assert.equal(average([]), 0);
+assert.equal(formatUptime(3725), '1:02:05');
 
 // L9: 첫 값은 회전 없음, 0/255 경계는 짧은 쪽으로
 assert.equal(discDelta(null, 40), 0);

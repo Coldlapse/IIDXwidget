@@ -53,6 +53,7 @@ $('save-button').addEventListener('click', async () => {
     controllerProfile,
     lr2ModeEnabled: $('lr2ModeEnabled').checked,
     autoLaunch: $('autoLaunch').checked,
+    autoUploadOnQuit: $('autoUploadOnQuit').checked,
     keyMapping: {
       KB: kbMapping,
       GENERIC: generic.mapping,
@@ -151,6 +152,7 @@ for (const slotName of Object.keys(discSlots)) {
   $('buttonLayout').value = settings.widget.buttonLayout;
   $('lr2ModeEnabled').checked = !!settings.lr2ModeEnabled;
   $('autoLaunch').checked = !!settings.autoLaunch;
+  $('autoUploadOnQuit').checked = !!settings.autoUploadOnQuit;
   $('showPromoBox').checked = !!settings.widget.showPromoBox;
   $('transparent-container').checked = !!settings.widget.transparentContainer;
   updateContainerColorAvailability();

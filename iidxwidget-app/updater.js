@@ -19,7 +19,8 @@ function releaseNotesText(notes) {
 }
 
 // t(key, values): 번역 함수, store: skippedVersion 저장용 electron-store
-function setupUpdater({ t, store, logger }) {
+// beforeInstall(): 설치를 위해 앱이 바로 꺼지기 전에 기록 저장 등을 끝낸다 (종료 창을 거치지 않음)
+function setupUpdater({ t, store, logger, beforeInstall = () => {} }) {
   autoUpdater.logger = logger;
   autoUpdater.autoDownload = false;
 
@@ -90,7 +91,10 @@ function setupUpdater({ t, store, logger }) {
       defaultId: 0,
       cancelId: 1
     });
-    if (confirm === 0) autoUpdater.quitAndInstall(); // ✅ 종료 후 설치
+    if (confirm === 0) {
+      beforeInstall();
+      autoUpdater.quitAndInstall(); // ✅ 종료 후 설치
+    }
   });
 
   function check(isManual) {

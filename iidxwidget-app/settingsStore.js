@@ -11,6 +11,7 @@ const DEFAULT_SETTINGS = {
   controllerProfile: 'PHOENIXWAN',
   lr2ModeEnabled: false,
   autoLaunch: false,
+  autoUploadOnQuit: false, // 종료할 때 남은 타건 기록을 beatmania.app으로 전송 (토큰이 필요해서 기본은 꺼짐)
   keyMapping: {
     KB: {
       SCup: 'ShiftLeft',

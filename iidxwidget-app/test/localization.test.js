@@ -10,7 +10,7 @@ const getNested = (object, key) => key.split('.').reduce((value, part) => value 
 assert.equal(normalizeLanguage(), 'ko');
 assert.equal(normalizeLanguage('invalid'), 'ko');
 assert.equal(translate('en', 'menu.settings'), 'Settings');
-assert.equal(translate('ko', 'upload.confirm', { count: 3 }).startsWith('현재 타건 수 3회'), true);
+assert.equal(translate('ko', 'records.uploadNow', { count: 3 }), '지금 전송 (3타)');
 
 // 영어에 없는 키는 한국어로 대체
 translations.ko.__fallbackTest = '한국어';
@@ -22,7 +22,8 @@ const sources = [
   'main.js', 'updater.js',
   'renderer/settings/settings.html', 'renderer/settings/settings.js',
   'renderer/chatter/chatter.html', 'renderer/chatter/chatter.js',
-  'renderer/logs/logs.html'
+  'renderer/logs/logs.html',
+  'renderer/records/records.html', 'renderer/records/records.js'
 ];
 const keyPatterns = [
   /data-i18n(?:-placeholder)?="([\w.]+)"/g,        // HTML 속성
@@ -35,7 +36,9 @@ for (const file of sources) {
   for (const pattern of keyPatterns) for (const m of text.matchAll(pattern)) usedKeys.add(m[1]);
 }
 // 조건부로 만드는 키 / 로거 코드로 만드는 키
-['settings.savedPortChanged', 'settings.discImageUp',
+['settings.savedPortChanged', 'settings.discImageUp', 'records.autoUploadOn', 'records.autoUploadOff',
+ ...['busy', 'noToken', 'noData', 'unauthorized', 'server', 'network', 'timeout'].map(r => `records.error.${r}`),
+ ...['save', 'upload', 'inputs', 'servers'].map(k => `shutdown.step.${k}`),
  ...['notFound', 'connected', 'openFailed', 'deviceError', 'closed', 'closeFailed', 'dataError', 'lr2Activated', 'lr2Deactivated'].map(c => `controller.${c}`)
 ].forEach(key => usedKeys.add(key));
 

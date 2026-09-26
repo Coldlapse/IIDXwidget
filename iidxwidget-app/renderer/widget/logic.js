@@ -1,16 +1,6 @@
 // 위젯의 계산 로직. 브라우저에서는 window.widgetLogic, node(테스트)에서는 module.exports로 쓴다.
+// 타건 수·릴리즈 같은 통계는 앱 본체(sessionStats.js)가 계산하고, 위젯은 받아서 그리기만 한다.
 (function (root) {
-  // 표본을 넣고, 최대 개수를 넘는 오래된 값을 모두 버린다 (최대 개수가 줄어든 경우 포함)
-  function pushSample(samples, value, maxLength) {
-    samples.push(value);
-    if (samples.length > maxLength) samples.splice(0, samples.length - maxLength);
-    return samples;
-  }
-
-  function average(samples) {
-    return samples.length ? samples.reduce((a, b) => a + b, 0) / samples.length : 0;
-  }
-
   // 턴테이블 값(0–255, 한 바퀴를 넘으면 다시 0부터) 두 개 사이의 회전량. 첫 값이면 0
   function discDelta(previous, next) {
     if (previous === null || previous === undefined) return 0;
@@ -19,7 +9,15 @@
     return delta;
   }
 
-  const api = { pushSample, average, discDelta };
+  // 초 → 'H:MM:SS'
+  function formatUptime(seconds) {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hrs}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  }
+
+  const api = { discDelta, formatUptime };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.widgetLogic = api;
 })(typeof window !== 'undefined' ? window : globalThis);

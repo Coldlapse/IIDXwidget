@@ -5,7 +5,8 @@ let wssPort = null;
 
 // options.isAllowedOrigin(origin): 브라우저 연결의 Origin 허용 여부
 // options.onError(error, port): 포트 충돌 등 서버 오류 알림
-function startWebSocketServer(port = 5678, { isAllowedOrigin = () => true, onError } = {}) {
+// options.onConnection(): 새 연결에 처음 보낼 메시지 목록 (예: 현재 통계)
+function startWebSocketServer(port = 5678, { isAllowedOrigin = () => true, onError, onConnection } = {}) {
   // 같은 포트로 이미 떠 있으면 기존 연결(OBS 등)을 그대로 유지
   if (wss && wssPort === port) return wss;
 
@@ -22,6 +23,11 @@ function startWebSocketServer(port = 5678, { isAllowedOrigin = () => true, onErr
   });
 
   console.log(`🟢 WebSocket server running at ws://0.0.0.0:${port}`);
+
+  server.on('connection', (client) => {
+    const initial = onConnection?.();
+    if (initial) client.send(JSON.stringify(initial));
+  });
 
   server.on('error', (error) => {
     console.error(`❌ WebSocket Server Error: ${error.message}`);

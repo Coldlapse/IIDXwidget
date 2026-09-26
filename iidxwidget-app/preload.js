@@ -23,14 +23,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
   stopMappingSession: () => ipcRenderer.invoke('stop-mapping-session'),
   // 턴테이블을 돌리는 동안 축 바이트를 찾는다. 결과 { byteIndex, distinct } 또는 null
   learnTurntableAxis: () => ipcRenderer.invoke('learn-turntable-axis'),
-  sendChatterData: (data) => ipcRenderer.send('chatter-data', data),
+  // 오늘 통계 (타건 수, 릴리즈, KPS, 업타임 등). 앱 창과 OBS 위젯이 같은 값을 받는다
+  getStats: () => ipcRenderer.invoke('get-stats'),
+  onStats: (callback) => ipcRenderer.on('stats', (_, stats) => callback(stats)),
+  // 기록 페이지: 오늘·일별 기록, 지금 전송
+  getRecords: () => ipcRenderer.invoke('get-records'),
+  uploadNow: () => ipcRenderer.invoke('upload-now'),
   requestChatterSummary: () => ipcRenderer.invoke('request-chatter-summary'),
-  // Main -> Renderer: "카운트 알려줘" 요청을 받을 리스너
-  requestSessionCount: (callback) => ipcRenderer.on('request-session-count', () => callback()),
-  // Renderer -> Main: 카운트를 담아 보낼 함수
-  sendSessionCount: (count) => ipcRenderer.send('session-count', count),
-  // Main -> Renderer: "카운트 초기화해" 명령을 받을 리스너
-  onResetSessionCount: (callback) => ipcRenderer.on('reset-session-count', () => callback())
+  // 종료 진행 창
+  onShutdownStart: (callback) => ipcRenderer.on('shutdown-start', (_, data) => callback(data)),
+  onShutdownProgress: (callback) => ipcRenderer.on('shutdown-progress', (_, data) => callback(data))
 });
 
 contextBridge.exposeInMainWorld('iidxapi', {

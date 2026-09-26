@@ -7,7 +7,7 @@ const translations = {
       language: 'Language',
       settings: '설정',
       logs: '로그',
-      uploadCount: '타건 기록 서버로 전송',
+      records: '기록',
       chatter: '채터링 감지',
       about: '정보',
       contributors: '기여자',
@@ -24,17 +24,49 @@ const translations = {
         'MellDa1024 : 스크래치 회전 방향별 이미지\n' +
         'Ryochobi : 한국어/영어 지원, 자동 감지, 위젯 배경 설정'
     },
-    upload: {
-      noToken: 'API 토큰이 설정되지 않았습니다.',
-      noData: '전송할 타건 기록이 없습니다.',
-      confirmTitle: '타건 기록 전송 확인',
-      confirm: '현재 타건 수 {count}회를 서버로 전송합니다.\nOBS의 수치는 그대로 남고, 앱 화면의 타건 수치는 0으로 초기화됩니다. 계속하시겠습니까?',
-      failed: '전송 실패',
-      invalidToken: '잘못된 토큰입니다.',
-      success: '전송 성공',
-      successMessage: '완료되었습니다. (일일 총 타건 수: {count})',
-      error: '오류가 발생했습니다: {message}',
-      noResponse: '위젯에서 타건 수를 받지 못했습니다. 잠시 후 다시 시도해 주세요.'
+    records: {
+      title: '기록',
+      today: '오늘',
+      presses: '타건 수',
+      uploaded: '전송함',
+      pending: '전송할 양',
+      activeTime: '활동 시간',
+      releaseAvg: '평균 릴리즈',
+      chatter: '채터링',
+      uploadNow: '지금 전송 ({count}타)',
+      uploading: '전송 중...',
+      uploadedMessage: '{count}타를 전송했습니다. (서버 일일 합계: {total})',
+      noToken: '설정에서 beatmania.app 타건 기록 토큰을 입력하면 전송할 수 있습니다.',
+      uploadsTitle: '오늘 전송 내역',
+      noUploads: '아직 전송한 기록이 없습니다.',
+      time: '시각',
+      count: '전송한 양',
+      dailyTotal: '서버 일일 합계',
+      history: '일별 기록',
+      noHistory: '지난 기록이 없습니다.',
+      date: '날짜',
+      autoUploadOn: '종료할 때 남은 기록 자동 전송: 켜짐 (설정에서 변경)',
+      autoUploadOff: '종료할 때 남은 기록 자동 전송: 꺼짐 (설정에서 변경)',
+      resetNote: '기록은 매일 0시(이 컴퓨터 시간)에 새로 시작합니다. 전송하지 않은 양은 그날 기록에 남습니다.',
+      error: {
+        busy: '이미 전송 중입니다.',
+        noToken: '토큰이 설정되지 않았습니다.',
+        noData: '전송할 타건 기록이 없습니다.',
+        unauthorized: '잘못된 토큰입니다.',
+        server: '서버가 요청을 처리하지 못했습니다.',
+        network: '서버에 연결하지 못했습니다.',
+        timeout: '서버 응답이 너무 늦습니다.'
+      }
+    },
+    shutdown: {
+      title: '종료 중...',
+      uploaded: '{count}타 전송 완료',
+      step: {
+        save: '기록 저장',
+        upload: '남은 타건 기록 전송 ({count}타)',
+        inputs: '입력 장치 정리',
+        servers: '위젯 서버 종료'
+      }
     },
     server: {
       portInUse: '{port}번 포트를 다른 프로그램이 쓰고 있어서 서버를 열지 못했습니다. 그 프로그램을 끄거나 설정에서 포트를 바꾼 뒤 저장해 주세요.'
@@ -75,6 +107,8 @@ const translations = {
       apiToken: 'beatmania.app 타건 기록 토큰',
       apiPlaceholder: '웹사이트에서 발급받은 토큰 입력',
       lr2: 'LR2 모드 감지 (주작콘 전용)',
+      autoUploadOnQuit: '종료할 때 남은 타건 기록 자동 전송',
+      autoUploadHint: 'beatmania.app 토큰이 있어야 동작합니다.',
       keyboardMapping: '키보드 매핑 (저는 KB를 하는 바보입니다)',
       genericMapping: 'AUTO 일반 컨트롤러 매핑',
       genericHelp: '각 칸을 클릭한 다음 원하는 컨트롤러 버튼을 누르세요. 칸을 비우면 매핑이 해제됩니다. 마지막에 저장을 누르세요.',
@@ -156,7 +190,7 @@ const translations = {
       language: 'Language',
       settings: 'Settings',
       logs: 'Logs',
-      uploadCount: 'Upload play count',
+      records: 'Records',
       chatter: 'Chatter detector',
       about: 'About',
       contributors: 'Contributors',
@@ -173,17 +207,49 @@ const translations = {
         'MellDa1024 : turntable images by spin direction\n' +
         'Ryochobi : Korean/English, auto-detect, widget background options'
     },
-    upload: {
-      noToken: 'API token is not configured.',
-      noData: 'There is no play count to upload.',
-      confirmTitle: 'Confirm play-count upload',
-      confirm: 'Upload the current count of {count} to the server?\nThe OBS count remains unchanged and the app count will reset to 0.',
-      failed: 'Upload failed',
-      invalidToken: 'The token is invalid.',
-      success: 'Upload successful',
-      successMessage: 'Complete. (Daily total: {count})',
-      error: 'An error occurred: {message}',
-      noResponse: 'Could not get the play count from the widget. Please try again in a moment.'
+    records: {
+      title: 'Records',
+      today: 'Today',
+      presses: 'Presses',
+      uploaded: 'Uploaded',
+      pending: 'To upload',
+      activeTime: 'Active time',
+      releaseAvg: 'Avg release',
+      chatter: 'Chatter',
+      uploadNow: 'Upload now ({count})',
+      uploading: 'Uploading...',
+      uploadedMessage: 'Uploaded {count}. (Server daily total: {total})',
+      noToken: 'Enter your beatmania.app play-count token in Settings to upload.',
+      uploadsTitle: "Today's uploads",
+      noUploads: 'Nothing uploaded yet.',
+      time: 'Time',
+      count: 'Uploaded',
+      dailyTotal: 'Server daily total',
+      history: 'Daily records',
+      noHistory: 'No past records yet.',
+      date: 'Date',
+      autoUploadOn: 'Upload the rest when quitting: on (change in Settings)',
+      autoUploadOff: 'Upload the rest when quitting: off (change in Settings)',
+      resetNote: "Records start fresh every day at midnight (this computer's time). Anything not uploaded stays in that day's record.",
+      error: {
+        busy: 'An upload is already in progress.',
+        noToken: 'No token is set.',
+        noData: 'There is nothing to upload.',
+        unauthorized: 'The token is invalid.',
+        server: 'The server could not process the request.',
+        network: 'Could not reach the server.',
+        timeout: 'The server took too long to respond.'
+      }
+    },
+    shutdown: {
+      title: 'Quitting...',
+      uploaded: 'Uploaded {count}',
+      step: {
+        save: 'Saving records',
+        upload: 'Uploading remaining presses ({count})',
+        inputs: 'Releasing input devices',
+        servers: 'Stopping widget servers'
+      }
     },
     server: {
       portInUse: 'Port {port} is used by another program, so the server could not start. Close that program or change the port in Settings, then save.'
@@ -224,6 +290,8 @@ const translations = {
       apiToken: 'beatmania.app play-count token',
       apiPlaceholder: 'Enter the token issued by the website',
       lr2: 'Detect LR2 mode (dedicated controller only)',
+      autoUploadOnQuit: 'Upload remaining presses when quitting',
+      autoUploadHint: 'Requires a beatmania.app token.',
       keyboardMapping: 'Keyboard mapping',
       genericMapping: 'AUTO generic controller mapping',
       genericHelp: 'Click a field, then press the controller button to map. Clear a field to unmap it. Press Save when finished.',

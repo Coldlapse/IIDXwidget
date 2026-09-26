@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'" />
+  <title>IIDXwidget</title>
+  <link rel="stylesheet" href="../shared/fonts.css" />
+  <style>
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      box-sizing: border-box;
+      padding: 20px 24px;
+      background-color: #1e1e1e;
+      color: #fff;
+      font-family: 'Nanum Gothic', sans-serif;
+      border: 1px solid #333;
+      user-select: none;
+      -webkit-app-region: drag;
+    }
+    h1 { font-size: 17px; margin: 0 0 14px; }
+    ul { list-style: none; margin: 0; padding: 0; }
+    li { display: flex; gap: 10px; align-items: baseline; font-size: 14px; padding: 4px 0; color: #777; }
+    li .icon { width: 16px; text-align: center; }
+    li .detail { font-size: 12px; color: #999; }
+    li.running { color: #fff; }
+    li.running .icon { animation: spin 1s linear infinite; display: inline-block; }
+    li.done { color: #ccc; }
+    li.done .icon { color: #00c853; }
+    li.failed { color: #ccc; }
+    li.failed .icon, li.failed .detail { color: #ff5252; }
+    li.skipped { display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <h1 id="title">종료 중...</h1>
+  <ul id="steps"></ul>
+  <script src="shutdown.js"></script>
+</body>
+</html>
