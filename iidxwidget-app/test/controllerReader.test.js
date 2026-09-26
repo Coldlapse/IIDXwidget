@@ -38,3 +38,31 @@ assert.deepEqual(parseControllerData(report, pState).map(e => e.type), ['button'
 assert.deepEqual(parseControllerData(report, fState).map(e => e.type), ['button','axis']);
 assert.equal(findExactDedicatedDevice([keyboard], 'KB'), undefined);
 console.log('controllerReader tests passed');
+
+// report ID가 없는 장치: 첫 바이트가 버튼 1~8
+{
+  const { createGenericParserState } = require('../controller/controllerReader');
+  const mapping = { 1: 1, 3: 3 };
+  const s = createGenericParserState();
+  const pressed = events => events.filter(e => e.type === 'button').map(e => `${e.button} ${e.pressed ? 'down' : 'up'}`);
+  assert.deepEqual(pressed(parseGenericControllerData(Buffer.from([0, 0, 0, 0]), mapping, s)), []);
+  assert.equal(s.hasReportId, false);
+  assert.deepEqual(pressed(parseGenericControllerData(Buffer.from([1, 0, 0, 0]), mapping, s)), ['button 1 down']);
+  assert.deepEqual(pressed(parseGenericControllerData(Buffer.from([5, 0, 0, 0]), mapping, s)), ['button 3 down']);
+  assert.deepEqual(pressed(parseGenericControllerData(Buffer.from([0, 0, 0, 0]), mapping, s)), ['button 1 up', 'button 3 up']);
+}
+
+// report ID가 없는 장치인데 연결 순간 버튼 1이 눌려 있던 경우: 버튼을 떼는 순간 판단을 바로잡음
+{
+  const { createGenericParserState } = require('../controller/controllerReader');
+  const mapping = { 1: 1, 2: 2 };
+  const s = createGenericParserState();
+  const pressed = events => events.filter(e => e.type === 'button').map(e => `${e.button} ${e.pressed ? 'down' : 'up'}`);
+  parseGenericControllerData(Buffer.from([1, 0, 0, 0]), mapping, s); // 처음엔 report ID로 오인
+  assert.equal(s.hasReportId, true);
+  assert.deepEqual(pressed(parseGenericControllerData(Buffer.from([0, 0, 0, 0]), mapping, s)), []);
+  assert.equal(s.hasReportId, false);
+  assert.deepEqual(pressed(parseGenericControllerData(Buffer.from([2, 0, 0, 0]), mapping, s)), ['button 2 down']);
+}
+
+console.log('controllerReader report-id tests passed');
