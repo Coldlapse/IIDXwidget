@@ -122,3 +122,40 @@ body {
 .guide-button:hover {
   background-color: #3a3a3a;
 }
+
+/* beatmania.app 계정 (토큰은 확인 후 바로 저장) */
+.account-status {
+  margin: 0;
+  font-size: 14px;
+  color: #ddd;
+}
+.account-status.bad { color: #ff6b6b; }
+
+.token-form {
+  display: flex;
+  gap: 8px;
+}
+.token-form input { flex: 1; min-width: 0; }
+.token-form button {
+  padding: 8px 16px;
+  font-size: 14px;
+  background-color: #2979ff;
+  color: #fff;
+}
+.token-form button:disabled { opacity: 0.6; cursor: default; }
+
+.token-message {
+  margin: 0;
+  min-height: 1em;
+  font-size: 13px;
+  color: #aaa;
+}
+.token-message.ok { color: #00c853; }
+.token-message.bad { color: #ff6b6b; }
+
+.account-links {
+  margin: 0;
+  font-size: 13px;
+  color: #777;
+}
+.account-links a { color: #4fc3f7; }

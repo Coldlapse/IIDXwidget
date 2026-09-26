@@ -30,6 +30,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getRecords: () => ipcRenderer.invoke('get-records'),
   uploadNow: () => ipcRenderer.invoke('upload-now'),
   requestChatterSummary: () => ipcRenderer.invoke('request-chatter-summary'),
+  // beatmania.app 계정: { username, hasToken, tokenInvalid }. 토큰은 서버에 확인한 뒤 암호화해서 바로 저장된다
+  getAccount: () => ipcRenderer.invoke('get-account'),
+  setApiToken: (token) => ipcRenderer.invoke('set-api-token', token),
+  clearApiToken: () => ipcRenderer.invoke('clear-api-token'),
+  onAccountChanged: (callback) => ipcRenderer.on('account-changed', (_, state) => callback(state)),
   // 가이드: 앱 언어에 맞는 문서를 뷰어로 연다 (id: USAGE, CONNECTION, RELEASE, CHATTER)
   openGuide: (id) => ipcRenderer.invoke('open-guide', id),
   // 가이드 뷰어: 문서 불러오기, 링크를 기본 브라우저로 열기(https만), 다른 가이드로 바꾸라는 알림

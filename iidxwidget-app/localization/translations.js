@@ -39,7 +39,9 @@ const translations = {
       uploadedMessage: '{count}타를 전송했습니다. (서버 오늘 합계: {total})',
       partiallySent: '({count}타까지는 전송됨)',
       serverTotal: '서버에 기록된 오늘 합계: {total}타 (마지막 전송 기준)',
-      noToken: '설정에서 beatmania.app 타건 기록 토큰을 입력하면 전송할 수 있습니다.',
+      noToken: '설정에서 beatmania.app 계정을 연결하면 전송할 수 있습니다.',
+      account: '{username} 계정으로 보냅니다.',
+      accountInvalid: '저장된 토큰을 서버가 받아 주지 않습니다. 설정에서 토큰을 다시 넣어 주세요.',
       uploadsTitle: '이번 세션 전송 내역',
       noUploads: '아직 전송한 기록이 없습니다.',
       time: '시각',
@@ -51,7 +53,7 @@ const translations = {
       myPage: '날짜별 기록은 beatmania.app 마이페이지에서 볼 수 있습니다.',
       error: {
         busy: '이미 전송 중입니다.',
-        noToken: '토큰이 설정되지 않았습니다.',
+        noToken: '연결된 계정이 없습니다.',
         noData: '전송할 타건 기록이 없습니다.',
         unauthorized: '잘못된 토큰입니다.',
         dailyLimit: '서버의 하루 합계 한도(2,000,000타)를 넘어서 전송할 수 없습니다.',
@@ -106,8 +108,24 @@ const translations = {
       controllerProfile: '컨트롤러 프로필',
       auto: '자동 감지',
       keyboard: 'BM으로 하라고 만든 게임을 꾸역꾸역 키보드로 하는 멍청이',
-      apiToken: 'beatmania.app 타건 기록 토큰',
-      apiPlaceholder: '웹사이트에서 발급받은 토큰 입력',
+      account: 'beatmania.app 계정',
+      apiPlaceholder: 'API 토큰 붙여 넣기',
+      connectToken: '연결',
+      changeToken: '바꾸기',
+      accountConnected: '{username} 계정으로 연결되어 있습니다.',
+      accountUnchecked: '토큰이 저장되어 있습니다 (계정 확인 전).',
+      accountNone: '연결된 계정이 없습니다.',
+      accountInvalid: '저장된 토큰을 서버가 받아 주지 않습니다. 사이트의 API 토큰을 다시 복사해 넣어 주세요.',
+      tokenChecking: '확인 중...',
+      tokenSaved: '{username} 계정으로 연결했습니다.',
+      tokenError: {
+        unauthorized: '토큰이 맞지 않습니다. 사이트에서 다시 복사해 주세요.',
+        network: '서버에 닿지 않습니다 ({error})',
+        encryption: '이 PC에서 토큰을 암호화할 수 없어 저장하지 못했습니다.'
+      },
+      viewTokenOnSite: '사이트에서 토큰 보기',
+      myProfile: '내 서열표 ↗',
+      disconnect: '연결 해제',
       lr2: 'LR2 모드 감지 (주작콘 전용)',
       autoUploadOnQuit: '종료할 때 남은 타건 기록 자동 전송',
       autoUploadHint: 'beatmania.app 토큰이 있어야 동작합니다.',
@@ -191,20 +209,6 @@ const translations = {
       usageButton: '📘 사용법 가이드',
       connectionButton: '🔌 연결 가이드 (원컴/투컴 주소, IP 찾는 법)',
       chatterButton: '❓ 채터링 감지 가이드'
-    },
-    readme: {
-      title: 'OBS 설정 안내',
-      obsSetup: 'OBS 설정 방법',
-      obsInstructions:
-        '1. IIDXwidget을 실행한 상태로 유지하세요.\n' +
-        '2. OBS에서 소스 → + → 브라우저를 선택하세요.\n' +
-        '3. URL에 http://127.0.0.1:{serverPort}/widget/ 을 입력하세요.\n' +
-        '   투컴 방송이라면 127.0.0.1 대신 리듬 게임을 실행하는 컴퓨터의 IP를 입력하세요.\n' +
-        '4. 너비 800, 높이 600을 권장합니다.\n' +
-        '5. 확인을 누르세요.\n\n' +
-        '설정을 바꾸면 위젯에 바로 반영되고, 앱을 다시 켜도 위젯이 자동으로 다시 연결됩니다.\n' +
-        '앱을 업데이트한 직후에는 브라우저 소스 속성에서 "현재 페이지의 캐시를 새로고침"을 한 번 눌러주세요.\n\n' +
-        '웹소켓(ws://…:{webSocketPort})은 위젯이 자동으로 연결하므로 OBS에서 따로 설정할 필요가 없습니다.'
     }
   },
   en: {
@@ -245,7 +249,9 @@ const translations = {
       uploadedMessage: 'Uploaded {count}. (Server total today: {total})',
       partiallySent: '({count} were uploaded before the error)',
       serverTotal: 'Total recorded on the server today: {total} (as of the last upload)',
-      noToken: 'Enter your beatmania.app play-count token in Settings to upload.',
+      noToken: 'Connect your beatmania.app account in Settings to upload.',
+      account: 'Uploading as {username}.',
+      accountInvalid: 'The server rejected the saved token. Enter the token again in Settings.',
       uploadsTitle: 'Uploads in this session',
       noUploads: 'Nothing uploaded yet.',
       time: 'Time',
@@ -257,7 +263,7 @@ const translations = {
       myPage: 'See your daily records on your beatmania.app my page.',
       error: {
         busy: 'An upload is already in progress.',
-        noToken: 'No token is set.',
+        noToken: 'No account connected.',
         noData: 'There is nothing to upload.',
         unauthorized: 'The token is invalid.',
         dailyLimit: "The server's daily limit (2,000,000) would be exceeded.",
@@ -312,8 +318,24 @@ const translations = {
       controllerProfile: 'Controller Profile',
       auto: 'Auto-detect',
       keyboard: 'Keyboard',
-      apiToken: 'beatmania.app play-count token',
-      apiPlaceholder: 'Enter the token issued by the website',
+      account: 'beatmania.app account',
+      apiPlaceholder: 'Paste your API token',
+      connectToken: 'Connect',
+      changeToken: 'Change',
+      accountConnected: 'Connected as {username}.',
+      accountUnchecked: 'A token is saved (account not checked yet).',
+      accountNone: 'No account connected.',
+      accountInvalid: 'The server rejected the saved token. Copy the API token from the site again and paste it here.',
+      tokenChecking: 'Checking...',
+      tokenSaved: 'Connected as {username}.',
+      tokenError: {
+        unauthorized: 'The token is not valid. Copy it from the site again.',
+        network: 'Could not reach the server ({error})',
+        encryption: 'Could not encrypt the token on this PC, so it was not saved.'
+      },
+      viewTokenOnSite: 'View token on the site',
+      myProfile: 'My profile ↗',
+      disconnect: 'Disconnect',
       lr2: 'Detect LR2 mode (dedicated controller only)',
       autoUploadOnQuit: 'Upload remaining presses when quitting',
       autoUploadHint: 'Requires a beatmania.app token.',
@@ -397,20 +419,6 @@ const translations = {
       usageButton: '📘 Usage guide',
       connectionButton: '🔌 Connection guide (addresses, finding your IP)',
       chatterButton: '❓ Chatter detection guide'
-    },
-    readme: {
-      title: 'OBS Setup Guide',
-      obsSetup: 'How to set up OBS',
-      obsInstructions:
-        '1. Keep IIDXwidget running.\n' +
-        '2. In OBS, select Sources → + → Browser.\n' +
-        '3. Enter http://127.0.0.1:{serverPort}/widget/ as the URL.\n' +
-        '   For a two-PC setup, use the IP of the PC running the rhythm game instead of 127.0.0.1.\n' +
-        '4. A width of 800 and height of 600 is recommended.\n' +
-        '5. Click OK.\n\n' +
-        'Settings changes apply to the widget right away, and the widget reconnects automatically when the app restarts.\n' +
-        'Right after updating the app, click "Refresh cache of current page" once in the Browser Source properties.\n\n' +
-        'The widget connects to the WebSocket (ws://…:{webSocketPort}) automatically; no separate setup is needed in OBS.'
     }
   }
 };

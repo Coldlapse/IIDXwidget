@@ -1,6 +1,6 @@
 const assert = require('assert');
 const { createShutdown } = require('../shutdown');
-const { uploadTypingCount, uploadInChunks, MAX_PER_REQUEST } = require('../uploader');
+const { uploadTypingCount, uploadInChunks, whoami, ME_URL, MAX_PER_REQUEST } = require('../uploader');
 
 (async () => {
   // 순서대로 한 번만, 실패·시간 초과·건너뛰기가 있어도 끝까지 진행
@@ -54,6 +54,15 @@ const { uploadTypingCount, uploadInChunks, MAX_PER_REQUEST } = require('../uploa
   assert.equal((await uploadTypingCount({ token: 't', count: 3, fetchImpl: async () => { throw new Error('offline'); } })).reason, 'network');
   const hang = (url, { signal }) => new Promise((_, reject) => signal.addEventListener('abort', () => reject(Object.assign(new Error('aborted'), { name: 'AbortError' }))));
   assert.equal((await uploadTypingCount({ token: 't', count: 3, timeoutMs: 30, fetchImpl: hang })).reason, 'timeout');
+
+  // 토큰 주인 확인 (/api/v1/me/)
+  let seen = null;
+  const me = await whoami({ token: 'abc', fetchImpl: async (url, options) => { seen = { url, auth: options.headers.Authorization }; return reply(200, { username: 'sadang', profile_url: '/u/sadang/' })(); } });
+  assert.deepEqual(me, { kind: 'ok', username: 'sadang' });
+  assert.deepEqual(seen, { url: ME_URL, auth: 'Token abc' });
+  assert.equal((await whoami({ token: 'x', fetchImpl: reply(401, {}) })).kind, 'unauthorized');
+  assert.equal((await whoami({ token: 'x', fetchImpl: reply(500, {}) })).kind, 'network');
+  assert.equal((await whoami({ token: 'x', fetchImpl: async () => { throw new Error('offline'); } })).kind, 'network');
 
   console.log('shutdown/uploader tests passed');
 })().catch(e => { console.error(e); process.exit(1); });

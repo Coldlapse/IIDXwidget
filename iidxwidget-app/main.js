@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, ipcMain, dialog, screen, shell, net } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, dialog, screen, shell, net, safeStorage } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { pathToFileURL } = require('url');
@@ -12,13 +12,13 @@ const { startServer, stopServer } = require('./server');
 const { startWebSocketServer, stopWebSocketServer, broadcastControllerData, broadcastSettingsUpdated } = require('./wsServer');
 const { createInputManager } = require('./inputManager');
 const { createSessionManager } = require('./sessionManager');
-const { uploadInChunks } = require('./uploader');
+const { uploadInChunks, whoami } = require('./uploader');
 const { createShutdown } = require('./shutdown');
 const { setupUpdater } = require('./updater');
 const { GUIDE_IDS, guideFile, loadGuide } = require('./guides');
 const { translations, normalizeLanguage, translate } = require('./localization/translations');
 const {
-  DEFAULT_SETTINGS, applyUpdate, readSettingsFile, writeSettingsFile, publicSettings, referencedImageFiles
+  DEFAULT_SETTINGS, applyUpdate, settingsForWindow, readSettingsFile, writeSettingsFile, publicSettings, referencedImageFiles
 } = require('./settingsStore');
 
 
@@ -212,25 +212,98 @@ function currentMALengths() {
 }
 
 
+// 🔑 beatmania.app 계정 (beatmania.app Synchronizer와 같은 방식)
+// 토큰은 safeStorage(Windows DPAPI)로 암호화해 설정 파일에 두고, 서버에 확인한 뒤에만 저장한다.
+let tokenInvalid = false; // 저장된 토큰을 서버가 거부했다 (시작할 때 확인, 또는 전송 중 401)
+
+function getApiToken() {
+  if (!settings.apiTokenEnc) return null;
+  try {
+    return safeStorage.decryptString(Buffer.from(settings.apiTokenEnc, 'base64'));
+  } catch (e) {
+    // 다른 PC·Windows 계정에서 옮겨 온 설정이면 풀리지 않는다. 없는 것으로 본다.
+    return null;
+  }
+}
+
+function storeApiToken(token, username) {
+  settings.apiTokenEnc = token ? safeStorage.encryptString(token).toString('base64') : null;
+  settings.apiUsername = token ? username : null;
+  delete settings.apiToken;
+  tokenInvalid = false;
+  persistSettings();
+  broadcastAccount();
+}
+
+function accountState() {
+  return { username: settings.apiUsername, hasToken: !!getApiToken(), tokenInvalid };
+}
+
+function broadcastAccount() {
+  const state = accountState();
+  sendTo(settingsWindow, 'account-changed', state);
+  sendTo(recordsWindow, 'account-changed', state);
+}
+
+function markTokenInvalid() {
+  tokenInvalid = true;
+  settings.apiUsername = null;
+  persistSettings();
+  broadcastAccount();
+}
+
+// 2.x까지는 토큰을 평문(apiToken)으로 저장했다. 암호화해서 옮기고 평문은 지운다.
+function migrateLegacyToken() {
+  if (!('apiToken' in settings)) return;
+  const legacy = typeof settings.apiToken === 'string' ? settings.apiToken.trim() : '';
+  delete settings.apiToken;
+  if (legacy && safeStorage.isEncryptionAvailable()) {
+    settings.apiTokenEnc = safeStorage.encryptString(legacy).toString('base64');
+    console.log('🔑 저장된 토큰을 암호화해서 옮겼습니다.');
+  }
+  persistSettings();
+}
+
+// 저장된 토큰의 주인을 확인해 둔다. 인터넷이 안 되면 다음 기회로 미룬다.
+async function refreshAccount() {
+  const token = getApiToken();
+  if (!token) return;
+  const result = await whoami({ token });
+  if (result.kind === 'unauthorized') {
+    console.warn('⚠️ 저장된 beatmania.app 토큰을 서버가 받아 주지 않습니다. 설정에서 토큰을 다시 넣어 주세요.');
+    markTokenInvalid();
+  } else if (result.kind === 'ok') {
+    tokenInvalid = false;
+    if (result.username !== settings.apiUsername) {
+      settings.apiUsername = result.username;
+      persistSettings();
+    }
+    broadcastAccount();
+  }
+}
+
+
 // ✅ 타건 기록 전송: 이번 세션에서 아직 보내지 않은 양(남은 양)만 보낸다
 let uploadInProgress = false;
 
 // 결과: { ok: true, count, dailyTotal } 또는 { ok: false, reason, count(일부만 보낸 경우 보낸 양) }
 async function uploadRemaining({ timeoutMs } = {}) {
   if (uploadInProgress) return { ok: false, reason: 'busy' };
-  if (!settings.apiToken) return { ok: false, reason: 'noToken' };
+  const token = getApiToken();
+  if (!token) return { ok: false, reason: 'noToken' };
   const count = session.remaining();
   if (count <= 0) return { ok: false, reason: 'noData' };
 
   uploadInProgress = true;
   try {
     const result = await uploadInChunks({
-      token: settings.apiToken,
+      token,
       count,
       timeoutMs,
       onSent: (sent, dailyTotal) => session.recordUpload(sent, dailyTotal)
     });
     if (!result.ok) {
+      if (result.reason === 'unauthorized') markTokenInvalid();
       console.error(`❌ 타건 기록 전송 실패 (${result.reason}): ${result.message}`);
       return { ok: false, reason: result.reason, count: result.sent };
     }
@@ -272,17 +345,7 @@ function createStatusMenu() {
     },
     {
       label: t('guide.menu'),
-      submenu: [
-        ...GUIDE_IDS.map(id => ({ label: t(`guide.title.${id}`), click: () => openGuide(id) })),
-        { type: 'separator' },
-        {
-          label: t('readme.obsSetup'),
-          click: () => showInfo(t('readme.title'), t('readme.obsInstructions', {
-            serverPort: settings.serverPort,
-            webSocketPort: settings.webSocketPort
-          }))
-        }
-      ]
+      submenu: GUIDE_IDS.map(id => ({ label: t(`guide.title.${id}`), click: () => openGuide(id) }))
     }
   ]);
   Menu.setApplicationMenu(menu);
@@ -416,7 +479,7 @@ const shutdown = createShutdown({
     {
       key: 'upload',
       timeoutMs: QUIT_UPLOAD_TIMEOUT_MS + 1000,
-      skip: () => !settings.autoUploadOnQuit || !settings.apiToken || !session || session.remaining() <= 0,
+      skip: () => !settings.autoUploadOnQuit || !getApiToken() || !session || session.remaining() <= 0,
       run: async () => {
         const result = await uploadRemaining({ timeoutMs: QUIT_UPLOAD_TIMEOUT_MS });
         if (!result.ok) throw new Error(t(`records.error.${result.reason}`));
@@ -483,7 +546,7 @@ ipcMain.handle('get-language', () => normalizeLanguage(settings.language));
 ipcMain.handle('get-translations', () => translations);
 ipcMain.handle('request-log-buffer', () => logBuffer);
 ipcMain.handle('get-app-version', () => appVersion);
-ipcMain.handle('load-settings', () => settings);
+ipcMain.handle('load-settings', () => settingsForWindow(settings));
 ipcMain.handle('get-stats', () => session?.snapshot() ?? null);
 
 ipcMain.handle('save-settings', (event, incoming) => {
@@ -537,12 +600,32 @@ ipcMain.handle('learn-turntable-axis', () => inputs.learnTurntableAxis());
 // 기록 페이지
 ipcMain.handle('get-records', () => ({
   session: session.summary(),
-  hasToken: !!settings.apiToken,
+  hasToken: !!getApiToken(),
+  account: accountState(),
   autoUploadOnQuit: !!settings.autoUploadOnQuit
 }));
 ipcMain.handle('upload-now', () => uploadRemaining());
 
 ipcMain.handle('request-chatter-summary', () => session?.chatter() ?? {});
+
+// beatmania.app 계정: 토큰은 서버에 확인한 뒤에만 저장한다 (틀린 토큰으로 조용히 실패하지 않도록).
+// 결과: { ok: true, username } 또는 { ok: false, error: 'unauthorized' | 'network' | 'encryption', detail? }
+ipcMain.handle('get-account', () => accountState());
+ipcMain.handle('set-api-token', async (event, raw) => {
+  const token = typeof raw === 'string' ? raw.trim() : '';
+  if (!token) return { ok: false, error: 'unauthorized' };
+  if (!safeStorage.isEncryptionAvailable()) return { ok: false, error: 'encryption' };
+  const result = await whoami({ token });
+  if (result.kind === 'unauthorized') return { ok: false, error: 'unauthorized' };
+  if (result.kind === 'network') return { ok: false, error: 'network', detail: result.error };
+  storeApiToken(token, result.username);
+  console.log(`🔑 beatmania.app 토큰을 저장했습니다 (${result.username})`);
+  return { ok: true, username: result.username };
+});
+ipcMain.handle('clear-api-token', () => {
+  storeApiToken(null);
+  console.log('🔑 beatmania.app 토큰을 지웠습니다.');
+});
 
 // 가이드
 ipcMain.handle('open-guide', (event, id) => openGuide(id, { parent: BrowserWindow.fromWebContents(event.sender) }));
@@ -563,6 +646,8 @@ app.whenReady().then(() => {
   settings = loaded.settings;
   // 기본값을 합치고 이전 버전 형식을 바꾼 결과를 저장해 둔다
   persistSettings();
+  migrateLegacyToken();
+  refreshAccount();
   cleanupUserImages();
   applyAutoLaunch(settings.autoLaunch);
 

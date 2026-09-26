@@ -45,3 +45,4 @@ th, td { padding: 6px 8px; text-align: right; border-bottom: 1px solid #333; fon
 th:first-child, td:first-child { text-align: left; }
 th { color: #aaa; font-weight: normal; }
 .note a { display: block; margin-top: 4px; }
+#account-line.error { color: #ff5252; }

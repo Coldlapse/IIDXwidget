@@ -1,7 +1,7 @@
 const { formatUptime } = window.widgetLogic;
 const $ = id => document.getElementById(id);
 
-let data = null;              // { session, hasToken, autoUploadOnQuit }
+let data = null;              // { session, hasToken, account, autoUploadOnQuit }
 let lastUploadResult = null;
 let uploading = false;
 
@@ -28,11 +28,24 @@ function renderUploadButton() {
   $('token-hint').hidden = data.hasToken;
 }
 
+// 연결된 계정 (설정에서 토큰을 넣으면 서버에 확인한 계정 이름)
+function renderAccount() {
+  const account = data.account;
+  const line = $('account-line');
+  line.hidden = !data.hasToken;
+  line.classList.toggle('error', account.tokenInvalid);
+  $('account-text').textContent = account.tokenInvalid ? window.i18n.t('records.accountInvalid')
+    : account.username ? window.i18n.t('records.account', { username: account.username }) : '';
+  $('profile-link').hidden = !account.username || account.tokenInvalid;
+  if (account.username) $('profile-link').href = `https://beatmania.app/u/${encodeURIComponent(account.username)}/`;
+}
+
 function render() {
   if (!data || !window.i18n.ready) return;
   const s = data.session;
   $('started-at').textContent = window.i18n.t('records.startedAt', { time: new Date(s.startedAt).toLocaleString() });
   renderNumbers();
+  renderAccount();
   $('auto-upload-state').textContent = window.i18n.t(data.autoUploadOnQuit ? 'records.autoUploadOn' : 'records.autoUploadOff');
   $('server-total').hidden = s.lastDailyTotal === null;
   if (s.lastDailyTotal !== null) $('server-total').textContent = window.i18n.t('records.serverTotal', { total: s.lastDailyTotal });
@@ -102,4 +115,5 @@ setInterval(() => {
 }, 1000);
 
 document.addEventListener('i18n-changed', render);
+window.electronAPI.onAccountChanged(load);
 load();

@@ -5,7 +5,10 @@ const path = require('path');
 
 const DEFAULT_SETTINGS = {
   language: 'ko',
-  apiToken: '',
+  // beatmania.app API 토큰은 평문으로 두지 않는다 (beatmania.app Synchronizer와 같은 방식).
+  // Electron safeStorage(Windows DPAPI)로 암호화해 base64로 저장하고, 같은 PC·같은 Windows 계정에서만 풀린다.
+  apiTokenEnc: null,
+  apiUsername: null,       // 토큰 주인(/api/v1/me/). 연결된 계정 표시와 '내 서열표' 링크에 쓴다
   serverPort: 8080,
   webSocketPort: 5678,
   controllerProfile: 'PHOENIXWAN',
@@ -98,8 +101,13 @@ function withDefaults(saved) {
 
 // 설정 창에서 받은 값을 현재 설정에 합친다.
 // 키 매핑은 통째로 바꿔야 사용자가 지운 매핑이 기본값으로 되살아나지 않는다.
+// 계정(토큰) 값은 설정 저장으로 바꾸지 않는다. 토큰은 확인을 거쳐 따로 저장한다 (main의 set-api-token).
+const ACCOUNT_KEYS = ['apiToken', 'apiTokenEnc', 'apiUsername'];
+
 function applyUpdate(current, incoming) {
-  const next = deepMerge(clone(current), migrateSettings(incoming));
+  const accepted = migrateSettings(incoming);
+  ACCOUNT_KEYS.forEach(key => delete accepted[key]);
+  const next = deepMerge(clone(current), accepted);
   for (const kind of MAPPING_KINDS) {
     const mapping = incoming?.keyMapping?.[kind];
     if (mapping && typeof mapping === 'object') next.keyMapping[kind] = clone(mapping);
@@ -133,6 +141,13 @@ function publicSettings(settings) {
   };
 }
 
+// 설정 창에 보내는 설정. 토큰(암호화된 값 포함)은 화면으로 보내지 않는다. 계정 표시는 get-account로 따로 받는다.
+function settingsForWindow(settings) {
+  const copy = clone(settings);
+  ACCOUNT_KEYS.forEach(key => delete copy[key]);
+  return copy;
+}
+
 // 설정이 참조하는 사용자 이미지 파일 이름
 function referencedImageFiles(settings) {
   return [settings.widget?.discImagePath, settings.widget?.downDiscImagePath]
@@ -149,6 +164,7 @@ module.exports = {
   migrateSettings,
   withDefaults,
   applyUpdate,
+  settingsForWindow,
   readSettingsFile,
   writeSettingsFile,
   publicSettings,

@@ -51,4 +51,23 @@ async function uploadInChunks({ token, count, timeoutMs, fetchImpl, onSent = () 
   return { ok: true, sent, dailyTotal };
 }
 
-module.exports = { uploadTypingCount, uploadInChunks, API_URL, MAX_PER_REQUEST };
+// 토큰이 누구의 것인지 (beatmania.app Synchronizer와 같은 API). 토큰을 넣는 순간 확인하고, 연결된 계정을 보여주는 데 쓴다.
+// 결과: { kind: 'ok', username } | { kind: 'unauthorized' } | { kind: 'network', error }
+const ME_URL = 'https://beatmania.app/api/v1/me/';
+
+async function whoami({ token, timeoutMs = 10000, fetchImpl = fetch }) {
+  try {
+    const response = await fetchImpl(ME_URL, {
+      headers: { 'Authorization': `Token ${token}` },
+      signal: AbortSignal.timeout(timeoutMs)
+    });
+    if (response.status === 401 || response.status === 403) return { kind: 'unauthorized' };
+    if (!response.ok) return { kind: 'network', error: `HTTP ${response.status}` };
+    const data = await response.json().catch(() => ({}));
+    return data.username ? { kind: 'ok', username: data.username } : { kind: 'network', error: 'unexpected response' };
+  } catch (error) {
+    return { kind: 'network', error: error.message };
+  }
+}
+
+module.exports = { uploadTypingCount, uploadInChunks, whoami, API_URL, ME_URL, MAX_PER_REQUEST };

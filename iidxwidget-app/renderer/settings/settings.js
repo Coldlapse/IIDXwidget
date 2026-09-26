@@ -47,7 +47,6 @@ $('save-button').addEventListener('click', async () => {
   });
 
   const newSettings = {
-    apiToken: $('apiToken').value,
     serverPort,
     webSocketPort,
     controllerProfile,
@@ -145,7 +144,6 @@ for (const slotName of Object.keys(discSlots)) {
   if (!settings) return;
   loadedSettings = settings;
 
-  $('apiToken').value = settings.apiToken || '';
   $('serverPort').value = settings.serverPort;
   $('webSocketPort').value = settings.webSocketPort;
   $('controllerProfile').value = settings.controllerProfile;
@@ -321,4 +319,67 @@ $('transparent-container').addEventListener('change', updateContainerColorAvaila
 // 가이드 열기 (오른쪽 위: 사용법, 포트 아래: 연결 가이드)
 document.querySelectorAll('[data-guide]').forEach(button => {
   button.addEventListener('click', () => window.electronAPI.openGuide(button.dataset.guide));
+});
+
+// 🔑 beatmania.app 계정 (beatmania.app Synchronizer와 같은 방식)
+// 토큰은 '연결'을 누르면 서버에 확인한 뒤 암호화해서 바로 저장한다. 설정 저장 버튼과는 따로 동작한다.
+let account = null; // { username, hasToken, tokenInvalid }
+
+function renderAccount() {
+  if (!account || !window.i18n.ready) return;
+  const t = window.i18n.t;
+  const status = $('account-status');
+  status.classList.toggle('bad', account.tokenInvalid);
+  status.textContent = account.tokenInvalid ? t('settings.accountInvalid')
+    : account.username ? t('settings.accountConnected', { username: account.username })
+    : account.hasToken ? t('settings.accountUnchecked') : t('settings.accountNone');
+  $('connect-token').textContent = t(account.hasToken ? 'settings.changeToken' : 'settings.connectToken');
+  $('disconnect-group').hidden = !account.hasToken;
+  $('profile-link-group').hidden = !account.username;
+  if (account.username) $('profile-link').href = `https://beatmania.app/u/${encodeURIComponent(account.username)}/`;
+}
+
+function showTokenMessage(text, kind = '') {
+  const message = $('token-message');
+  message.className = kind ? `token-message ${kind}` : 'token-message';
+  message.textContent = text;
+}
+
+async function connectToken() {
+  const input = $('apiToken');
+  if (!input.value.trim()) return;
+  const button = $('connect-token');
+  button.disabled = true;
+  showTokenMessage(window.i18n.t('settings.tokenChecking'));
+  const result = await window.electronAPI.setApiToken(input.value);
+  button.disabled = false;
+  if (result.ok) {
+    input.value = '';
+    showTokenMessage(window.i18n.t('settings.tokenSaved', { username: result.username }), 'ok');
+  } else {
+    showTokenMessage(window.i18n.t(`settings.tokenError.${result.error}`, { error: result.detail ?? '' }), 'bad');
+  }
+}
+
+$('connect-token').addEventListener('click', connectToken);
+$('apiToken').addEventListener('keydown', event => {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    connectToken();
+  }
+});
+$('disconnect-token').addEventListener('click', async event => {
+  event.preventDefault();
+  await window.electronAPI.clearApiToken();
+  showTokenMessage('');
+});
+
+window.electronAPI.onAccountChanged(state => {
+  account = state;
+  renderAccount();
+});
+document.addEventListener('i18n-changed', renderAccount);
+window.electronAPI.getAccount().then(state => {
+  account = state;
+  renderAccount();
 });

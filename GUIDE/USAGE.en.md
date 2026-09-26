@@ -67,7 +67,7 @@ Press **Save** to apply changes. Saved changes show up in the OBS widget right a
 
 | Setting | Meaning |
 |---|---|
-| **beatmania.app play-count token** | Paste the token from [beatmania.app](https://beatmania.app) My Page → **Get an API token**. You need it to upload play counts. |
+| **beatmania.app account** | Paste the token from [beatmania.app](https://beatmania.app) My Page → **Get an API token** and press **Connect**. It is checked with the server and saved right away, and the connected account name is shown. The token is stored encrypted with your Windows account. |
 | **Upload remaining presses when quitting** | When you quit, uploads what this session has not sent yet. Off by default. When off, unsent presses are gone when you quit. |
 
 - To upload by hand, go to Menu → **Session** → **Upload now**. Only what hasn't been sent is uploaded, so pressing it more than once never double-counts.

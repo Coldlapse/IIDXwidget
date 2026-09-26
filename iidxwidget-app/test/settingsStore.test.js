@@ -60,3 +60,17 @@ assert.equal(fs.existsSync(`${file}.tmp`), false);
 fs.rmSync(dir, { recursive: true });
 
 console.log('settingsStore tests passed');
+
+// 계정: 토큰은 설정 저장으로 바뀌지 않고, 설정 창에도 가지 않는다 (main이 암호화해서 따로 저장)
+const withAccount = { ...merged, apiTokenEnc: 'ENCRYPTED', apiUsername: 'sadang' };
+const saved = store.applyUpdate(withAccount, { apiToken: 'plain', apiTokenEnc: 'forged', apiUsername: 'x', serverPort: 9001 });
+assert.equal(saved.apiTokenEnc, 'ENCRYPTED');
+assert.equal(saved.apiUsername, 'sadang');
+assert.equal('apiToken' in saved, 'apiToken' in merged); // 2.x 평문 토큰은 main이 시작할 때 암호화해서 지운다
+assert.equal(saved.serverPort, 9001);
+const forWindow = store.settingsForWindow(withAccount);
+for (const key of ['apiToken', 'apiTokenEnc', 'apiUsername']) assert.equal(key in forWindow, false, key);
+assert.equal(forWindow.serverPort, merged.serverPort);
+assert.equal(store.DEFAULT_SETTINGS.apiTokenEnc, null);
+assert.equal('apiToken' in store.DEFAULT_SETTINGS, false);
+console.log('settingsStore account tests passed');
