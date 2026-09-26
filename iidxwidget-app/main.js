@@ -70,23 +70,19 @@ const sendTo = (win, channel, data) => {
 
 
 // 🪟 창
-// 창 크기는 화면 안쪽(내용 영역) 기준. 화면이 작으면 작업 영역 안에 들어오게 줄인다.
+// 보조 창 크기는 화면 안쪽(내용 영역) 기준. 화면이 작으면 작업 영역 안에 들어오게 줄인다.
 function fitToScreen(width, height) {
   const area = screen.getPrimaryDisplay().workAreaSize;
   return { width: Math.min(width, area.width - 40), height: Math.min(height, area.height - 80) };
 }
 
 function createMainWindow() {
-  // 앱 창은 OBS 브라우저 소스 권장 크기(800×600)와 같게 보여준다
   mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
-    useContentSize: true,
+    width: 1000,
+    height: 800,
     resizable: false,
     webPreferences: { preload: preloadPath, contextIsolation: true, nodeIntegration: false }
   });
-  // 크기 고정 창은 Windows에서 안쪽 크기가 몇 px 어긋나게 만들어지는 경우가 있어 한 번 더 맞춘다
-  mainWindow.setContentSize(800, 600);
   mainWindow.loadFile(path.join(__dirname, 'renderer/widget/index.html'));
   // 창을 닫으면 바로 꺼지지 않고 종료 절차(자동 전송, 정리)를 거친다
   mainWindow.on('close', event => {
@@ -678,9 +674,8 @@ app.whenReady().then(() => {
   startServers();
   inputs.start(settings);
 
-  // 메뉴를 먼저 만든다. 창을 만든 뒤에 메뉴가 붙으면 창 안쪽 크기가 800×600에서 어긋난다
-  createStatusMenu();
   createMainWindow();
+  createStatusMenu();
   if (!loaded.existed) mainWindow.webContents.once('did-finish-load', showFirstRunGuide);
 });
 
