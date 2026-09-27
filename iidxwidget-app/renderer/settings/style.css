@@ -68,26 +68,29 @@ body {
     gap: 10px;
   }
 
-/* 저장 줄: 설정 박스 안에서 창 아래에 붙어 떠 있다가(sticky), 맨 아래까지 내리면 제자리에 합쳐진다 */
+/* 저장 줄: 설정 박스 안에서 창 아래에 떠 있다가(sticky), 맨 아래까지 내리면 제자리에 합쳐진다 */
 .save-bar {
   position: sticky;
-  bottom: 0;
+  bottom: 12px;
   z-index: 10;
   margin: 0 -40px;
   padding: 12px 40px 24px;
   background-color: #1e1e1e;
+  border: 1px solid transparent;
   border-radius: 0 0 12px 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  transition: box-shadow 0.15s, border-color 0.15s;
-  border-top: 1px solid transparent;
+  transition: margin 0.15s, padding 0.15s, background-color 0.15s, border-color 0.15s, border-radius 0.15s, box-shadow 0.15s;
 }
-/* 떠 있는 동안: 위쪽 경계선과 그림자로 내용 위에 올라와 있다는 걸 보여준다 */
+/* 떠 있는 동안: 설정 박스 안쪽으로 조금 들어간 둥근 카드로 띄워서, 내용 위에 올라와 있다는 걸 보여준다 */
 .save-bar.floating {
-  border-top-color: #333;
-  border-radius: 0;
-  box-shadow: 0 -10px 20px rgba(0, 0, 0, 0.55);
+  margin: 0 -28px;
+  padding: 12px 16px;
+  background-color: #262626;
+  border-color: #353535;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
 }
 /* 저장 줄이 제자리에 왔는지 알기 위한 표시 (높이 0, 저장 줄 바로 아래. -20px는 설정 박스의 줄 간격 상쇄) */
 #save-bar-anchor { height: 0; margin-top: -20px; }
