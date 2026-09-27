@@ -77,12 +77,28 @@ Change them with **⚙ Settings** at the top right of the chatter window. You ca
 
 ---
 
+## 📈 How to read the numbers
+
+Chatter being detected doesn't necessarily mean that key has a bad double-input problem. **Most switches show some chatter even when brand new.**
+What matters is finding **double inputs that actually affect your play** (for example, late POORs after a note or long-note combo breaks).
+
+### If one key is much higher than the rest
+If one of the seven keys stands out, for example every key is around 20 but one shows about 70, that can be one sign that the key's switch is near the end of its life.
+
+### Keys 2, 4 and 6 tend to be a bit higher
+- On 1P with the common 엄중검 fingering, keys 2, 4 and 6 are played with the left middle finger, the right index finger and the right middle finger.
+- These three fingers are all strong and easy to control, so they may hit the buttons harder, and in practice they tended to show higher chatter counts.
+- (This is the developer's own observation from four years of play, not a proven finding.)
+- So higher counts on only 2, 4 and 6 are hard to call abnormal. We suggest **grouping 1-3-5-7 and 2-4-6 separately** and comparing keys within each group.
+
+---
+
 ## The count keeps going up. What should I do?
 
-1. **Find which key.** If one key is much higher, that key's switch is the likely cause.
-2. **Check the switch.** Cleaning the contacts or replacing the switch fixes most cases.
-3. **Check your controller settings.** Some controllers and DIY boards have a bounce filter (debounce) in their firmware.
-4. An occasional 1–2 is nothing to worry about.
+1. **Find which key.** If a key is much higher than the other keys in its group (1-3-5-7 or 2-4-6), that key's switch is the likely cause.
+2. **Check whether it actually affects your play.** If you don't see late POORs or long-note combo breaks, there's no rush.
+3. **Check the switch.** Cleaning the contacts or replacing the switch fixes most cases.
+4. **Check your controller settings.** Some controllers and DIY boards have a bounce filter (debounce) in their firmware.
 5. Charts with very fast repeated notes on the same key (jacks) can make normal presses hit the threshold. Avoid those charts when checking your switches.
 
 ---
