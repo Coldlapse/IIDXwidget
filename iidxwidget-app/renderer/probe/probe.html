@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko" data-overlay-scroll>
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:" />
+  <title data-i18n="probe.title">컨트롤러 정보 수집</title>
+  <link rel="stylesheet" href="../shared/fonts.css" />
+  <link rel="stylesheet" href="../shared/window.css" />
+  <link rel="stylesheet" href="../shared/scrollbar.css" />
+  <link rel="stylesheet" href="probe.css" />
+</head>
+<body>
+  <p class="intro muted" data-i18n="probe.intro"></p>
+
+  <section class="panel">
+    <h2 data-i18n="probe.deviceTitle">1. 컨트롤러 고르기</h2>
+    <div class="device-row">
+      <select id="device"></select>
+      <button type="button" id="refresh" class="secondary" data-i18n="probe.refresh">다시 찾기</button>
+    </div>
+    <p id="device-status" class="muted"></p>
+    <h3 data-i18n="probe.live">실시간 신호</h3>
+    <div id="live" class="live"></div>
+    <p id="rate" class="muted"></p>
+  </section>
+
+  <section class="panel">
+    <h2 data-i18n="probe.infoTitle">2. 컨트롤러 정보</h2>
+    <label for="product" data-i18n="probe.product">제품 이름</label>
+    <input id="product" type="text" data-i18n-placeholder="probe.productPlaceholder" />
+    <label for="mode" data-i18n="probe.mode">지금 모드 이름</label>
+    <input id="mode" type="text" data-i18n-placeholder="probe.modePlaceholder" />
+    <label for="notes" data-i18n="probe.notes">증상 메모</label>
+    <textarea id="notes" data-i18n-placeholder="probe.notesPlaceholder"></textarea>
+  </section>
+
+  <section class="panel">
+    <h2 data-i18n="probe.stepsTitle">3. 단계별 녹화</h2>
+    <p class="muted" data-i18n="probe.stepsHint"></p>
+    <p class="muted"><b id="mode-label"></b></p>
+    <ul id="steps" class="steps"></ul>
+    <button type="button" id="restart" class="secondary" data-i18n="probe.restart">다른 모드로 처음부터</button>
+  </section>
+
+  <section class="panel">
+    <h2 data-i18n="probe.saveTitle">4. 저장하고 요청하기</h2>
+    <p id="summary" class="muted"></p>
+    <div class="save-row">
+      <button type="button" id="save" class="primary" data-i18n="probe.save">결과 파일 저장</button>
+      <button type="button" id="show-file" class="secondary" data-i18n="probe.showFile" hidden>파일 위치 열기</button>
+    </div>
+    <p id="saved" class="muted saved" hidden></p>
+    <p><a id="issue" href="https://github.com/Coldlapse/IIDXwidget/issues/new?template=controller-support.yml" target="_blank" data-i18n="probe.issue">GitHub에 지원 요청 올리기 ↗</a></p>
+    <p class="muted" data-i18n="probe.issueHint"></p>
+  </section>
+
+  <script src="../shared/overlayScroll.js"></script>
+  <script src="../shared/i18n.js"></script>
+  <script src="probe.js"></script>
+</body>
+</html>

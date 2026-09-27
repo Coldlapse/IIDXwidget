@@ -31,6 +31,7 @@ For what release means, see the [RELEASE guide](RELEASE.en.md).
   - **Settings** : Change the [settings](#-settings) below.
   - **Logs** : Whether your controller was detected, and any errors. Look here first when something goes wrong.
   - **Session** : Presses, sent and remaining counts for this session, and uploading to [beatmania.app](https://beatmania.app).
+  - **Controller probe** : Records the signals of a controller that isn't officially supported, for requesting official support. See [Requesting official support](#requesting-official-support) below.
   - **Chatter detector** : Chatter (double input) counts per key, grouped as 1-3-5-7 and 2-4-6, with keys that stand out within their group highlighted in red. Change the detection preset (Rag / Sadang) and thresholds with **⚙ Settings** at the top right of the window. See the [chatter guide](CHATTER.en.md).
   - **Developer & Contributors** : App version, the developer and their links, support (Buy me a coffee) and the contributors, all in one window.
   - **Check for updates** : Check for a new version now. The app also checks on startup.
@@ -106,6 +107,20 @@ Not every controller on the market is supported. The Other controller profile is
 3. Once all seven keys and the turntable are picked up, press **Save** and check that the widget reacts.
 
 **Confirmed controllers** : none yet. If you tried one with Other controller, please tell us its name and the result (works / partly works / doesn't work) in [Issues](https://github.com/Coldlapse/IIDXwidget/issues) and we'll add it here.
+
+### Requesting official support
+
+If manual mapping is a hassle, or you'd like a pick-and-go profile like PHOENIXWAN+ and FPS have, please request one. Record the signals your controller sends and share them — that's what we build a dedicated profile from.
+
+1. Connect the controller and open Menu → **Controller probe**. What you record is only saved as a file on this PC — nothing is uploaded. Keyboards and mice are not listed.
+2. Pick the controller under **Device**. If the 'Live signal' changes when you press a button, you picked the right one.
+3. For each step, press **Record** → do what it says → **Stop**: keys 1–7, other buttons, the turntable (slow, fast, back and forth), rapid presses and chords. If the controller has several modes (LR2, INFINITAS, …), please do it once per mode.
+4. Press **Save result file** to save a JSON file. It also includes the app version and your current controller settings.
+5. Press **Open a support request on GitHub** to open the [controller support request](https://github.com/Coldlapse/IIDXwidget/issues/new?template=controller-support.yml) issue form, drag the JSON file into the **Probe file** box, and submit.
+
+- You need a GitHub account.
+- Zip the file if it's over 25MB.
+- A request doesn't guarantee official support, and we may need to test the hardware.
 
 ### beatmania.app play count
 

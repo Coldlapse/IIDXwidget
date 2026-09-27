@@ -50,6 +50,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   loadGuide: (file) => ipcRenderer.invoke('load-guide', file),
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
   onShowGuide: (callback) => ipcRenderer.on('show-guide', (_, file) => callback(file)),
+  // 컨트롤러 정보 수집
+  probeList: () => ipcRenderer.invoke('probe-list'),
+  probeOpen: (id) => ipcRenderer.invoke('probe-open', id),
+  probeClose: () => ipcRenderer.invoke('probe-close'),
+  probeSave: (result) => ipcRenderer.invoke('probe-save', result),
+  probeShowFile: () => ipcRenderer.invoke('probe-show-file'),
+  onProbeReport: (callback) => ipcRenderer.on('probe-report', (_, report) => callback(report)),
   // 종료 진행 창
   onShutdownStart: (callback) => ipcRenderer.on('shutdown-start', (_, data) => callback(data)),
   onShutdownProgress: (callback) => ipcRenderer.on('shutdown-progress', (_, data) => callback(data))

@@ -1,0 +1,61 @@
+.intro { margin: 0 0 16px; line-height: 1.6; }
+.panel h2 { margin-bottom: 10px; }
+.panel p { margin: 8px 0 0; line-height: 1.5; }
+
+label { display: block; font-size: 13px; color: #aaa; margin: 12px 0 6px; }
+input[type=text], textarea, select {
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+  font-size: 14px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #3a3a3a;
+  background-color: #2a2a2a;
+  color: #fff;
+}
+textarea { min-height: 60px; resize: vertical; }
+
+button {
+  font: inherit;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+button.primary { background-color: #00c853; color: #fff; }
+button.secondary { background-color: #3a3a3a; color: #eee; }
+button.rec { background-color: #ff5252; color: #fff; }
+button:disabled { background-color: #444; color: #888; cursor: default; }
+
+.device-row { display: flex; gap: 8px; }
+.device-row select { flex: 1; min-width: 0; }
+
+.live {
+  font-family: Consolas, 'Courier New', monospace;
+  font-size: 13px;
+  background-color: #121212;
+  border-radius: 6px;
+  padding: 8px 10px;
+  min-height: 20px;
+  word-break: break-all;
+}
+.live b { color: #ffb74d; }
+
+.steps { list-style: none; margin: 10px 0 12px; padding: 0; }
+.steps li { display: grid; grid-template-columns: 18px 1fr auto; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid #2c2c2c; }
+.steps li:last-child { border-bottom: none; }
+.steps li.active { background-color: #262626; margin: 0 -8px; padding: 8px; border-radius: 8px; border-bottom-color: transparent; }
+.steps .mark { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #444; }
+.steps li.done .mark { background-color: #00c853; border-color: #00c853; }
+.steps li.skipped .mark { background-color: #444; }
+.steps .title { font-weight: bold; font-size: 14px; }
+.steps .hint { color: #999; font-size: 12px; }
+.steps .result { color: #888; font-size: 11px; font-family: Consolas, monospace; }
+.steps .actions { display: flex; gap: 6px; }
+
+.save-row { display: flex; gap: 8px; }
+.saved { word-break: break-all; }

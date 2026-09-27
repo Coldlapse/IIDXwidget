@@ -52,6 +52,8 @@ You only need to do this once. From now on the widget follows settings changes a
 - **Instant settings and auto reconnect** : Saved settings show up in the OBS widget right away, and the widget reconnects by itself when you restart the app. While the app is off, OBS shows "Lost connection to IIDXwidget".
 - **Session** (Menu → Session) : See presses, sent and remaining counts for this session and upload them to beatmania.app right there.
 - **Upload when quitting** : Turn it on in Settings to upload the remaining presses automatically when you quit. Off by default.
+- **Controller probe** (Menu → Controller probe) : Record the signals of a controller that isn't officially supported and request official support through a GitHub issue.
+- **Developer & Contributors** : About and Contributors are now one window.
 - **Guides** (top menu → Guides) : Usage, connection, release and chatter guides inside the app.
 
 ---

@@ -28,6 +28,7 @@
             "uploader.js",
             "shutdown.js",
             "guides.js",
+            "controllerProbe.js",
             "controller/controllerReader.js",
             "controller/keyboardReader.js",
             "localization/**",

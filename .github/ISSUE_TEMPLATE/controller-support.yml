@@ -1,0 +1,56 @@
+name: 컨트롤러 지원 요청 / Controller support request
+description: 공식 지원하지 않는 컨트롤러의 전용 프로필을 요청합니다. / Ask for a dedicated profile for a controller that isn't officially supported.
+title: "[컨트롤러] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        먼저 IIDXwidget의 메뉴 → **컨트롤러 정보 수집**에서 안내대로 녹화한 뒤 **결과 파일 저장**으로 JSON 파일을 저장해 주세요. ([방법](https://github.com/Coldlapse/IIDXwidget/blob/main/GUIDE/USAGE.md#공식-지원-요청하기))
+        First, record the steps in IIDXwidget under Menu → **Controller probe** and press **Save result file** to save a JSON file. ([How](https://github.com/Coldlapse/IIDXwidget/blob/main/GUIDE/USAGE.en.md#requesting-official-support))
+
+        요청이 곧 공식 지원을 보장하지는 않습니다. / A request doesn't guarantee official support.
+  - type: input
+    id: controller
+    attributes:
+      label: 컨트롤러 이름 / Controller name
+      description: 제조사, 모델, 기판 버전 등 아는 만큼 적어 주세요. / Maker, model, board revision — as much as you know.
+      placeholder: "예 / e.g. PHOENIXWAN 기판 V2"
+    validations:
+      required: true
+  - type: textarea
+    id: probe
+    attributes:
+      label: 수집 파일 / Probe file
+      description: 저장한 JSON 파일을 이 칸에 끌어다 놓으면 첨부됩니다. 25MB를 넘으면 ZIP으로 압축해 주세요. / Drag the saved JSON file here to attach it. Zip it if it's over 25MB.
+    validations:
+      required: true
+  - type: textarea
+    id: modes
+    attributes:
+      label: 컨트롤러 모드 / Controller modes
+      description: 모드가 여러 개라면 모드별로 녹화했는지, 모드를 바꾸는 방법을 적어 주세요. / If it has several modes, say which ones you recorded and how you switch between them.
+      placeholder: "예 / e.g. LR2 모드, 인피니타스 모드 둘 다 녹화. START+1 누른 채로 연결하면 LR2 모드"
+  - type: dropdown
+    id: profile
+    attributes:
+      label: 지금 쓰는 IIDXwidget 프로필 / Profile you use now
+      options:
+        - 기타 컨트롤러 (수동 매핑) / Other controller (manual mapping)
+        - PHOENIXWAN+
+        - FPS EMP Gen2
+        - 키보드 / Keyboard
+        - 인식 안 됨 / Not detected at all
+    validations:
+      required: true
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: 증상 / What goes wrong
+      description: 수동 매핑으로 쓸 때 안 되거나 이상한 점 / What doesn't work (or works oddly) with manual mapping
+      placeholder: "예 / e.g. 스크래치를 빨리 돌리면 인식이 안 됨, 연타가 빠짐"
+  - type: input
+    id: version
+    attributes:
+      label: IIDXwidget 버전 / Version
+      description: 메뉴 → 개발자 정보/기여자 / Menu → Developer & Contributors
+      placeholder: "3.0.0"

@@ -96,6 +96,7 @@ English guides: [What's new in 3.0.0](./GUIDE/WHATSNEW.en.md) · [Connection](./
 > ⚠️ **시중의 모든 컨트롤러를 지원하지는 않습니다.** 공식 지원은 주작콘·FPS EMP 2세대·키보드뿐이고, 기타 컨트롤러는 동작할 수 있지만 보장하지 않습니다.
 > 게임패드(HID) 모드로 연결되는 아케이드식 컨트롤러와 자작 기판은 대부분 동작할 것으로 예상하지만, Xbox(XInput) 모드 컨트롤러나 일반 게임패드는 안 될 수 있습니다.
 > 자세한 내용과 확인 방법은 [사용법과 설정 → 컨트롤러 지원 범위](./GUIDE/USAGE.md#컨트롤러-지원-범위)를 보세요. 써 보신 결과를 [Issues](https://github.com/Coldlapse/IIDXwidget/issues)로 알려주시면 확인된 컨트롤러 목록에 반영합니다.
+> 전용 프로필이 필요하면 앱의 메뉴 → **컨트롤러 정보 수집**에서 기록한 파일을 [컨트롤러 지원 요청](https://github.com/Coldlapse/IIDXwidget/issues/new?template=controller-support.yml) 이슈에 첨부해 주세요. ([방법](./GUIDE/USAGE.md#공식-지원-요청하기))
 
 ---
 

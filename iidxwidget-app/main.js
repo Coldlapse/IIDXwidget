@@ -16,6 +16,7 @@ const { uploadInChunks, whoami } = require('./uploader');
 const { createShutdown } = require('./shutdown');
 const { setupUpdater } = require('./updater');
 const { GUIDE_IDS, UPDATE_GUIDE_VERSION, guideFile, loadGuide } = require('./guides');
+const { groupProbeDevices, openProbe } = require('./controllerProbe');
 const { translations, normalizeLanguage, translate } = require('./localization/translations');
 const {
   DEFAULT_SETTINGS, applyUpdate, settingsForWindow, validChatterConfig, CHATTER_RANGE, readSettingsFile, writeSettingsFile, publicSettings, referencedImageFiles
@@ -46,6 +47,7 @@ let settingsWindow = null;
 let chatterWindow = null;
 let recordsWindow = null;
 let aboutWindow = null;
+let probeWindow = null;
 let guideWindow = null;
 let settings = structuredClone(DEFAULT_SETTINGS);
 let session = null; // 앱이 준비되면 만든다 (이번 세션 통계)
@@ -132,7 +134,8 @@ const EXTERNAL_LINK_PREFIXES = [
   'https://www.youtube.com/@Sadang',
   'https://discord.gg/RxjwbvWa8D',
   'https://boku.tachi.ac/u/Sadang',
-  'https://buymeacoffee.com/sadang'
+  'https://buymeacoffee.com/sadang',
+  'https://github.com/Coldlapse/IIDXwidget/issues/new'
 ];
 
 function createSettingsWindow() {
@@ -173,6 +176,18 @@ function createRecordsWindow() {
 }
 
 // 개발자 정보/기여자
+// 컨트롤러 정보 수집. 창을 닫으면 연 장치도 닫는다
+let probe = null;
+function closeProbe() {
+  if (probe) probe.close();
+  probe = null;
+}
+function createProbeWindow() {
+  const isNew = !probeWindow;
+  probeWindow = createChildWindow(probeWindow, { width: 640, height: 820, file: 'renderer/probe/probe.html' });
+  if (isNew) probeWindow.on('closed', () => { probeWindow = null; closeProbe(); });
+}
+
 function createAboutWindow() {
   const isNew = !aboutWindow;
   aboutWindow = createChildWindow(aboutWindow, { width: 520, height: byLanguage({ ko: 705, en: 761 }), file: 'renderer/about/about.html' });
@@ -384,6 +399,7 @@ function createStatusMenu() {
         { type: 'separator' },
         { label: t('menu.records'), click: createRecordsWindow },
         { label: t('menu.chatter'), click: () => createChatterWindow() },
+        { label: t('menu.probe'), click: createProbeWindow },
         { type: 'separator' },
         { label: t('menu.about'), click: createAboutWindow },
         { type: 'separator' },
@@ -726,6 +742,47 @@ ipcMain.handle('clear-api-token', () => {
 // 가이드
 ipcMain.handle('open-guide', (event, id) => openGuide(id, { parent: BrowserWindow.fromWebContents(event.sender) }));
 ipcMain.handle('load-guide', (event, file) => loadGuide(file, { fetchText: fetchGuideText, readLocal: readLocalGuide }));
+// 컨트롤러 정보 수집 (수집 창에서만)
+const fromProbe = event => probeWindow && event.sender === probeWindow.webContents;
+let probeGroups = [];
+ipcMain.handle('probe-list', event => {
+  if (!fromProbe(event)) return [];
+  try {
+    probeGroups = groupProbeDevices(require('node-hid').devices());
+  } catch (error) {
+    probeGroups = [];
+  }
+  return probeGroups.map(({ id, name, manufacturer, gamepad, interfaces }) => ({ id, name, manufacturer, gamepad, interfaces: interfaces.length }));
+});
+ipcMain.handle('probe-open', (event, id) => {
+  if (!fromProbe(event)) return null;
+  closeProbe();
+  const group = probeGroups.find(g => g.id === id);
+  if (!group) return null;
+  probe = openProbe(group, (index, data, time) => sendTo(probeWindow, 'probe-report', { index, data, time }));
+  return { opened: probe.opened, failed: probe.failed };
+});
+ipcMain.handle('probe-close', event => { if (fromProbe(event)) closeProbe(); });
+// 결과에 앱 버전과 지금 컨트롤러 설정을 붙여 저장한다 (토큰 같은 계정 정보는 넣지 않는다)
+let probeSavedPath = null;
+ipcMain.handle('probe-save', async (event, result) => {
+  if (!fromProbe(event) || !result || typeof result !== 'object') return null;
+  const side = s => s && { controllerProfile: s.controllerProfile, lr2ModeEnabled: s.lr2ModeEnabled,
+    genericMapping: s.keyMapping?.GENERIC, genericAxis: s.keyMapping?.GENERIC_AXIS };
+  const full = { ...result, app: { version: appVersion, platform: `${process.platform} ${process.arch}`, buttonLayout: settings.widget?.buttonLayout,
+    side1: side(settings), side2: settings.widget?.buttonLayout === 'DP' ? side(settings.player2) : undefined } };
+  const name = String(result.product || result.devices?.[0]?.product || 'controller').replace(/[^\p{L}\p{N}_-]+/gu, '_').slice(0, 40);
+  const { canceled, filePath } = await dialog.showSaveDialog(probeWindow, {
+    defaultPath: path.join(app.getPath('downloads'), `controller-probe-${name}-${new Date().toISOString().slice(0, 10)}.json`),
+    filters: [{ name: 'JSON', extensions: ['json'] }]
+  });
+  if (canceled || !filePath) return null;
+  fs.writeFileSync(filePath, JSON.stringify(full, null, 1));
+  probeSavedPath = filePath;
+  return { path: filePath };
+});
+ipcMain.handle('probe-show-file', event => { if (fromProbe(event) && probeSavedPath) shell.showItemInFolder(probeSavedPath); });
+
 // 가이드 안의 링크만 기본 브라우저로 연다 (https만)
 ipcMain.handle('open-external', (event, url) => {
   if (!guideWindow || event.sender !== guideWindow.webContents) return;
