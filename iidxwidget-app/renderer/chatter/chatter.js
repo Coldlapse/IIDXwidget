@@ -2,16 +2,13 @@
 // 이 창은 현재 숫자를 받아서 건반 위에 보여주기만 한다.
 const slots = [...document.querySelectorAll('.key-slot')];
 
+// 그룹(1·3·5·7 / 2·4·6) 평균의 2배 이상인 건반만 강조한다
 function render(counts) {
-  let total = 0;
+  const outliers = window.chatterLogic.findOutliers(counts);
   for (const slot of slots) {
-    const count = counts[slot.dataset.button] || 0;
-    total += count;
-    slot.querySelector('.count').textContent = count;
-    slot.classList.toggle('has-chatter', count > 0);
+    slot.querySelector('.count').textContent = counts[slot.dataset.button] || 0;
+    slot.classList.toggle('outlier', outliers.includes(slot.dataset.button));
   }
-  document.getElementById('total').textContent = total;
-  document.querySelector('.total').classList.toggle('has-chatter', total > 0);
 }
 
 async function refresh() {

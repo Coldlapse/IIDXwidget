@@ -149,7 +149,7 @@ function createChatterWindow({ view, parent } = {}) {
     parent: parent && !parent.isDestroyed() ? parent : mainWindow,
     query: view ? { view } : undefined,
     width: 440,
-    height: byLanguage({ ko: 484, en: 503 }),
+    height: byLanguage({ ko: 526, en: 560 }),
     file: 'renderer/chatter/chatter.html'
   });
   if (isNew) chatterWindow.on('closed', () => chatterWindow = null);

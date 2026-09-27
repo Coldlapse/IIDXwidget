@@ -34,7 +34,8 @@ It looks at **the time between releasing a key and pressing the same key again (
 
 - When a switch bounces like the picture above, you get a "release, then press again after a tiny gap".
 - A person needs at least tens of ms to release and press the same key again, so a very short gap is treated as bounce.
-- Counts are kept per key, plus a total.
+- Counts are kept per key.
+- The window groups the white keys (1-3-5-7, white glow) and the black keys (2-4-6, blue glow), and **highlights in red only keys at least twice their group average**. See [How to read the numbers](#-how-to-read-the-numbers) below for why.
 - Counts cover **this session** (since the app started) and keep going while the chatter window is closed.
 - The **Chatter** number on the Session page uses the same rule.
 
@@ -89,7 +90,7 @@ If one of the seven keys stands out, for example every key is around 20 but one 
 - On 1P with the common 엄중검 fingering, keys 2, 4 and 6 are played with the left middle finger, the right index finger and the right middle finger.
 - These three fingers are all strong and easy to control, so they may hit the buttons harder, and in practice they tended to show higher chatter counts.
 - (This is the developer's own observation from four years of play, not a proven finding.)
-- So higher counts on only 2, 4 and 6 are hard to call abnormal. We suggest **grouping 1-3-5-7 and 2-4-6 separately** and comparing keys within each group.
+- So higher counts on only 2, 4 and 6 are hard to call abnormal. We suggest **grouping 1-3-5-7 and 2-4-6 separately** and comparing keys within each group. The chatter window highlights only keys at least twice their group average for this reason.
 
 ---
 

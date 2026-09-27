@@ -17,7 +17,8 @@
     <!-- 설명은 지금 기준(프리셋, ms)에 맞춰 chatter.js가 채운다 -->
     <p class="muted note" id="description"></p>
 
-    <!-- IIDX 건반 배치: 위 2·4·6(검은 건반), 아래 1·3·5·7(흰 건반). 숫자는 건반 위에 표시 -->
+    <!-- IIDX 건반 배치: 위 2·4·6(검은 건반), 아래 1·3·5·7(흰 건반). 숫자는 건반 위에 표시.
+         두 그룹은 뒷배경 글로우로 묶고(흰 건반 흰색, 검은 건반 파란색), 그룹 평균의 2배 이상인 건반만 강조한다 -->
     <div class="keyboard">
       <div class="key-row black">
         <div class="key-slot" data-button="2"><span class="count">0</span><div class="key">2</div></div>
@@ -32,10 +33,7 @@
       </div>
     </div>
 
-    <div class="total">
-      <span data-i18n="chatter.total">합계</span>
-      <strong id="total">0</strong>
-    </div>
+    <p class="muted legend" data-i18n="chatter.outlierLegend"></p>
 
     <div class="guide-link">
       <button type="button" class="guide-button" data-open-guide data-i18n="guide.chatterButton">❓ 채터링 감지 가이드</button>
@@ -77,6 +75,7 @@
 
   <script src="../shared/i18n.js"></script>
   <script src="../shared/fitWindow.js"></script>
+  <script src="chatterLogic.js"></script>
   <script src="chatter.js"></script>
 </body>
 </html>
