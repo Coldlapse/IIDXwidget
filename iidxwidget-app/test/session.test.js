@@ -94,3 +94,17 @@ const press = (n, pressed, timestamp) => ({ type: 'button', button: `button ${n}
   m.dispose();
   console.log('session tests passed');
 })().catch(e => { console.error(e); process.exit(1); });
+
+// DP: 2P 입력(side 2)은 'p2-N' 키로 따로 센다. 타건 수·KPS는 합친다
+{
+  const stats = createSessionStats({ now: T0 });
+  stats.handleEvents([press(1, true, T0 + 100), press(1, false, T0 + 140)], T0 + 140);
+  stats.handleEvents([{ ...press(1, true, T0 + 200), side: 2 }, { ...press(1, false, T0 + 260), side: 2 }], T0 + 260);
+  // 1P와 2P의 같은 번호 버튼은 서로 다른 버튼 (1P 1번을 누르고 있어도 2P 1번이 따로 눌림)
+  stats.handleEvents([press(3, true, T0 + 300), { ...press(3, true, T0 + 305), side: 2 }], T0 + 305);
+  const snap = stats.snapshot(T0 + 400);
+  assert.equal(snap.presses, 4);
+  assert.equal(snap.perButton['1'], 40);
+  assert.equal(snap.perButton['p2-1'], 60);
+  console.log('session DP tests passed');
+}

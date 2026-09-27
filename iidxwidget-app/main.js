@@ -633,12 +633,15 @@ ipcMain.handle('pick-user-image', async () => {
   }
 });
 
-ipcMain.handle('start-mapping-session', () => inputs.startMappingSession(events => {
-  const physical = events.filter(event => event.type === 'physical-button');
+// 기타 컨트롤러 매핑 학습 (side: 1 또는 2, devicePath: 설정 창에서 고른 장치)
+ipcMain.handle('start-mapping-session', (event, side = 1, devicePath = null) => inputs.startMappingSession(side === 2 ? 2 : 1, events => {
+  const physical = events.filter(e => e.type === 'physical-button');
   if (physical.length) sendTo(settingsWindow, 'controller-data', physical);
-}));
+}, typeof devicePath === 'string' ? devicePath : null));
 ipcMain.handle('stop-mapping-session', () => inputs.stopMappingSession());
-ipcMain.handle('learn-turntable-axis', () => inputs.learnTurntableAxis());
+ipcMain.handle('learn-turntable-axis', (event, side = 1) => inputs.learnTurntableAxis(side === 2 ? 2 : 1));
+// 설정 창 장치 드롭다운: 프로필에 맞는 연결된 장치 목록
+ipcMain.handle('list-controller-devices', (event, profile) => inputs.listDevices(String(profile)));
 
 // 기록 페이지
 ipcMain.handle('get-records', () => ({

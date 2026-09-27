@@ -26,17 +26,47 @@ function findExactDedicatedDevice(devices, profile) {
 // 기타 컨트롤러(수동 매핑, 설정값 'AUTO'): 공식 지원하지 않는 컨트롤러만 찾는다.
 // 주작콘·FPS는 전용 프로필이 있으므로 여기서는 고르지 않는다.
 // 이름으로 알아볼 수 있는 IIDX 컨트롤러 → 아무 조이스틱/게임패드 순
-function findAutoController(devices) {
+function autoCandidates(devices) {
   const usable = devices.filter(d => d.path && !isOfficiallySupported(d));
-
   const terms = /infinitas|inf&bms|iidx|beatmania|yuancon|gamo2/i;
   const isMouseOrKeyboard = d => d.usagePage === 1 && (d.usage === 2 || d.usage === 6);
-  const named = usable.find(d => terms.test(`${d.product || ''} ${d.manufacturer || ''}`) && !isMouseOrKeyboard(d));
-  if (named) return { device: named, parser: 'GENERIC' };
-
   const isJoystickOrGamepad = d => d.usagePage === 1 && (d.usage === 4 || d.usage === 5);
-  const generic = usable.find(isJoystickOrGamepad);
-  return generic ? { device: generic, parser: 'GENERIC' } : null;
+  const named = usable.filter(d => terms.test(`${d.product || ''} ${d.manufacturer || ''}`) && !isMouseOrKeyboard(d));
+  const generic = usable.filter(d => isJoystickOrGamepad(d) && !named.includes(d));
+  return [...named, ...generic];
+}
+
+function findAutoController(devices) {
+  const device = autoCandidates(devices)[0];
+  return device ? { device, parser: 'GENERIC' } : null;
+}
+
+// ─── 장치 목록과 선택 (1P·2P에 각각 장치를 고를 수 있도록) ───────
+
+const PARSER_BY_PROFILE = { PHOENIXWAN: 'PHOENIXWAN', 'FPS EMP Gen2': 'FPS_EMP', AUTO: 'GENERIC' };
+
+// 프로필에 맞는 연결된 장치들 (찾는 순서대로)
+function profileCandidates(profile, devices) {
+  if (profile === 'PHOENIXWAN') return devices.filter(d => d.path && isPhoenix(d));
+  if (profile === 'FPS EMP Gen2') return devices.filter(d => d.path && isFps(d));
+  if (profile === 'AUTO') return autoCandidates(devices);
+  return [];
+}
+
+// 설정 화면의 장치 드롭다운용: [{ path, name }]. 같은 이름이 여러 개면 번호를 붙인다
+function listControllerDevices(profile, devices = getHID().devices()) {
+  const list = profileCandidates(profile, devices).map(d => ({ path: d.path, name: describeDevice(d) }));
+  const counts = {};
+  list.forEach(d => { counts[d.name] = (counts[d.name] || 0) + 1; });
+  const seen = {};
+  return list.map(d => counts[d.name] > 1 ? { ...d, name: `${d.name} #${seen[d.name] = (seen[d.name] || 0) + 1}` } : d);
+}
+
+// 장치 고르기: 저장된 경로가 있으면 그 장치, 없거나 빠져 있으면 다른 사이드가 쓰지 않는 첫 장치
+function chooseDevice(profile, { devicePath = null, excludePaths = [] } = {}, devices = getHID().devices()) {
+  const available = profileCandidates(profile, devices).filter(d => !excludePaths.includes(d.path));
+  const device = available.find(d => d.path === devicePath) || available[0];
+  return device ? { device, parser: PARSER_BY_PROFILE[profile] } : null;
 }
 
 function describeDevice(device) {
@@ -286,6 +316,7 @@ function openReader(selection, callback, options) {
   return {
     parser: selection.parser,
     deviceName,
+    path: selection.device.path,
     // 원시 보고서를 받는다 (턴테이블 축 학습용). 구독 해제 함수를 돌려준다
     addRawListener(listener) {
       rawListeners.add(listener);
@@ -304,14 +335,14 @@ function openReader(selection, callback, options) {
   };
 }
 
+// options.devicePath: 고른 장치 (없으면 처음 찾은 장치), options.excludePaths: 다른 사이드가 쓰는 장치
 function startControllerReader(profile, callback, options = {}) {
-  const device = findExactDedicatedDevice(getHID().devices(), profile);
-  if (!device) {
+  const selection = chooseDevice(profile, options);
+  if (!selection) {
     options.logger?.('error', 'notFound', { profile });
     return null;
   }
-  const parser = profile === 'PHOENIXWAN' ? 'PHOENIXWAN' : 'FPS_EMP';
-  return openReader({ device, parser }, callback, { ...options, profile });
+  return openReader(selection, callback, { ...options, profile });
 }
 
 // 공식 지원 컨트롤러가 연결되어 있는지 (기타 컨트롤러로 못 찾았을 때 알맞은 프로필을 안내하려고)
@@ -321,7 +352,7 @@ function hasOfficiallySupportedController(devices = getHID().devices()) {
 
 function startAutoControllerReader(callback, options = {}) {
   const devices = getHID().devices();
-  const selection = findAutoController(devices);
+  const selection = chooseDevice('AUTO', options, devices);
   if (!selection) {
     options.logger?.('error', hasOfficiallySupportedController(devices) ? 'otherOnlyOfficial' : 'otherNotFound');
     return null;
@@ -334,6 +365,8 @@ module.exports = {
   startAutoControllerReader,
   findExactDedicatedDevice,
   findAutoController,
+  listControllerDevices,
+  chooseDevice,
   hasOfficiallySupportedController,
   describeDevice,
   createGenericParserState,

@@ -12,6 +12,7 @@ const DEFAULT_SETTINGS = {
   serverPort: 8080,
   webSocketPort: 5678,
   controllerProfile: 'PHOENIXWAN',
+  controllerDevice: null,  // 고른 컨트롤러 장치(HID 경로). null이면 처음 찾은 장치. DP에서는 1P
   lr2ModeEnabled: false,
   autoLaunch: false,
   seenUpdateGuide: null,   // 마지막으로 보여 준 업데이트 안내 버전 (guides.js의 UPDATE_GUIDE_VERSION)
@@ -31,9 +32,20 @@ const DEFAULT_SETTINGS = {
     GENERIC: { '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, SCup: 8, SCdown: 9 },
     GENERIC_AXIS: null // 일반 컨트롤러의 턴테이블 축 바이트 위치 (학습으로 설정)
   },
+  // DP(버튼 레이아웃 'DP')일 때 2P 쪽 컨트롤러. 1P는 위의 controllerProfile·controllerDevice·keyMapping을 쓴다
+  player2: {
+    controllerProfile: 'PHOENIXWAN',
+    controllerDevice: null,
+    lr2ModeEnabled: false,
+    keyMapping: {
+      KB: {},                // 2P 키보드 매핑 (기본은 비어 있음, 사용자가 채운다)
+      GENERIC: { '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, SCup: 8, SCdown: 9 },
+      GENERIC_AXIS: null
+    }
+  },
   widget: {
     infoPosition: 'bottom',
-    buttonLayout: '1P',
+    buttonLayout: '1P',      // '1P' | '2P' | 'DP'
     discImageMode: 'single', // 'single' | 'dual' (회전 방향별 이미지)
     discImagePath: null,     // 1장 모드 이미지 / 2장 모드의 기본·윗방향 이미지 ('/userImages/<파일>')
     downDiscImagePath: null, // 2장 모드의 아랫방향 이미지
@@ -131,6 +143,8 @@ function applyUpdate(current, incoming) {
   for (const kind of MAPPING_KINDS) {
     const mapping = incoming?.keyMapping?.[kind];
     if (mapping && typeof mapping === 'object') next.keyMapping[kind] = clone(mapping);
+    const mapping2 = incoming?.player2?.keyMapping?.[kind];
+    if (mapping2 && typeof mapping2 === 'object') next.player2.keyMapping[kind] = clone(mapping2);
   }
   return next;
 }
@@ -157,6 +171,7 @@ function publicSettings(settings) {
     serverPort: settings.serverPort,
     webSocketPort: settings.webSocketPort,
     controllerProfile: settings.controllerProfile,
+    player2: { controllerProfile: settings.player2?.controllerProfile },
     widget: clone(settings.widget)
   };
 }

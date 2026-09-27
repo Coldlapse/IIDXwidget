@@ -19,10 +19,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // 파일 선택 창을 열어 이미지를 복사하고 '/userImages/<파일>'을 돌려준다 (취소하면 null)
   pickUserImage: () => ipcRenderer.invoke('pick-user-image'),
   // AUTO 매핑 학습: 결과 { status: 'generic' | 'dedicated' | 'none', device? }
-  startMappingSession: () => ipcRenderer.invoke('start-mapping-session'),
+  startMappingSession: (side = 1, devicePath = null) => ipcRenderer.invoke('start-mapping-session', side, devicePath),
+  // 프로필에 맞는 연결된 컨트롤러 장치 목록: { devices: [{ path, name }], inUse: { 1: path, 2: path } }
+  listControllerDevices: (profile) => ipcRenderer.invoke('list-controller-devices', profile),
   stopMappingSession: () => ipcRenderer.invoke('stop-mapping-session'),
   // 턴테이블을 돌리는 동안 축 바이트를 찾는다. 결과 { byteIndex, distinct } 또는 null
-  learnTurntableAxis: () => ipcRenderer.invoke('learn-turntable-axis'),
+  learnTurntableAxis: (side = 1) => ipcRenderer.invoke('learn-turntable-axis', side),
   // 이번 세션 통계 (타건 수, 릴리즈, KPS, 업타임 등). 앱 창과 OBS 위젯이 같은 값을 받는다
   getStats: () => ipcRenderer.invoke('get-stats'),
   onStats: (callback) => ipcRenderer.on('stats', (_, stats) => callback(stats)),

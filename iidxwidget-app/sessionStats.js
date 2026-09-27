@@ -74,7 +74,9 @@ function createSessionStats({ now, config: initialConfig = {} }) {
     let changed = false;
     for (const event of events) {
       if (event.type !== 'button') continue;
-      const button = String(event.button).split(' ')[1];
+      // 버튼 키: 1P(또는 SP)는 '1'~'7', DP의 2P는 'p2-1'~'p2-7'
+      const number = String(event.button).split(' ')[1];
+      const button = event.side === 2 ? `p2-${number}` : number;
       const at = event.timestamp || time;
 
       if (event.pressed) {

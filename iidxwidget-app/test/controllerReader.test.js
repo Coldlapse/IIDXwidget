@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { findExactDedicatedDevice, findAutoController, hasOfficiallySupportedController, parseGenericControllerData, parseControllerData, createDedicatedParserState } = require('../controller/controllerReader');
+const { findExactDedicatedDevice, findAutoController, hasOfficiallySupportedController, listControllerDevices, chooseDevice, parseGenericControllerData, parseControllerData, createDedicatedParserState } = require('../controller/controllerReader');
 const phoenix = { path: 'phoenix', vendorId: 0x1CCF, productId: 0x8048, interface: 1, usagePage: 1 };
 const fps = { path: 'fps', vendorId: 0x1CCF, productId: 0x8048, interface: 0, usagePage: 1 };
 const arduino = { path: 'arduino', vendorId: 0x2341, productId: 0x8036, manufacturer: 'Arduino LLC', product: 'Arduino Leonardo', interface: 2, usagePage: 1, usage: 4 };
@@ -107,3 +107,26 @@ console.log('controllerReader tests passed');
 }
 
 console.log('controllerReader report-id tests passed');
+
+// 장치 목록·선택 (1P·2P에 각각 장치 할당)
+{
+  const phoenixA = { ...phoenix, path: 'phoenix-A', manufacturer: 'Konami', product: 'PHOENIXWAN' };
+  const phoenixB = { ...phoenix, path: 'phoenix-B', manufacturer: 'Konami', product: 'PHOENIXWAN' };
+  const devices = [phoenixA, arduino, phoenixB, keyboard];
+  // 같은 이름이 여러 개면 번호가 붙는다
+  assert.deepEqual(listControllerDevices('PHOENIXWAN', devices).map(d => d.path), ['phoenix-A', 'phoenix-B']);
+  assert.ok(/#1$/.test(listControllerDevices('PHOENIXWAN', devices)[0].name));
+  assert.ok(/#2$/.test(listControllerDevices('PHOENIXWAN', devices)[1].name));
+  // 하나뿐이면 번호 없음
+  assert.ok(!/#d$/.test(listControllerDevices('AUTO', devices)[0].name));
+  assert.deepEqual(listControllerDevices('KB', devices), []);
+  // 고른 장치가 있으면 그 장치, 없으면 첫 장치
+  assert.equal(chooseDevice('PHOENIXWAN', { devicePath: 'phoenix-B' }, devices).device.path, 'phoenix-B');
+  assert.equal(chooseDevice('PHOENIXWAN', { devicePath: 'gone' }, devices).device.path, 'phoenix-A');
+  // 다른 사이드가 쓰는 장치는 건너뛴다 (같은 컨트롤러 두 대)
+  assert.equal(chooseDevice('PHOENIXWAN', { excludePaths: ['phoenix-A'] }, devices).device.path, 'phoenix-B');
+  assert.equal(chooseDevice('PHOENIXWAN', { devicePath: 'phoenix-A', excludePaths: ['phoenix-A'] }, devices).device.path, 'phoenix-B');
+  assert.equal(chooseDevice('PHOENIXWAN', { excludePaths: ['phoenix-A', 'phoenix-B'] }, devices), null);
+  assert.equal(chooseDevice('AUTO', {}, devices).parser, 'GENERIC');
+  console.log('device selection tests passed');
+}
