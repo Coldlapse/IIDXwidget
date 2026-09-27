@@ -1,6 +1,6 @@
 {
     "name": "iidxwidget",
-    "version": "2.1.0",
+    "version": "3.0.0",
     "description": "iidxwidget",
     "author": "Sadang",
     "license": "MIT",
@@ -37,8 +37,14 @@
             "!node_modules/uiohook-napi/{src,libuiohook}/**"
         ],
         "extraResources": [
-            { "from": "../GUIDE", "to": "GUIDE" },
-            { "from": "../images", "to": "images" }
+            {
+                "from": "../GUIDE",
+                "to": "GUIDE"
+            },
+            {
+                "from": "../images",
+                "to": "images"
+            }
         ],
         "directories": {
             "buildResources": "build"
