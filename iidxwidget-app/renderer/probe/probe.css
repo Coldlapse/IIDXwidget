@@ -1,4 +1,6 @@
-.intro { margin: 0 0 16px; line-height: 1.6; }
+.intro { margin: 0 0 10px; line-height: 1.6; }
+.guide-link { background: none; border: 1px solid #3a3a3a; color: #4fc3f7; font-weight: normal; margin-bottom: 16px; }
+.guide-link:hover { border-color: #666; }
 .panel h2 { margin-bottom: 10px; }
 .panel p { margin: 8px 0 0; line-height: 1.5; }
 

@@ -14,7 +14,7 @@ For example, here is what the developer (Sadang) gets:
 | Chart type | Examples | Release |
 |---|---|---|
 | Hard-press (gachi-oshi) charts | ★2 夜明けの少女たち [Another+], ★17 gazer [MANIAQ] | 40–50ms |
-| Typical dense charts | | 75–85ms |
+| Typical dense charts | ★20 Air -GOD-, ★23 ★LittlE HearTs★ (GOD) | 75–85ms |
 | Slow charts (around 150 BPM) | ★12 Angelic layer -Heavenly7- | sometimes over 90ms |
 
 Some players, like [Rag](https://rag-oji.com/dakendisplay/), land in the 50s on almost every chart. Even so, Rag has said publicly that a low number doesn't mean better play. Many other Overjoy-level BMS players get 70–80 on dense charts.

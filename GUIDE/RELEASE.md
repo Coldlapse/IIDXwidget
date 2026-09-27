@@ -14,7 +14,7 @@
 | 곡 종류 | 예시 | 릴리즈 |
 |---|---|---|
 | 끊어치는(가치오시) 곡 | ★2 夜明けの少女たち [Another+], ★17 gazer [MANIAQ] | 40~50ms |
-| 일반적인 폭타곡 | | 75~85ms |
+| 일반적인 폭타곡 | ★20 Air -GOD-, ★23 ★LittlE HearTs★ (GOD) | 75~85ms |
 | 느린 BPM(150대) 곡 | ★12 Angelic layer -Heavenly7- | 90ms를 넘기도 함 |
 
 반면 [Rag](https://rag-oji.com/dakendisplay/) 님처럼 어떤 곡을 쳐도 릴리즈가 50대에 모이는 사람도 있습니다. 다만 Rag 님도 이 수치가 낮은 것이 좋다는 뜻은 아니라고 직접 밝혔습니다. 다른 Overjoy급 BMS 플레이어 중에도 폭타를 칠 때 70~80대가 나오는 사람이 많습니다.

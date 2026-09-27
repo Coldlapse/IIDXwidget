@@ -296,6 +296,7 @@ const translations = {
         CONNECTION: '연결 가이드 (처음이라면 여기부터)',
         RELEASE: 'RELEASE 수치',
         CHATTER: '채터링 감지',
+        CONTROLLER: '컨트롤러 지원 요청',
         WHATSNEW: '3.0.0 업데이트 안내 (바뀐 점)'
       },
       loading: '가이드를 불러오는 중...',
@@ -306,7 +307,8 @@ const translations = {
       tutorialDone: '모든 가이드는 상단 메뉴의 "가이드"에서 언제든 다시 볼 수 있습니다.',
       usageButton: '📘 사용법 가이드',
       connectionButton: '🔌 연결 가이드 (원컴/투컴 주소, IP 찾는 법)',
-      chatterButton: '❓ 채터링 감지 가이드'
+      chatterButton: '❓ 채터링 감지 가이드',
+      controllerButton: '📘 컨트롤러 지원 요청 가이드'
     }
   },
   en: {
@@ -604,6 +606,7 @@ const translations = {
         CONNECTION: 'Connection guide (start here)',
         RELEASE: 'RELEASE value',
         CHATTER: 'Chatter detection',
+        CONTROLLER: 'Controller support request',
         WHATSNEW: "What's new in 3.0.0"
       },
       loading: 'Loading guide...',
@@ -614,7 +617,8 @@ const translations = {
       tutorialDone: 'You can find all guides at any time under "Guides" in the top menu.',
       usageButton: '📘 Usage guide',
       connectionButton: '🔌 Connection guide (addresses, finding your IP)',
-      chatterButton: '❓ Chatter detection guide'
+      chatterButton: '❓ Chatter detection guide',
+      controllerButton: '📘 Controller support request guide'
     }
   }
 };

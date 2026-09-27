@@ -5,8 +5,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        먼저 IIDXwidget의 메뉴 → **컨트롤러 정보 수집**에서 안내대로 녹화한 뒤 **결과 파일 저장**으로 JSON 파일을 저장해 주세요. ([방법](https://github.com/Coldlapse/IIDXwidget/blob/main/GUIDE/USAGE.md#공식-지원-요청하기))
-        First, record the steps in IIDXwidget under Menu → **Controller probe** and press **Save result file** to save a JSON file. ([How](https://github.com/Coldlapse/IIDXwidget/blob/main/GUIDE/USAGE.en.md#requesting-official-support))
+        먼저 IIDXwidget의 메뉴 → **컨트롤러 정보 수집**에서 안내대로 녹화한 뒤 **결과 파일 저장**으로 JSON 파일을 저장해 주세요. ([방법](https://github.com/Coldlapse/IIDXwidget/blob/main/GUIDE/CONTROLLER.md))
+        First, record the steps in IIDXwidget under Menu → **Controller probe** and press **Save result file** to save a JSON file. ([How](https://github.com/Coldlapse/IIDXwidget/blob/main/GUIDE/CONTROLLER.en.md))
 
         요청이 곧 공식 지원을 보장하지는 않습니다. / A request doesn't guarantee official support.
   - type: input

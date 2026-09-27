@@ -198,5 +198,6 @@ $('mode').oninput = render;
 $('restart').onclick = () => { if (!current) { activeStep = 0; render(); } };
 $('save').onclick = save;
 $('show-file').onclick = () => api.probeShowFile();
+$('open-guide').onclick = () => api.openGuide('CONTROLLER');
 document.addEventListener('i18n-changed', render);
 refreshDevices();

@@ -10,7 +10,7 @@ const FETCH_TIMEOUT_MS = 5000;
 
 // 메뉴 순서대로. 파일 이름은 한국어 <ID>.md, 영어 <ID>.en.md
 // WHATSNEW: 업데이트 안내 (2.x → 3.0.0). 업데이트 후 처음 켤 때 한 번 보여준다
-const GUIDE_IDS = ['USAGE', 'CONNECTION', 'RELEASE', 'CHATTER', 'WHATSNEW'];
+const GUIDE_IDS = ['USAGE', 'CONNECTION', 'RELEASE', 'CHATTER', 'CONTROLLER', 'WHATSNEW'];
 
 // 업데이트 안내의 대상 버전. 안내 내용을 새 버전용으로 바꿀 때만 올린다 (그 버전으로 처음 업데이트한 사람에게 한 번 보인다)
 const UPDATE_GUIDE_VERSION = '3.0.0';
