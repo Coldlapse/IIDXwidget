@@ -31,7 +31,7 @@ For what release means, see the [RELEASE guide](RELEASE.en.md).
   - **Settings** : Change the [settings](#-settings) below.
   - **Logs** : Whether your controller was detected, and any errors. Look here first when something goes wrong.
   - **Session** : Presses, sent and remaining counts for this session, and uploading to [beatmania.app](https://beatmania.app).
-  - **Chatter detector** : Chatter (double input) counts per key. Change the detection preset (Rag / Sadang) and thresholds with **⚙ Settings** at the top right of the window. See the [chatter guide](CHATTER.en.md).
+  - **Chatter detector** : Chatter (double input) counts per key, grouped as 1-3-5-7 and 2-4-6, with keys that stand out within their group highlighted in red. Change the detection preset (Rag / Sadang) and thresholds with **⚙ Settings** at the top right of the window. See the [chatter guide](CHATTER.en.md).
   - **About / Contributors** : App version and the people who made it
   - **Check for updates** : Check for a new version now. The app also checks on startup.
   - **Restart** : Reopens the servers and controller connection. Session numbers carry on.
@@ -50,11 +50,9 @@ Press **Save** to apply changes. Saved changes show up in the OBS widget right a
 | Setting | Meaning |
 |---|---|
 | **Launch automatically with Windows** | Starts IIDXwidget when you turn on your PC. |
-| **Show widget promotion box** | Shows the IIDXwidget repository address in small text below (or above) the widget. Thanks if you turn it on 🙏 |
-| **Controller Profile** | The controller you use. See [Controller profiles](#controller-profiles) below. |
-| **Detect LR2 mode (dedicated controller only)** | A PHOENIXWAN in LR2 sends turntable signals differently. With this on, the app detects LR2 mode and shows the turntable correctly. |
+| **Show widget promotion box** | Shows the IIDXwidget repository address as a small strip on the side opposite the session dashboard. Thanks if you turn it on 🙏 |
 
-### Button layout and DP
+### Controllers: button layout and DP
 
 | Setting | Meaning |
 |---|---|
@@ -67,10 +65,11 @@ Press **Save** to apply changes. Saved changes show up in the OBS widget right a
 
 ### Controller profiles
 
-Choose a profile and a **device** for each side (one for SP, 1P and 2P for DP).
+Choose a profile and a **device** for each side (one for SP, 1P and 2P for DP). The keyboard and other-controller mapping tables appear right below the profile.
 
 - **Device** : Lists only connected controllers that match the profile; if there is just one, only one appears. Identical controllers get #1, #2 after the name. Press **Rescan** after plugging in a controller. If the saved device is missing, another connected one is used.
 - In DP, 1P and 2P can't use the same device.
+- **Detect LR2 mode (dedicated controller only)** : Shown only for the PHOENIXWAN and FPS profiles. A PHOENIXWAN in LR2 sends turntable signals differently; with this on, the app detects LR2 mode and shows the turntable correctly.
 
 - **PHOENIXWAN+ / FPS EMP Gen2** : Works as soon as you select it.
 - **Other controller (manual mapping)** : For controllers that are not officially supported and DIY boards such as Arduino. You map each button by hand. A PHOENIXWAN or FPS is not picked up by this profile; choose its own profile instead.
@@ -98,7 +97,7 @@ Not every controller on the market is supported. The Other controller profile is
 - Controllers in **Xbox (XInput) mode** : the app may not find the device. If your controller can switch modes, try gamepad (HID) mode.
 - Controllers in **keyboard mode** : use the **Keyboard** profile instead of Other controller.
 - **General gamepads** with many buttons or analog sticks : mapping may pick up the wrong numbers, or some buttons may not be read.
-- **Several gamepads** connected : only the first one found is used. Unplug the ones you don't use.
+- **Several gamepads** connected : they all appear in the list, so pick the one you use under **Device**. Identical names get #1, #2; if that's confusing, unplug the ones you don't use.
 - Konami's official INFINITAS controller : not checked yet.
 
 **How to check your controller**
@@ -160,9 +159,9 @@ KPS speedometer presets:
 |---|---|
 | **Transparent container background** | Makes the background behind the widget transparent so only the widget shows on stream. |
 | **Show each button's release value above it** | Shows or hides the release number above each key. On by default. |
-| **Show KPS speedometer gauge** | Shows KPS as a speedometer. On by default; turn it off to show just the number. The preset sets the red zone and the end of the gauge (table below). |
+| **Show KPS speedometer gauge** | Shows KPS as a speedometer. On by default; turn it off to show just the number. The preset sets the red zone and the end of the gauge (table above). |
 | **Turntable image mode** | **Single image** : one image spins with the turntable. **Two images** : a different image for each spin direction. |
-| **Custom turntable image** | The image used for the disc. **Delete** goes back to the default disc. |
+| **Custom turntable image** | The image used for the disc (PNG, JPG, WEBP, BMP, and **animated images like GIFs**). **Delete** goes back to the default disc. |
 | **Colors** | Widget background, turntable background (also used for the dashboard and promotion strip), idle/active colors (the idle color also draws the dashboard dividers), text color, and the color of a key held as a long note. |
 
 ---
