@@ -1,4 +1,4 @@
-const { discDelta, formatUptime } = window.widgetLogic;
+const { discDelta, formatUptime, kpsGauge } = window.widgetLogic;
 
 let lastDiscValue = null; // 첫 입력은 기준값으로만 쓴다
 let discRotation = 0;
@@ -25,6 +25,7 @@ function applyStats(stats) {
   if (!stats) return;
   document.getElementById('session-display').textContent = `${stats.presses}`;
   document.getElementById('kps-display').textContent = `${stats.kps}`;
+  renderKpsGauge(stats.kps);
   document.getElementById('release-display').textContent = stats.releaseAvg === null ? '--' : `${stats.releaseAvg}`;
   document.querySelectorAll('.key').forEach(key => {
     const id = key.id.replace('button-', '');
@@ -37,14 +38,77 @@ function applyStats(stats) {
 
 document.fonts?.ready.then(() => fitDashValues());
 
+// ─── KPS 스피드미터 ─────────────────────────────
+// 240° 원호. 0~중점이 70%, 중점~최대가 30%(빨간 영역). 중점을 넘으면 채움 색이 주황→빨강으로 달아오르고 빛이 번진다
+const GAUGE = { cx: 50, cy: 36, r: 31, start: 150, sweep: 240 };
+let kpsGaugePreset = 'iidx';
+let lastKps = 0;
+
+function gaugePoint(fraction, radius = GAUGE.r) {
+  const angle = (GAUGE.start + GAUGE.sweep * fraction) * Math.PI / 180;
+  return [GAUGE.cx + radius * Math.cos(angle), GAUGE.cy + radius * Math.sin(angle)].map(v => v.toFixed(2));
+}
+
+function gaugeArc(from, to) {
+  const [x1, y1] = gaugePoint(from);
+  const [x2, y2] = gaugePoint(to);
+  const large = GAUGE.sweep * (to - from) > 180 ? 1 : 0;
+  return `M ${x1} ${y1} A ${GAUGE.r} ${GAUGE.r} 0 ${large} 1 ${x2} ${y2}`;
+}
+
+function buildKpsGauge() {
+  const svg = document.getElementById('kps-gauge');
+  const split = window.widgetLogic.KPS_GAUGE_SPLIT;
+  const tick = f => {
+    const [x1, y1] = gaugePoint(f, GAUGE.r - 7);
+    const [x2, y2] = gaugePoint(f, GAUGE.r - 4);
+    return `<line class="gauge-tick" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
+  };
+  svg.innerHTML = `
+    <defs>
+      <linearGradient id="gauge-hot" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#ffb020"/><stop offset="1" stop-color="#ff2d1a"/>
+      </linearGradient>
+    </defs>
+    <path class="gauge-track" d="${gaugeArc(0, 1)}"/>
+    <path class="gauge-redzone" d="${gaugeArc(split, 1)}"/>
+    <path class="gauge-fill" id="kps-gauge-fill" d="${gaugeArc(0, 1)}" pathLength="100"/>
+    ${tick(0)}${tick(split)}${tick(1)}`;
+}
+
+function renderKpsGauge(kps) {
+  lastKps = kps;
+  const { fraction, heat } = kpsGauge(kps, kpsGaugePreset);
+  const cell = document.querySelector('.dash-kps');
+  cell.style.setProperty('--heat', heat.toFixed(3));
+  document.getElementById('kps-gauge-fill').style.strokeDashoffset = (100 - fraction * 100).toFixed(2);
+}
+
+function applyKpsGauge(gaugeSettings) {
+  const enabled = gaugeSettings?.enabled !== false;
+  kpsGaugePreset = gaugeSettings?.preset || 'iidx';
+  document.querySelector('.release-container').classList.toggle('gauge-on', enabled);
+  renderKpsGauge(lastKps);
+  fitDashValues();
+}
+
+buildKpsGauge();
+
 // 계기판 숫자가 칸보다 길면(세션 1000만 이상, 업타임 100시간 이상 등) 칸에 맞게 글자를 줄인다
 function fitDashValues() {
+  // 글자 실제 너비로 잰다 (게이지 칸의 숫자는 가운데 정렬하려고 칸 전체 너비로 늘여 두었기 때문)
+  const textWidth = el => {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    return range.getBoundingClientRect().width;
+  };
   document.querySelectorAll('.dash-value').forEach(value => {
     value.style.fontSize = '';
     const room = value.parentElement.clientWidth - 8;
-    if (value.scrollWidth > room) {
+    const width = textWidth(value);
+    if (width > room) {
       const size = parseFloat(getComputedStyle(value).fontSize);
-      value.style.fontSize = `${Math.max(14, Math.floor(size * room / value.scrollWidth))}px`;
+      value.style.fontSize = `${Math.max(14, Math.floor(size * room / width))}px`;
     }
   });
 }
@@ -310,6 +374,7 @@ function applySettings(settings) {
     applyPromoBox(settings);
     applyCustomColors(settings.widget.colors, settings.widget.transparentContainer);
     document.body.classList.toggle('transparent-container', !!settings.widget.transparentContainer);
+    applyKpsGauge(settings.widget.kpsGauge);
     cnThresholdMs = settings.widget.cnThresholdMs || 200;
     // 건반 위 릴리즈 숫자 표시 (설정에 없으면 표시)
     document.body.classList.toggle('hide-key-release', settings.widget.showKeyRelease === false);

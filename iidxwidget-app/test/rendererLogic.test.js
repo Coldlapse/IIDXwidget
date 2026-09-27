@@ -33,3 +33,19 @@ assert.equal(validateMALength(-5), false);
 assert.equal(validateMALength(NaN), false);
 
 console.log('renderer logic tests passed');
+
+// KPS 스피드미터: 0~중점 70%, 중점~최대 30%, 최대에서 멈춤
+{
+  const { kpsGauge } = require('../renderer/widget/logic');
+  assert.deepEqual(kpsGauge(0, 'iidx'), { fraction: 0, heat: 0 });
+  assert.deepEqual(kpsGauge(10, 'iidx'), { fraction: 0.35, heat: 0 });
+  assert.deepEqual(kpsGauge(20, 'iidx'), { fraction: 0.7, heat: 0 });
+  assert.equal(kpsGauge(30, 'iidx').heat, 0.5);
+  assert.ok(Math.abs(kpsGauge(30, 'iidx').fraction - 0.85) < 1e-9);
+  assert.deepEqual(kpsGauge(40, 'iidx'), { fraction: 1, heat: 1 });
+  assert.deepEqual(kpsGauge(99, 'iidx'), { fraction: 1, heat: 1 });
+  assert.deepEqual(kpsGauge(30, 'bms'), { fraction: 0.7, heat: 0 });
+  assert.deepEqual(kpsGauge(60, 'bmsInsane'), { fraction: 1, heat: 1 });
+  assert.deepEqual(kpsGauge(10, 'unknown'), kpsGauge(10, 'iidx'));
+  console.log('kps gauge tests passed');
+}

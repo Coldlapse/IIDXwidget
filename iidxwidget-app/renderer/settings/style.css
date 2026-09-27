@@ -186,3 +186,4 @@ body {
   color: #777;
 }
 .account-links a { color: #4fc3f7; }
+select:disabled { opacity: 0.5; }

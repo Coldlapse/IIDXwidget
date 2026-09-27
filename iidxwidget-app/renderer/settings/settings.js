@@ -72,6 +72,7 @@ $('save-button').addEventListener('click', async () => {
       showPromoBox: $('showPromoBox').checked,
       transparentContainer: $('transparent-container').checked,
       showKeyRelease: $('showKeyRelease').checked,
+      kpsGauge: { enabled: $('kpsGaugeEnabled').checked, preset: $('kpsGaugePreset').value },
       globalMALength,
       perButtonMALength,
       cnThresholdMs,
@@ -162,6 +163,9 @@ for (const slotName of Object.keys(discSlots)) {
   $('showPromoBox').checked = !!settings.widget.showPromoBox;
   $('transparent-container').checked = !!settings.widget.transparentContainer;
   $('showKeyRelease').checked = settings.widget.showKeyRelease !== false;
+  $('kpsGaugeEnabled').checked = settings.widget.kpsGauge?.enabled !== false;
+  $('kpsGaugePreset').value = settings.widget.kpsGauge?.preset || 'iidx';
+  $('kpsGaugePreset').disabled = !$('kpsGaugeEnabled').checked;
   updateContainerColorAvailability();
   $('GlobalReleaseMALength').value = settings.widget.globalMALength;
   $('PerButtonMALength').value = settings.widget.perButtonMALength;
@@ -400,3 +404,6 @@ $('open-chatter-settings').addEventListener('click', () => window.electronAPI.op
 new IntersectionObserver(([entry]) => {
   $('save-bar').classList.toggle('floating', !entry.isIntersecting);
 }).observe($('save-bar-anchor'));
+
+// KPS 게이지를 끄면 프리셋 선택도 막는다
+$('kpsGaugeEnabled').addEventListener('change', () => { $('kpsGaugePreset').disabled = !$('kpsGaugeEnabled').checked; });

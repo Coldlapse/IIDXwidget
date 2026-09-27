@@ -145,6 +145,15 @@
       <label><input type="checkbox" id="showKeyRelease" /> <span data-i18n="settings.showKeyRelease">각 버튼 위에 버튼별 Release 수치 표시</span></label>
     </div>
     <div class="setting-group">
+      <label><input type="checkbox" id="kpsGaugeEnabled" /> <span data-i18n="settings.kpsGauge">KPS 스피드미터 게이지 표시</span></label>
+      <select id="kpsGaugePreset">
+        <option value="iidx" data-i18n="settings.kpsGaugeIidx">IIDX 유저 (빨간 영역 20 KPS부터, 최대 40)</option>
+        <option value="bms" data-i18n="settings.kpsGaugeBms">BMS 유저 ~★★ (빨간 영역 30 KPS부터, 최대 50)</option>
+        <option value="bmsInsane" data-i18n="settings.kpsGaugeBmsInsane">BMS 유저 ★★~ (빨간 영역 40 KPS부터, 최대 60)</option>
+      </select>
+      <p class="mapping-help" data-i18n="settings.kpsGaugeHint">계기판의 KPS를 자동차 속도계처럼 보여줍니다. 빨간 영역에 들어가면 점점 달아오릅니다.</p>
+    </div>
+    <div class="setting-group">
       <label for="discImageMode" data-i18n="settings.discImageMode">스크래치 이미지 모드</label>
       <select id="discImageMode">
         <option value="single" data-i18n="settings.discImageSingle">1장</option>

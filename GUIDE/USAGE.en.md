@@ -17,7 +17,7 @@ The app window and the OBS widget **always show the same screen and the same num
   - **Session** : Presses in this session
   - **Uptime** : Time since the app started
   - **Release** : Average release (ms) across all keys. Long-note presses are left out (same as [Rag](https://rag-oji.com/dakendisplay/)'s widget)
-  - **KPS** : Presses in the last second
+  - **KPS** : Presses in the last second. Shown as a **speedometer gauge** by default. The first 70% of the gauge is the normal range and the last 30% is the red zone; in the red zone the fill heats up from orange to red and starts to glow. Past the end of the gauge the needle stops, but the number keeps showing the real value.
 
 > 📌 A **session** runs from when you start the app until you quit it. Every number starts at 0 when the app starts and is gone when you quit.
 
@@ -133,10 +133,19 @@ When you save a new sample count or long note threshold, this session is recalcu
 
 ### Widget appearance
 
+KPS speedometer presets:
+
+| Preset | Red zone from | Gauge end |
+|---|---|---|
+| IIDX players (default) | 20 KPS | 40 KPS |
+| BMS players up to ★★ | 30 KPS | 50 KPS |
+| BMS players ★★ and up | 40 KPS | 60 KPS |
+
 | Setting | Meaning |
 |---|---|
 | **Transparent container background** | Makes the background behind the widget transparent so only the widget shows on stream. |
 | **Show each button's release value above it** | Shows or hides the release number above each key. On by default. |
+| **Show KPS speedometer gauge** | Shows KPS as a speedometer. On by default; turn it off to show just the number. The preset sets the red zone and the end of the gauge (table below). |
 | **Turntable image mode** | **Single image** : one image spins with the turntable. **Two images** : a different image for each spin direction. |
 | **Custom turntable image** | The image used for the disc. **Delete** goes back to the default disc. |
 | **Colors** | Widget background, turntable background (also used for the dashboard and promotion strip), idle/active colors (the idle color also draws the dashboard dividers), text color, and the color of a key held as a long note. |

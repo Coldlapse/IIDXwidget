@@ -246,6 +246,56 @@ body {
 .dash-release { flex-grow: 0.9; }
 .dash-kps { flex-grow: 0.55; }
 
+/* ─── KPS 스피드미터 (계기판 KPS 칸) ───────────────────
+   --heat: 0(중점 이하) ~ 1(최대). 중점을 넘으면 채움 색과 숫자가 주황→빨강으로 달아오르고 빛이 번진다 */
+.kps-gauge { display: none; }
+.gauge-on .dash-kps { flex-grow: 1; justify-content: flex-start; }
+.gauge-on .kps-gauge {
+  display: block;
+  position: absolute;
+  top: 3px;
+  left: 50%;
+  width: 104px;
+  height: 67px;
+  transform: translateX(-50%);
+  overflow: visible;
+}
+.gauge-on .dash-kps .dash-value {
+  position: absolute;
+  top: 25px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 24px;
+}
+.gauge-on .dash-kps .dash-label {
+  position: absolute;
+  bottom: 8px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 9px;
+}
+.dash-kps {
+  --heat: 0;
+  --heat-color: color-mix(in srgb, #ff2d1a calc(var(--heat) * 100%), #ffb020);
+}
+.gauge-track, .gauge-redzone, .gauge-fill { fill: none; stroke-width: 6; }
+.gauge-track { stroke: color-mix(in srgb, var(--accent-color) 75%, transparent); stroke-linecap: round; }
+.gauge-redzone { stroke: url(#gauge-hot); opacity: 0.35; }
+.gauge-fill {
+  stroke: color-mix(in srgb, var(--heat-color) calc(var(--heat) * 100%), var(--active-color));
+  stroke-dasharray: 100 100;
+  stroke-dashoffset: 100;
+  filter: drop-shadow(0 0 calc(var(--heat) * 4px) color-mix(in srgb, #ff4020 calc(var(--heat) * 90%), transparent));
+  transition: stroke-dashoffset 0.25s ease-out, stroke 0.25s;
+}
+.gauge-tick { stroke: color-mix(in srgb, var(--font-color) 45%, transparent); stroke-width: 1.2; }
+.gauge-on .dash-kps .dash-value {
+  color: color-mix(in srgb, var(--heat-color) calc(var(--heat) * 100%), var(--font-color));
+  transition: color 0.25s;
+}
+
 /* 키보드 입력 표시: 건반 묶음 위 빈 공간 가운데 (건반 배치에는 영향 없음) */
 .button-grid { position: relative; }
 .kb-indicator {

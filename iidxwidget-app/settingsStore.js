@@ -40,6 +40,7 @@ const DEFAULT_SETTINGS = {
     showPromoBox: false,
     transparentContainer: false,
     showKeyRelease: true,    // 건반 위에 버튼별 평균 릴리즈(ms) 표시
+    kpsGauge: { enabled: true, preset: 'iidx' }, // 계기판 KPS 스피드미터 (프리셋: iidx / bms / bmsInsane)
     globalMALength: 2000,    // 전체 평균 릴리즈 표본 (Rag 원본과 같은 최근 2000개)
     perButtonMALength: 300,  // 건반별 평균 릴리즈 표본 (Rag 원본과 같은 최근 300개)
     cnThresholdMs: 200,      // 이 시간 이상 누르면 롱노트(CN)로 보고 릴리즈 평균에서 빼며, 건반을 롱노트 색으로 표시

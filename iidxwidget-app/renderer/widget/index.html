@@ -47,7 +47,11 @@
       <div class="dash-cell dash-session"><span class="dash-label">Session</span><span class="dash-value" id="session-display">0</span></div>
       <div class="dash-cell dash-uptime"><span class="dash-label">Uptime</span><span class="dash-value" id="uptime-display">0:00:00</span></div>
       <div class="dash-cell dash-release"><span class="dash-label">Release</span><span class="dash-value"><span id="release-display">--</span><small>ms</small></span></div>
-      <div class="dash-cell dash-kps"><span class="dash-label">KPS</span><span class="dash-value" id="kps-display">0</span></div>
+      <div class="dash-cell dash-kps">
+        <!-- KPS 스피드미터 (설정에서 끌 수 있음). 모양은 index.js의 buildKpsGauge가 그린다 -->
+        <svg class="kps-gauge" id="kps-gauge" viewBox="0 0 100 64" aria-hidden="true"></svg>
+        <span class="dash-label">KPS</span><span class="dash-value" id="kps-display">0</span>
+      </div>
     </div>
 
     <div id="promo-top" class="promo-box">Try this! → https://github.com/Coldlapse/IIDXwidget</div>
