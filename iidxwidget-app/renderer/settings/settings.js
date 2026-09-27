@@ -1,8 +1,7 @@
-const { buildGenericMapping, validatePorts, validateMALength, validateCnThreshold, MA_LENGTH_RANGE, CN_THRESHOLD_RANGE } = window.formLogic;
+const { validatePorts, validateMALength, validateCnThreshold, MA_LENGTH_RANGE, CN_THRESHOLD_RANGE } = window.formLogic;
 const $ = id => document.getElementById(id);
 
 let loadedSettings = null;
-let genericAxis = null; // 일반 컨트롤러의 턴테이블 축 바이트 위치
 
 // ✅ 화면 안 메시지 (alert 대신)
 function showStatus(message, { error = false } = {}) {
@@ -21,7 +20,6 @@ $('save-button').addEventListener('click', async () => {
   const globalMALength = parseInt($('GlobalReleaseMALength').value, 10);
   const perButtonMALength = parseInt($('PerButtonMALength').value, 10);
   const cnThresholdMs = parseInt($('cnThresholdMs').value, 10);
-  const controllerProfile = $('controllerProfile').value;
 
   if (!validatePorts(serverPort, webSocketPort)) {
     showStatus(window.i18n.t('settings.invalidPort'), { error: true });
@@ -36,33 +34,30 @@ $('save-button').addEventListener('click', async () => {
     return;
   }
 
-  const generic = buildGenericMapping(
-    [...document.querySelectorAll('#generic-mapping-table input')].map(input => ({ key: input.dataset.key, value: input.value }))
-  );
-  if (controllerProfile === 'AUTO' && (generic.invalid.length || generic.duplicates.length)) {
-    const keys = generic.invalid.length ? generic.invalid : generic.duplicates[0];
-    showStatus(window.i18n.t('settings.invalidGenericMapping', { keys: keys.map(getMappingLabel).join(', ') }), { error: true });
+  const mappingError = panels.map(panel => panel.validate()).find(Boolean);
+  if (mappingError) {
+    showStatus(mappingError, { error: true });
     return;
   }
-
-  const kbMapping = {};
-  document.querySelectorAll('#key-mapping-table input').forEach(input => {
-    const value = input.value.trim();
-    if (value) kbMapping[input.dataset.key] = value;
-  });
+  const side1 = panels[0].collect().config;
+  const side2 = panels[1].collect().config;
+  const isDP = $('buttonLayout').value === 'DP';
+  // DP에서 1P와 2P가 같은 장치를 고르면 한쪽이 입력을 못 받는다
+  if (isDP && side1.controllerProfile !== 'KB' && side2.controllerProfile !== 'KB' && side1.controllerDevice && side1.controllerDevice === side2.controllerDevice) {
+    showStatus(window.i18n.t('settings.sameDevice'), { error: true });
+    return;
+  }
 
   const newSettings = {
     serverPort,
     webSocketPort,
-    controllerProfile,
-    lr2ModeEnabled: $('lr2ModeEnabled').checked,
+    controllerProfile: side1.controllerProfile,
+    controllerDevice: side1.controllerDevice,
+    lr2ModeEnabled: side1.lr2ModeEnabled,
+    player2: side2,
     autoLaunch: $('autoLaunch').checked,
     autoUploadOnQuit: $('autoUploadOnQuit').checked,
-    keyMapping: {
-      KB: kbMapping,
-      GENERIC: generic.mapping,
-      GENERIC_AXIS: genericAxis
-    },
+    keyMapping: side1.keyMapping,
     widget: {
       infoPosition: $('infoPosition').value,
       buttonLayout: $('buttonLayout').value,
@@ -104,13 +99,23 @@ $('save-button').addEventListener('click', async () => {
   window.close();
 });
 
-// ✅ 키 매핑 UI 토글 함수
-function toggleKeyMappingUI(profile) {
-  $('key-mapping-container').style.display = profile === 'KB' ? 'block' : 'none';
-  $('generic-mapping-container').style.display = profile === 'AUTO' ? 'block' : 'none';
-  // LR2 모드 감지는 전용 프로필(주작콘)에서만 쓴다
-  $('lr2-detect-row').style.display = profile === 'PHOENIXWAN' || profile === 'FPS EMP Gen2' ? 'block' : 'none';
+// ✅ 사이드별 컨트롤러 (1P, DP면 2P까지)
+const panels = [window.createControllerPanel(1), window.createControllerPanel(2)];
+
+// 버튼 레이아웃이 DP면 2P 컨트롤러 구역을 보이고, 1P·2P 제목과 권장 크기 안내를 보인다
+async function applyLayout() {
+  const isDP = $('buttonLayout').value === 'DP';
+  $('dp-hint').hidden = !isDP;
+  await panels[0].setVisible(true, isDP);
+  await panels[1].setVisible(isDP, true);
 }
+$('buttonLayout').addEventListener('change', applyLayout);
+
+// 기타 컨트롤러 매핑 학습 중 누른 물리 버튼
+window.electronAPI.onControllerData(events => {
+  const event = events.find(item => item.type === 'physical-button' && item.pressed);
+  if (event) panels.forEach(panel => panel.handlePhysical(event));
+});
 
 // ✅ 스크래치 이미지 모드 UI 토글 함수
 function toggleDiscImageModeUI(mode) {
@@ -154,10 +159,8 @@ for (const slotName of Object.keys(discSlots)) {
 
   $('serverPort').value = settings.serverPort;
   $('webSocketPort').value = settings.webSocketPort;
-  $('controllerProfile').value = settings.controllerProfile;
   $('infoPosition').value = settings.widget.infoPosition;
   $('buttonLayout').value = settings.widget.buttonLayout;
-  $('lr2ModeEnabled').checked = !!settings.lr2ModeEnabled;
   $('autoLaunch').checked = !!settings.autoLaunch;
   $('autoUploadOnQuit').checked = !!settings.autoUploadOnQuit;
   $('showPromoBox').checked = !!settings.widget.showPromoBox;
@@ -171,12 +174,15 @@ for (const slotName of Object.keys(discSlots)) {
   $('PerButtonMALength').value = settings.widget.perButtonMALength;
   $('cnThresholdMs').value = settings.widget.cnThresholdMs;
 
-  // 키 매핑은 프로필과 상관없이 채워 둔다 (프로필을 바꿨다 돌아와도 입력한 값이 남도록)
-  const kbMap = settings.keyMapping.KB || {};
-  document.querySelectorAll('#key-mapping-table input').forEach(input => input.value = kbMap[input.dataset.key] || '');
-  const genericMap = settings.keyMapping.GENERIC || {};
-  document.querySelectorAll('#generic-mapping-table input').forEach(input => input.value = genericMap[input.dataset.key] ?? '');
-  setGenericAxis(settings.keyMapping.GENERIC_AXIS);
+  // 사이드별 컨트롤러. 매핑은 프로필과 상관없이 채워 둔다 (프로필을 바꿨다 돌아와도 입력한 값이 남도록)
+  await panels[0].load({
+    controllerProfile: settings.controllerProfile,
+    controllerDevice: settings.controllerDevice,
+    lr2ModeEnabled: settings.lr2ModeEnabled,
+    keyMapping: settings.keyMapping
+  });
+  await panels[1].load(settings.player2);
+  await applyLayout();
 
   const colors = settings.widget.colors;
   $('color-container-background').value = colors.containerBackground;
@@ -196,117 +202,7 @@ for (const slotName of Object.keys(discSlots)) {
     bindColorPreview(`color-${name}`, `preview-${name}`);
   }
 
-  onProfileChanged(settings.controllerProfile);
 })();
-
-// ✅ 프로필 변경 시 키 매핑 UI 토글
-$('controllerProfile').addEventListener('change', (e) => onProfileChanged(e.target.value));
-
-function onProfileChanged(profile) {
-  toggleKeyMappingUI(profile);
-  if (profile === 'AUTO') startMappingSession();
-  else stopMappingSession();
-}
-
-
-// ✅ AUTO 일반 컨트롤러 매핑 학습 (저장하지 않아도 바로 동작)
-let learningInput = null;
-let mappingSession = null;
-
-function setMappingStatus(message, { warning = false } = {}) {
-  const status = $('mapping-status');
-  status.textContent = message;
-  status.classList.toggle('warning', warning);
-}
-
-async function startMappingSession() {
-  mappingSession = await window.electronAPI.startMappingSession();
-  renderMappingSessionStatus();
-}
-
-function renderMappingSessionStatus() {
-  if (!mappingSession || !window.i18n.ready) return;
-  if (mappingSession.status === 'none') setMappingStatus(window.i18n.t('settings.mappingNoDevice'), { warning: true });
-  else if (mappingSession.status === 'officialOnly') setMappingStatus(window.i18n.t('settings.mappingOfficialOnly'), { warning: true });
-  else setMappingStatus(window.i18n.t('settings.mappingReady', { device: mappingSession.device }));
-}
-
-function stopMappingSession() {
-  learningInput = null;
-  if (!mappingSession) return;
-  mappingSession = null;
-  window.electronAPI.stopMappingSession();
-}
-
-document.querySelectorAll('#generic-mapping-table input').forEach(input => {
-  input.addEventListener('focus', () => {
-    if ($('controllerProfile').value !== 'AUTO') return;
-    learningInput = input;
-    setMappingStatus(window.i18n.t('settings.listening', { key: getMappingLabel(input.dataset.key) }));
-  });
-  // 다른 곳으로 옮기면 학습을 멈춘다 (누른 버튼이 이전 칸에 들어가지 않도록)
-  input.addEventListener('blur', () => {
-    if (learningInput === input) learningInput = null;
-  });
-});
-
-window.electronAPI.onControllerData(events => {
-  if (!learningInput || $('controllerProfile').value !== 'AUTO') return;
-  const event = events.find(item => item.type === 'physical-button' && item.pressed);
-  if (!event) return;
-  const input = learningInput;
-  input.value = event.physicalButton;
-  setMappingStatus(window.i18n.t('settings.mapped', { key: getMappingLabel(input.dataset.key), button: event.physicalButton }));
-  input.blur();
-});
-
-function setGenericAxis(byteIndex) {
-  genericAxis = Number.isInteger(byteIndex) ? byteIndex : null;
-  $('generic-axis-value').textContent = genericAxis === null
-    ? (window.i18n.ready ? window.i18n.t('settings.axisNone') : '')
-    : window.i18n.t('settings.axisByte', { index: genericAxis });
-}
-
-$('learn-axis-button').addEventListener('click', async () => {
-  const button = $('learn-axis-button');
-  button.disabled = true;
-  setMappingStatus(window.i18n.t('settings.axisLearning'));
-  const result = await window.electronAPI.learnTurntableAxis();
-  button.disabled = false;
-  if (result) {
-    setGenericAxis(result.byteIndex);
-    setMappingStatus(window.i18n.t('settings.axisLearned', { index: result.byteIndex }));
-  } else {
-    setMappingStatus(window.i18n.t('settings.axisNotFound'), { warning: true });
-  }
-});
-$('clear-axis-button').addEventListener('click', () => setGenericAxis(null));
-
-function getMappingLabel(key) {
-  if (key === 'SCup') return window.i18n.t('settings.turntableClockwise');
-  if (key === 'SCdown') return window.i18n.t('settings.turntableCounterclockwise');
-  return window.i18n.t('settings.logicalKey', { key });
-}
-
-function localizeMappingLabels() {
-  document.querySelectorAll('#generic-mapping-table tr').forEach(row => {
-    row.cells[0].textContent = getMappingLabel(row.querySelector('input').dataset.key);
-  });
-  setGenericAxis(genericAxis);
-  renderMappingSessionStatus();
-}
-document.addEventListener('i18n-changed', localizeMappingLabels);
-
-
-// ✅ 키보드 키 입력 감지
-document.querySelectorAll('#key-mapping-table input').forEach(input => {
-  input.addEventListener('keydown', (e) => {
-    e.preventDefault();
-    // Normalize Enter and NumpadEnter to the same value
-    input.value = (e.code === 'NumpadEnter' || e.code === 'Enter') ? 'Enter' : e.code;
-  });
-});
-
 
 function bindColorPreview(inputId, previewId) {
   const input = $(inputId);

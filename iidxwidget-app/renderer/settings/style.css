@@ -118,15 +118,15 @@ body {
   margin-top: 20px;
 }
 .mapping-help { color: #aaa; font-size: 12px; line-height: 1.5; margin: 4px 0; }
-#mapping-status { min-height: 20px; color: #00c853; font-size: 13px; }
-#generic-mapping-table input { width: 100%; box-sizing: border-box; }
+.mapping-status { min-height: 20px; color: #00c853; font-size: 13px; }
+.generic-mapping-table input { width: 100%; box-sizing: border-box; }
 .input-with-delete { display: flex; gap: 8px; }
 .input-with-delete button { flex: 1; background-color: #333; color: #fff; }
 .disc-preview { display: none; margin-top: 10px; max-width: 100%; border-radius: 10px; }
 .axis-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 14px; color: #aaa; }
 .axis-row button { padding: 6px 10px; font-size: 13px; background-color: #333; color: #fff; }
-#generic-axis-value { flex: 1; color: #fff; }
-#mapping-status.warning, #form-status.error { color: #ff5252; }
+.axis-value { flex: 1; color: #fff; }
+.mapping-status.warning, #form-status.error, .side-error { color: #ff5252; }
 #form-status { min-height: 0; font-size: 14px; color: #00c853; }
 #form-status:empty { display: none; }
 
@@ -187,3 +187,15 @@ body {
 }
 .account-links a { color: #4fc3f7; }
 select:disabled { opacity: 0.5; }
+
+/* 사이드별 컨트롤러 (DP면 1P·2P 두 개) */
+.controller-side { display: flex; flex-direction: column; gap: 20px; }
+.controller-side[hidden] { display: none; }
+.side-title { font-size: 15px; font-weight: bold; color: #fff; }
+.device-row { display: flex; flex-direction: column; gap: 5px; margin-top: 6px; }
+.device-select { display: flex; gap: 8px; }
+.device-select select { flex: 1; min-width: 0; }
+.device-select .guide-button { align-self: stretch; }
+
+/* hidden 속성은 항상 숨김 (display를 지정한 클래스보다 우선) */
+[hidden] { display: none !important; }

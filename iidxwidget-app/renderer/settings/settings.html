@@ -22,62 +22,21 @@
         <input type="checkbox" id="showPromoBox" />
         <span data-i18n="settings.promo">위젯 홍보 박스 표시</span>
       </label><br>
-      <label for="controllerProfile" data-i18n="settings.controllerProfile">컨트롤러 프로필</label>
-      <select id="controllerProfile">
-        <option value="AUTO" data-i18n="settings.auto">기타 컨트롤러 (수동 매핑)</option>
-        <option value="PHOENIXWAN">PHOENIXWAN+</option>
-        <option value="FPS EMP Gen2">FPS EMP Gen2</option>
-        <option value="KB" data-i18n="settings.keyboard">BM으로 하라고 만든 게임을 꾸역꾸역 키보드로 하는 멍청이</option>
+    </div>
+
+    <label class="section-label" data-i18n="settings.controllers">컨트롤러</label>
+    <div class="setting-group">
+      <label for="buttonLayout" data-i18n="settings.buttonLayout">버튼 레이아웃</label>
+      <select id="buttonLayout">
+        <option value="1P">1P</option>
+        <option value="2P">2P</option>
+        <option value="DP" data-i18n="settings.layoutDP">DP (1P + 2P)</option>
       </select>
+      <p class="mapping-help" id="dp-hint" data-i18n="settings.dpHint" hidden></p>
     </div>
-
-    <div id="lr2-detect-row">
-      <label>
-        <input type="checkbox" id="lr2ModeEnabled" />
-        <span data-i18n="settings.lr2">LR2 모드 감지 (주작콘 전용)</span>
-      </label>
-    </div>
-
-    <div id="key-mapping-container" class="setting-group" style="display: none;">
-      <label data-i18n="settings.keyboardMapping">키보드 매핑 (저는 KB를 하는 바보입니다)</label>
-      <table id="key-mapping-table">
-        <tr><td>SCup</td><td><input type="text" data-key="SCup" readonly /></td></tr>
-        <tr><td>SCdown</td><td><input type="text" data-key="SCdown" readonly /></td></tr>
-        <tr><td>1</td><td><input type="text" data-key="1" readonly /></td></tr>
-        <tr><td>2</td><td><input type="text" data-key="2" readonly /></td></tr>
-        <tr><td>3</td><td><input type="text" data-key="3" readonly /></td></tr>
-        <tr><td>4</td><td><input type="text" data-key="4" readonly /></td></tr>
-        <tr><td>5</td><td><input type="text" data-key="5" readonly /></td></tr>
-        <tr><td>6</td><td><input type="text" data-key="6" readonly /></td></tr>
-        <tr><td>7</td><td><input type="text" data-key="7" readonly /></td></tr>
-      </table>
-    </div>
-
-    <div id="generic-mapping-container" class="setting-group" style="display: none;">
-      <label data-i18n="settings.genericMapping">기타 컨트롤러 버튼 매핑</label>
-      <p class="mapping-help" data-i18n="settings.genericHelp">각 칸을 클릭한 다음 원하는 컨트롤러 버튼을 누르세요. 칸을 비우면 매핑이 해제됩니다. 마지막에 저장을 누르세요.</p>
-      <table id="generic-mapping-table">
-        <tbody>
-          <tr><td>IIDX 키 1</td><td><input type="number" min="1" max="64" data-key="1"></td></tr>
-          <tr><td>IIDX 키 2</td><td><input type="number" min="1" max="64" data-key="2"></td></tr>
-          <tr><td>IIDX 키 3</td><td><input type="number" min="1" max="64" data-key="3"></td></tr>
-          <tr><td>IIDX 키 4</td><td><input type="number" min="1" max="64" data-key="4"></td></tr>
-          <tr><td>IIDX 키 5</td><td><input type="number" min="1" max="64" data-key="5"></td></tr>
-          <tr><td>IIDX 키 6</td><td><input type="number" min="1" max="64" data-key="6"></td></tr>
-          <tr><td>IIDX 키 7</td><td><input type="number" min="1" max="64" data-key="7"></td></tr>
-          <tr><td>턴테이블 시계 방향</td><td><input type="number" min="1" max="64" data-key="SCup"></td></tr>
-          <tr><td>턴테이블 반시계 방향</td><td><input type="number" min="1" max="64" data-key="SCdown"></td></tr>
-        </tbody>
-      </table>
-      <div class="axis-row">
-        <span data-i18n="settings.turntableAxis">턴테이블 (축)</span>
-        <span id="generic-axis-value"></span>
-        <button type="button" id="learn-axis-button" data-i18n="settings.learnAxis">학습</button>
-        <button type="button" id="clear-axis-button" data-i18n="settings.clearAxis">지우기</button>
-      </div>
-      <p class="mapping-help" data-i18n="settings.axisHelp">턴테이블이 축으로 동작하는 기판이라면 '학습'을 누르고 2초 동안 턴테이블을 돌리세요.</p>
-      <div id="mapping-status" aria-live="polite"></div>
-    </div>
+    <!-- 사이드별 컨트롤러 (SP는 1개, DP는 1P·2P). 내용은 controller-side-template에서 만든다 -->
+    <div class="controller-side" data-side="1"></div>
+    <div class="controller-side" data-side="2" hidden></div>
 
     <div class="setting-group">
       <label for="apiToken" data-i18n="settings.account">beatmania.app 계정</label>
@@ -110,13 +69,6 @@
       <label for="infoPosition" data-i18n="settings.infoPosition">세션 정보 표시 위치</label>
       <select id="infoPosition">
         <option value="top" data-i18n="settings.top">상단</option><option value="bottom" data-i18n="settings.bottom">하단</option><option value="none" data-i18n="settings.none">없음</option>
-      </select>
-    </div>
-    <div class="setting-group">
-      <label for="buttonLayout" data-i18n="settings.buttonLayout">버튼 레이아웃</label>
-      <select id="buttonLayout">
-        <option value="1P">1P</option>
-        <option value="2P">2P</option>
       </select>
     </div>
     <label class="section-label" data-i18n="settings.inputAnalysis">Release 표본 수집 기준</label>
@@ -219,10 +171,74 @@
     <div id="save-bar-anchor" aria-hidden="true"></div>
   </div>
 
+  <!-- 사이드 하나의 컨트롤러 설정 (프로필, 장치, LR2, 키보드 매핑, 기타 컨트롤러 매핑) -->
+  <template id="controller-side-template">
+    <div class="setting-group">
+      <label class="side-title" data-role="title" hidden></label>
+      <label data-i18n="settings.controllerProfile">컨트롤러 프로필</label>
+      <select data-role="profile">
+        <option value="AUTO" data-i18n="settings.auto">기타 컨트롤러 (수동 매핑)</option>
+        <option value="PHOENIXWAN">PHOENIXWAN+</option>
+        <option value="FPS EMP Gen2">FPS EMP Gen2</option>
+        <option value="KB" data-i18n="settings.keyboard">BM으로 하라고 만든 게임을 꾸역꾸역 키보드로 하는 멍청이</option>
+      </select>
+      <div class="device-row" data-role="device-row">
+        <label data-i18n="settings.device">장치</label>
+        <div class="device-select">
+          <select data-role="device"></select>
+          <button type="button" class="guide-button" data-role="refresh" data-i18n="settings.refreshDevices">다시 찾기</button>
+        </div>
+      </div>
+      <label data-role="lr2-row"><input type="checkbox" data-role="lr2" /> <span data-i18n="settings.lr2">LR2 모드 감지 (주작콘 전용)</span></label>
+    </div>
+
+    <div class="setting-group" data-role="kb-container" hidden>
+      <label data-i18n="settings.keyboardMapping">키보드 매핑 (저는 KB를 하는 바보입니다)</label>
+      <table class="key-mapping-table">
+        <tr><td>SCup</td><td><input type="text" data-key="SCup" readonly /></td></tr>
+        <tr><td>SCdown</td><td><input type="text" data-key="SCdown" readonly /></td></tr>
+        <tr><td>1</td><td><input type="text" data-key="1" readonly /></td></tr>
+        <tr><td>2</td><td><input type="text" data-key="2" readonly /></td></tr>
+        <tr><td>3</td><td><input type="text" data-key="3" readonly /></td></tr>
+        <tr><td>4</td><td><input type="text" data-key="4" readonly /></td></tr>
+        <tr><td>5</td><td><input type="text" data-key="5" readonly /></td></tr>
+        <tr><td>6</td><td><input type="text" data-key="6" readonly /></td></tr>
+        <tr><td>7</td><td><input type="text" data-key="7" readonly /></td></tr>
+      </table>
+    </div>
+
+    <div class="setting-group" data-role="generic-container" hidden>
+      <label data-i18n="settings.genericMapping">기타 컨트롤러 버튼 매핑</label>
+      <p class="mapping-help" data-i18n="settings.genericHelp">각 칸을 클릭한 다음 원하는 컨트롤러 버튼을 누르세요. 칸을 비우면 매핑이 해제됩니다. 마지막에 저장을 누르세요.</p>
+      <table class="generic-mapping-table">
+        <tbody>
+          <tr><td></td><td><input type="number" min="1" max="64" data-key="1"></td></tr>
+          <tr><td></td><td><input type="number" min="1" max="64" data-key="2"></td></tr>
+          <tr><td></td><td><input type="number" min="1" max="64" data-key="3"></td></tr>
+          <tr><td></td><td><input type="number" min="1" max="64" data-key="4"></td></tr>
+          <tr><td></td><td><input type="number" min="1" max="64" data-key="5"></td></tr>
+          <tr><td></td><td><input type="number" min="1" max="64" data-key="6"></td></tr>
+          <tr><td></td><td><input type="number" min="1" max="64" data-key="7"></td></tr>
+          <tr><td></td><td><input type="number" min="1" max="64" data-key="SCup"></td></tr>
+          <tr><td></td><td><input type="number" min="1" max="64" data-key="SCdown"></td></tr>
+        </tbody>
+      </table>
+      <div class="axis-row">
+        <span data-i18n="settings.turntableAxis">턴테이블 (축)</span>
+        <span class="axis-value" data-role="axis-value"></span>
+        <button type="button" data-role="learn-axis" data-i18n="settings.learnAxis">학습</button>
+        <button type="button" data-role="clear-axis" data-i18n="settings.clearAxis">지우기</button>
+      </div>
+      <p class="mapping-help" data-i18n="settings.axisHelp">턴테이블이 축으로 동작하는 기판이라면 '학습'을 누르고 2초 동안 턴테이블을 돌리세요.</p>
+      <div class="mapping-status" data-role="mapping-status" aria-live="polite"></div>
+    </div>
+  </template>
+
   <script src="../shared/overlayScroll.js"></script>
   <script src="../shared/i18n.js"></script>
   <script src="../shared/imageUrl.js"></script>
   <script src="formLogic.js"></script>
+  <script src="controllerPanel.js"></script>
   <script src="settings.js"></script>
 </body>
 </html>
