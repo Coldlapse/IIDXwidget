@@ -11,7 +11,7 @@ body {
   
   .settings-container {
     background-color: #1e1e1e;
-    padding: 30px 40px;
+    padding: 30px 40px 0; /* 아래 여백은 저장 줄(save-bar)이 채운다 */
     border-radius: 12px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
     width: 400px;
@@ -66,8 +66,31 @@ body {
     display: flex;
     justify-content: space-between;
     gap: 10px;
-    margin-top: 20px;
   }
+
+/* 저장 줄: 설정 박스 안에서 창 아래에 붙어 떠 있다가(sticky), 맨 아래까지 내리면 제자리에 합쳐진다 */
+.save-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  margin: 0 -40px;
+  padding: 12px 40px 24px;
+  background-color: #1e1e1e;
+  border-radius: 0 0 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: box-shadow 0.15s, border-color 0.15s;
+  border-top: 1px solid transparent;
+}
+/* 떠 있는 동안: 위쪽 경계선과 그림자로 내용 위에 올라와 있다는 걸 보여준다 */
+.save-bar.floating {
+  border-top-color: #333;
+  border-radius: 0;
+  box-shadow: 0 -10px 20px rgba(0, 0, 0, 0.55);
+}
+/* 저장 줄이 제자리에 왔는지 알기 위한 표시 (높이 0, 저장 줄 바로 아래. -20px는 설정 박스의 줄 간격 상쇄) */
+#save-bar-anchor { height: 0; margin-top: -20px; }
   
 .color-setting-row {
   display: flex;
@@ -101,7 +124,8 @@ body {
 .axis-row button { padding: 6px 10px; font-size: 13px; background-color: #333; color: #fff; }
 #generic-axis-value { flex: 1; color: #fff; }
 #mapping-status.warning, #form-status.error { color: #ff5252; }
-#form-status { min-height: 20px; font-size: 14px; color: #00c853; }
+#form-status { min-height: 0; font-size: 14px; color: #00c853; }
+#form-status:empty { display: none; }
 
 /* 가이드 열기 버튼 (오른쪽 위, 포트 설정 아래) */
 .guide-row {

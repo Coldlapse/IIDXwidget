@@ -395,3 +395,8 @@ window.electronAPI.getAccount().then(state => {
 
 // 채터링 감지 설정은 채터링 감지 창에 있다. 여기서는 그 화면을 열기만 한다
 $('open-chatter-settings').addEventListener('click', () => window.electronAPI.openChatterSettings());
+
+// 저장 줄: 제자리 표시(save-bar-anchor)가 화면에 안 보이면 저장 줄이 떠 있는 상태
+new IntersectionObserver(([entry]) => {
+  $('save-bar').classList.toggle('floating', !entry.isIntersecting);
+}).observe($('save-bar-anchor'));

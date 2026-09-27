@@ -200,10 +200,14 @@
       </div>
     </div>
 
-    <div id="form-status" role="alert"></div>
-    <div class="button-row">
-      <button id="save-button" data-i18n="settings.save">저장</button><button id="cancel-button" data-i18n="settings.cancel">저장하지 않고 종료</button>
+    <!-- 저장 줄: 스크롤 중에는 창 아래에 떠 있고, 맨 아래까지 내리면 제자리(설정 박스 끝)에 붙는다 -->
+    <div class="save-bar" id="save-bar">
+      <div id="form-status" role="alert"></div>
+      <div class="button-row">
+        <button id="save-button" data-i18n="settings.save">저장</button><button id="cancel-button" data-i18n="settings.cancel">저장하지 않고 종료</button>
+      </div>
     </div>
+    <div id="save-bar-anchor" aria-hidden="true"></div>
   </div>
 
   <script src="../shared/overlayScroll.js"></script>
