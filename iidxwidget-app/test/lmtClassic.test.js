@@ -22,9 +22,10 @@ test('LMT Classic: PHOENIXWAN 프로필에서 게임패드 인터페이스를 �
   const devices = [LMT, LMT_VENDOR_PAGE];
   assert.deepEqual(listControllerDevices('PHOENIXWAN', devices).map(d => d.path), ['lmt-pad']);
   assert.equal(chooseDevice('PHOENIXWAN', {}, devices).parser, 'PHOENIXWAN_LMT');
-  assert.equal(hasOfficiallySupportedController(devices), true);
-  // 공식 지원이므로 기타 컨트롤러(수동 매핑)에서는 고르지 않는다
-  assert.equal(findAutoController(devices), null);
+  // 일반 모드는 수동 매핑으로 쓰는 사람이 있어서 기타 컨트롤러(수동 매핑)에도 남긴다
+  assert.equal(hasOfficiallySupportedController(devices), false);
+  assert.equal(findAutoController(devices).device.path, 'lmt-pad');
+  assert.equal(chooseDevice('AUTO', {}, devices).parser, 'GENERIC');
 });
 
 test('LMT Classic: 같은 VID:PID의 다른 게임패드(이름이 다름)는 기타 컨트롤러로 남는다', () => {
@@ -59,7 +60,14 @@ test('LMT Classic 실제 기록 (LR2 모드): 스크래치를 돌리기 시작�
   assert.equal(last.direction, 'neutral');
 });
 
-test('LMT Classic: 턴테이블 값이 절대 위치로 오면(일반 모드 추정) 위치를 그대로 쓴다', () => {
+test('LMT Classic: 축 자리에 절대 위치가 오면(일반 모드 추정) 움직이는 바이트의 위치를 쓴다', () => {
+  // 7번이 아닌 다른 축 바이트(예: 6번)로 와도 찾는다
+  const other = createLmtParserState();
+  const frame6 = v => Buffer.from([0x01, 0, 0, 0, 0x0f, 0, v, 0x80, 0x80, 0x80]);
+  const moved = [0x80, 0x81, 0x84].flatMap(v => parseLmtData(frame6(v), other)).filter(e => e.type === 'axis');
+  assert.equal(other.positionByte, 6);
+  assert.deepEqual(moved.map(e => e.discRaw), [0x81, 0x84]);
+
   const state = createLmtParserState();
   const frame = tt => Buffer.from([0x01, 0, 0, 0, 0x0f, 0, 0x80, tt, 0x80, 0x80]);
   const events = [0x40, 0x42, 0x45, 0x43].flatMap(v => parseLmtData(frame(v), state)).filter(e => e.type === 'axis');

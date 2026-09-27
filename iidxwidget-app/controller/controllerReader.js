@@ -12,8 +12,9 @@ const isFps = d => d.vendorId === 0x1CCF && d.productId === 0x8048 && d.interfac
 // PHOENIXWAN+ LMT Classic 기판. 범용 게임패드 칩(VID 0E8F)이라 제품 이름까지 본다 (펌웨어 표기가 'PHONENIXWAN')
 const isLmtBoard = d => d.vendorId === 0x0E8F && d.productId === 0x1228 && /NIXWAN/i.test(d.product || '');
 const isPhoenixLmt = d => isLmtBoard(d) && d.usagePage === 1 && d.usage === 4;
-// 공식 지원 컨트롤러(주작콘·FPS EMP 2세대·LMT Classic)가 쓰는 USB 장치. 인터페이스와 상관없이 기타 컨트롤러에서는 고르지 않는다
-const isOfficiallySupported = d => (d.vendorId === 0x1CCF && d.productId === 0x8048) || isLmtBoard(d);
+// 공식 지원 컨트롤러(주작콘·FPS EMP 2세대)가 쓰는 USB 장치. 인터페이스와 상관없이 기타 컨트롤러에서는 고르지 않는다.
+// LMT Classic은 기타 컨트롤러에도 남긴다: LR2 모드만 실측했고, 일반 모드는 수동 매핑으로 잘 된다는 확인만 있어서
+const isOfficiallySupported = d => d.vendorId === 0x1CCF && d.productId === 0x8048;
 
 // ─── 장치 찾기 ──────────────────────────────────────────────
 
@@ -69,7 +70,7 @@ function listControllerDevices(profile, devices = getHID().devices()) {
 function chooseDevice(profile, { devicePath = null, excludePaths = [] } = {}, devices = getHID().devices()) {
   const available = profileCandidates(profile, devices).filter(d => !excludePaths.includes(d.path));
   const device = available.find(d => d.path === devicePath) || available[0];
-  return device ? { device, parser: isPhoenixLmt(device) ? 'PHOENIXWAN_LMT' : PARSER_BY_PROFILE[profile] } : null;
+  return device ? { device, parser: profile === 'PHOENIXWAN' && isPhoenixLmt(device) ? 'PHOENIXWAN_LMT' : PARSER_BY_PROFILE[profile] } : null;
 }
 
 function describeDevice(device) {
@@ -287,13 +288,16 @@ function handleDedicatedData(buffer, callback, state, logger) {
 //   [0] report ID 0x01, [2] 건반 1~7 (bit 0~6, 공식 주작콘과 같은 자리), [3] E1~E4 (bit 0~3), [7] 턴테이블
 // 턴테이블: LR2 모드에서는 0x80(멈춤) / 0x00(시계) / 0xFF(반시계)만 온다. 멈춤에서 끝값으로 한 번에 건너뛰므로
 //   (0x80 ↔ 0x00/0xFF) 실제 회전량이 아니라 방향 신호다 → 공식 주작콘 LR2 처리처럼 방향이 바뀔 때만 회전을 만든다.
-//   일반 모드는 아직 기록이 없다. 0x00/0x80/0xFF 밖의 값이 오면 절대 위치로 보고 공식 주작콘 일반 모드처럼 처리한다.
+//   일반 모드는 아직 기록이 없다 (수동 매핑으로는 잘 된다는 확인만 있음). 축 자리(6~9번 바이트, 멈추면 모두 0x80) 중
+//   0x00/0x80/0xFF 밖의 값이 오는 바이트를 절대 위치로 보고 공식 주작콘 일반 모드처럼 처리한다.
 //   (절대 위치는 1ms 사이에 0x80에서 끝값으로 건너뛸 수 없으므로 두 모드가 섞여 판단되지 않는다)
 // 방향 부호는 공식 주작콘 LR2와 같게 "값이 큰 쪽이 +"로 둔다 (0xFF = +, 0x00 = -)
 const LMT_DIGITAL = [0x00, 0x80, 0xFF];
+const LMT_TURNTABLE_BYTE = 7;          // LR2 모드 방향 신호
+const LMT_AXIS_BYTES = [6, 7, 8, 9];   // 일반 모드 절대 위치 후보
 
 function createLmtParserState() {
-  return { lastButtonByte: 0, lastTurntable: null, turntableMode: null, currentDiscRaw: 0, lastDirection: 'neutral' };
+  return { lastButtonByte: 0, lastTurntable: null, turntableMode: null, positionByte: null, lastPosition: null, currentDiscRaw: 0, lastDirection: 'neutral' };
 }
 
 function parseLmtData(buffer, state) {
@@ -307,13 +311,21 @@ function parseLmtData(buffer, state) {
   }
   state.lastButtonByte = buttonByte;
 
-  const value = buffer[7];
+  const value = buffer[LMT_TURNTABLE_BYTE];
   if (value === undefined) return events;
   const previous = state.lastTurntable;
   state.lastTurntable = value;
   const jumpedFromRest = (previous === 0x80 && (value === 0x00 || value === 0xFF)) || ((previous === 0x00 || previous === 0xFF) && value === 0x80);
-  if (jumpedFromRest) state.turntableMode = 'direction';
-  else if (!LMT_DIGITAL.includes(value)) state.turntableMode = 'position';
+  if (jumpedFromRest) {
+    state.turntableMode = 'direction';
+  } else {
+    const moving = LMT_AXIS_BYTES.find(i => buffer[i] !== undefined && !LMT_DIGITAL.includes(buffer[i]));
+    if (moving !== undefined && state.turntableMode !== 'position') {
+      state.turntableMode = 'position';
+      state.positionByte = moving;
+      state.lastPosition = null;
+    }
+  }
 
   if (state.turntableMode === 'direction') {
     const direction = value === 0xFF ? '+' : value === 0x00 ? '-' : 'neutral';
@@ -325,8 +337,11 @@ function parseLmtData(buffer, state) {
     }
     state.lastDirection = direction;
   } else if (state.turntableMode === 'position') {
-    const direction = previous === null || previous === value ? 'neutral' : ((value - previous + 256) % 256) < 128 ? '+' : '-';
-    events.push({ type: 'axis', axis: 'X', direction, discRaw: value, timestamp });
+    const position = buffer[state.positionByte];
+    const last = state.lastPosition;
+    state.lastPosition = position;
+    const direction = last === null || last === position ? 'neutral' : ((position - last + 256) % 256) < 128 ? '+' : '-';
+    events.push({ type: 'axis', axis: 'X', direction, discRaw: position, timestamp });
   }
   return events;
 }

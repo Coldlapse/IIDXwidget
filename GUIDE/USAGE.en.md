@@ -70,9 +70,9 @@ Choose a profile and a **device** for each side (one for SP, 1P and 2P for DP). 
 
 - **Device** : Lists only connected controllers that match the profile; if there is just one, only one appears. Identical controllers get #1, #2 after the name. Press **Rescan** after plugging in a controller. If the saved device is missing, another connected one is used.
 - In DP, 1P and 2P can't use the same device.
-- **Detect LR2 mode (dedicated controller only)** : Shown only for the PHOENIXWAN and FPS profiles. The LMT Classic board tells LR2 mode apart by itself, regardless of this setting. A PHOENIXWAN in LR2 sends turntable signals differently; with this on, the app detects LR2 mode and shows the turntable correctly.
+- **Detect LR2 mode (dedicated controller only)** : Shown only for the PHOENIXWAN and FPS profiles. The LMT Classic board doesn't need this setting. A PHOENIXWAN in LR2 sends turntable signals differently; with this on, the app detects LR2 mode and shows the turntable correctly.
 
-- **PHOENIXWAN+ / FPS EMP Gen2** : Works as soon as you select it. The PHOENIXWAN **LMT Classic** board is also recognized by the PHOENIXWAN+ profile.
+- **PHOENIXWAN+ / FPS EMP Gen2** : Works as soon as you select it. For the PHOENIXWAN **LMT Classic** board, use the PHOENIXWAN+ profile in LR2 mode. In normal mode (analog turntable), map it with Other controller (manual mapping).
 - **Other controller (manual mapping)** : For controllers that are not officially supported and DIY boards such as Arduino. You map each button by hand. A PHOENIXWAN or FPS is not picked up by this profile; choose its own profile instead.
   - Click a field in the mapping table, then press the controller button. Clear a field to unmap it.
   - If your board reports the turntable as **buttons**, map them to 'Turntable clockwise / counterclockwise'.
@@ -83,7 +83,7 @@ Choose a profile and a **device** for each side (one for SP, 1P and 2P for DP). 
 
 | Level | Controllers | Notes |
 |---|---|---|
-| ✅ **Officially supported** | PHOENIXWAN+ (including the LMT Classic board), FPS EMP Gen2 | Dedicated profiles. Works as soon as you select it. |
+| ✅ **Officially supported** | PHOENIXWAN+, FPS EMP Gen2, PHOENIXWAN+ LMT Classic board (LR2 mode) | Dedicated profiles. Works as soon as you select it. The LMT Classic's normal mode is confirmed to work with manual mapping. |
 | ✅ **Officially supported** | Keyboard | Map keys in the Keyboard profile. |
 | 🔧 **Manual mapping** (may work) | Other IIDX controllers, DIY boards | Map buttons by hand in the **Other controller (manual mapping)** profile. **Not guaranteed to work.** |
 
