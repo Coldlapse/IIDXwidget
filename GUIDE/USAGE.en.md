@@ -32,7 +32,7 @@ For what release means, see the [RELEASE guide](RELEASE.en.md).
   - **Logs** : Whether your controller was detected, and any errors. Look here first when something goes wrong.
   - **Session** : Presses, sent and remaining counts for this session, and uploading to [beatmania.app](https://beatmania.app).
   - **Chatter detector** : Chatter (double input) counts per key, grouped as 1-3-5-7 and 2-4-6, with keys that stand out within their group highlighted in red. Change the detection preset (Rag / Sadang) and thresholds with **⚙ Settings** at the top right of the window. See the [chatter guide](CHATTER.en.md).
-  - **About / Contributors** : App version and the people who made it
+  - **Developer & Contributors** : App version, the developer and their links, support (Buy me a coffee) and the contributors, all in one window.
   - **Check for updates** : Check for a new version now. The app also checks on startup.
   - **Restart** : Reopens the servers and controller connection. Session numbers carry on.
   - **Quit** : Quits the app.

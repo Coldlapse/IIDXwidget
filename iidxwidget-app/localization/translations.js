@@ -9,15 +9,21 @@ const translations = {
       logs: '로그',
       records: '세션 기록',
       chatter: '채터링 감지',
-      about: '정보',
-      contributors: '기여자',
+      about: '개발자 정보/기여자',
       checkUpdates: '업데이트 확인',
       restart: '재시작',
       quit: '끝내기'
     },
     common: { ok: '확인', yes: '예', no: '아니오', later: '다음에 하기', error: '오류', notice: '알림' },
     about: {
-      message: 'IIDXwidget v{version}\n개발자: Sadang\nhttps://github.com/Coldlapse/IIDXwidget',
+      title: '개발자 정보/기여자',
+      repository: 'GitHub 저장소',
+      bio: '2022년에 IIDX와 BMS를 시작해 SP 발광개전(★★)을 취득한 BMS 플레이어입니다. IIDX 인피니타스를 위한 서열표 사이트가 없다는 점에 착안해 beatmania.app을 만들어 운영하고 있고, IIDXwidget도 그 연장선에서 개발했습니다. 방송하며 직접 쓰는 도구를 만듭니다.',
+      sponsorTitle: '후원',
+      sponsorText: 'IIDXwidget은 무료입니다. 도움이 되셨다면 커피 한 잔으로 후원해 주시면 큰 힘이 됩니다.',
+      contributorsTitle: '기여자',
+      contributorsThanks: '함께 만들어 주신 분들께 감사드립니다.',
+      // 한 줄에 한 명, '이름 : 한 일'. README 기여자 목록과 함께 고친다
       contributors:
         'rhombus9 : KB 모드 특수키 입력 매핑\n' +
         '멘탈바사삭 : FPS EMP 2세대 컨트롤러 지원\n' +
@@ -257,15 +263,21 @@ const translations = {
       logs: 'Logs',
       records: 'Session',
       chatter: 'Chatter detector',
-      about: 'About',
-      contributors: 'Contributors',
+      about: 'Developer & Contributors',
       checkUpdates: 'Check for updates',
       restart: 'Restart',
       quit: 'Quit'
     },
     common: { ok: 'OK', yes: 'Yes', no: 'No', later: 'Later', error: 'Error', notice: 'Notice' },
     about: {
-      message: 'IIDXwidget v{version}\nDeveloper: Sadang\nhttps://github.com/Coldlapse/IIDXwidget',
+      title: 'Developer & Contributors',
+      repository: 'GitHub repository',
+      bio: 'A BMS player who started IIDX and BMS in 2022 and holds SP ★★ (発狂皆伝). Noticing that INFINITAS had no rank-table site of its own, Coldlapse built and runs beatmania.app. IIDXwidget grew out of the same work: tools made for real use on stream.',
+      sponsorTitle: 'Support',
+      sponsorText: 'IIDXwidget is free. If it has helped you, buying a coffee would mean a lot.',
+      contributorsTitle: 'Contributors',
+      contributorsThanks: 'Thanks to everyone who helped build it.',
+      // One per line, 'name : what they did'. Update together with the README list
       contributors:
         'rhombus9 : special key mapping for KB mode\n' +
         '멘탈바사삭 : FPS EMP Gen2 controller support\n' +

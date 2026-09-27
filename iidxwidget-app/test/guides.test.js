@@ -89,3 +89,17 @@ test('가이드와 README에 닫히지 않는 굵은 글씨가 없다', () => {
     });
   }
 });
+
+// 물결표: 한 줄에 ~가 둘 이상이면 GitHub·뷰어 모두 그 사이를 취소선으로 그린다 (예: "140~150대 … 40~50대"). 범위는 \~로 쓴다
+test('가이드와 README에 취소선으로 바뀌는 물결표가 없다', () => {
+  const files = [...fs.readdirSync(GUIDE_DIR).filter(isGuideFile).map(f => path.join(GUIDE_DIR, f)), path.join(GUIDE_DIR, '..', 'README.md')];
+  for (const file of files) {
+    let inCode = false;
+    fs.readFileSync(file, 'utf8').split('\n').forEach((line, i) => {
+      if (line.trimStart().startsWith('```')) inCode = !inCode;
+      if (inCode) return;
+      const tildes = line.replace(/`[^`]*`/g, '').replace(/\\~/g, '').split('~').length - 1;
+      assert.ok(tildes < 2, `${path.basename(file)}:${i + 1}: ${line.trim()}`);
+    });
+  }
+});

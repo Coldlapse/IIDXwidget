@@ -23,7 +23,8 @@ const sources = [
   'renderer/settings/settings.html', 'renderer/settings/settings.js',
   'renderer/chatter/chatter.html', 'renderer/chatter/chatter.js',
   'renderer/logs/logs.html',
-  'renderer/records/records.html', 'renderer/records/records.js'
+  'renderer/records/records.html', 'renderer/records/records.js',
+  'renderer/about/about.html', 'renderer/about/about.js'
 ];
 const keyPatterns = [
   /data-i18n(?:-placeholder)?="([\w.]+)"/g,        // HTML 속성

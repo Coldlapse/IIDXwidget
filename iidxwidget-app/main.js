@@ -45,6 +45,7 @@ let mainWindow = null;
 let settingsWindow = null;
 let chatterWindow = null;
 let recordsWindow = null;
+let aboutWindow = null;
 let guideWindow = null;
 let settings = structuredClone(DEFAULT_SETTINGS);
 let session = null; // 앱이 준비되면 만든다 (이번 세션 통계)
@@ -116,13 +117,23 @@ function createChildWindow(existing, { width, height, file, parent = mainWindow,
     webPreferences: { preload: preloadPath, contextIsolation: true, nodeIntegration: false }
   });
   win.loadFile(path.join(__dirname, file), query ? { query } : undefined);
-  // 새 창 열기는 막고, beatmania.app 링크만 기본 브라우저로 연다
+  // 새 창 열기는 막고, 정해 둔 사이트 링크만 기본 브라우저로 연다
   win.webContents.setWindowOpenHandler(({ url }) => {
-    if (url.startsWith('https://beatmania.app/')) shell.openExternal(url);
+    if (EXTERNAL_LINK_PREFIXES.some(prefix => url.startsWith(prefix))) shell.openExternal(url);
     return { action: 'deny' };
   });
   return win;
 }
+
+// 보조 창에서 기본 브라우저로 열어도 되는 주소 (세션 기록의 beatmania.app, 개발자 정보의 링크)
+const EXTERNAL_LINK_PREFIXES = [
+  'https://beatmania.app/',
+  'https://github.com/Coldlapse',
+  'https://www.youtube.com/@Sadang',
+  'https://discord.gg/RxjwbvWa8D',
+  'https://boku.tachi.ac/u/Sadang',
+  'https://buymeacoffee.com/sadang'
+];
 
 function createSettingsWindow() {
   const isNew = !settingsWindow;
@@ -159,6 +170,13 @@ function createRecordsWindow() {
   const isNew = !recordsWindow;
   recordsWindow = createChildWindow(recordsWindow, { width: 640, height: byLanguage({ ko: 629, en: 649 }), file: 'renderer/records/records.html' });
   if (isNew) recordsWindow.on('closed', () => recordsWindow = null);
+}
+
+// 개발자 정보/기여자
+function createAboutWindow() {
+  const isNew = !aboutWindow;
+  aboutWindow = createChildWindow(aboutWindow, { width: 520, height: byLanguage({ ko: 705, en: 761 }), file: 'renderer/about/about.html' });
+  if (isNew) aboutWindow.on('closed', () => aboutWindow = null);
 }
 
 
@@ -357,7 +375,6 @@ async function uploadRemaining({ timeoutMs } = {}) {
 // 📋 메뉴
 function createStatusMenu() {
   const language = normalizeLanguage(settings.language);
-  const showInfo = (title, message) => dialog.showMessageBox({ type: 'info', title, message, buttons: [t('common.ok')] });
   const menu = Menu.buildFromTemplate([
     {
       label: t('menu.main'),
@@ -368,8 +385,7 @@ function createStatusMenu() {
         { label: t('menu.records'), click: createRecordsWindow },
         { label: t('menu.chatter'), click: () => createChatterWindow() },
         { type: 'separator' },
-        { label: t('menu.about'), click: () => showInfo(t('menu.about'), t('about.message', { version: appVersion })) },
-        { label: t('menu.contributors'), click: () => showInfo(t('menu.contributors'), t('about.contributors')) },
+        { label: t('menu.about'), click: createAboutWindow },
         { type: 'separator' },
         { label: t('menu.checkUpdates'), click: () => updater.checkManually() },
         { label: t('menu.restart'), click: restartApp },
@@ -682,7 +698,7 @@ ipcMain.handle('open-chatter-settings', event => createChatterWindow({ view: 'se
 // 채터링·세션 기록 창 높이를 언어별 내용 높이에 맞춘다 (창을 연 뒤, 언어를 바꾼 뒤). 사용자가 늘리거나 줄일 수는 없다
 ipcMain.on('fit-window-height', (event, height) => {
   const win = BrowserWindow.fromWebContents(event.sender);
-  if (!win || (win !== chatterWindow && win !== recordsWindow) || !Number.isFinite(height)) return;
+  if (!win || ![chatterWindow, recordsWindow, aboutWindow].includes(win) || !Number.isFinite(height)) return;
   const [width, current] = win.getContentSize();
   const { height: fitted } = fitToScreen(width, Math.max(200, Math.ceil(height)));
   if (fitted !== current) win.setContentSize(width, fitted);

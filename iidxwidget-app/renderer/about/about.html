@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ko" data-overlay-scroll>
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:" />
+  <title data-i18n="about.title">개발자 정보/기여자</title>
+  <link rel="stylesheet" href="../shared/fonts.css" />
+  <link rel="stylesheet" href="../shared/window.css" />
+  <link rel="stylesheet" href="../shared/scrollbar.css" />
+  <link rel="stylesheet" href="about.css" />
+</head>
+<body>
+  <!-- 개발자 카드 (소개 페이지 iidxwidget.coldlapse.dev의 '만든 사람'과 같은 내용) -->
+  <section class="panel dev">
+    <img class="dev-photo" src="coldlapse.png" alt="Coldlapse" width="96" height="96" />
+    <div class="dev-body">
+      <h2>Coldlapse <small>Sadang</small></h2>
+      <p class="app-line">IIDXwidget <span id="version"></span> · <a href="https://github.com/Coldlapse/IIDXwidget" target="_blank" data-i18n="about.repository">GitHub 저장소</a></p>
+      <p class="bio" data-i18n="about.bio"></p>
+      <div class="links">
+        <a href="https://www.youtube.com/@Sadang" target="_blank">YouTube</a>
+        <a href="https://discord.gg/RxjwbvWa8D" target="_blank">Discord</a>
+        <a href="https://boku.tachi.ac/u/Sadang" target="_blank">IR Profile</a>
+        <a href="https://github.com/Coldlapse" target="_blank">GitHub</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel sponsor">
+    <h2 data-i18n="about.sponsorTitle">후원</h2>
+    <p data-i18n="about.sponsorText"></p>
+    <a class="coffee" href="https://buymeacoffee.com/sadang" target="_blank">☕ Buy me a coffee</a>
+  </section>
+
+  <section class="panel">
+    <h2 data-i18n="about.contributorsTitle">기여자</h2>
+    <ul id="contributors" class="contributors"></ul>
+    <p class="muted" data-i18n="about.contributorsThanks"></p>
+  </section>
+
+  <script src="../shared/overlayScroll.js"></script>
+  <script src="../shared/i18n.js"></script>
+  <script src="../shared/fitWindow.js"></script>
+  <script src="about.js"></script>
+</body>
+</html>
