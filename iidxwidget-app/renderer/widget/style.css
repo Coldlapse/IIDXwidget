@@ -22,6 +22,14 @@ body {
   color: #fff;
 }
 
+/* 무대: 본체(1P), DP면 검정 여백 + 2P 본체. 계기판·홍보 줄은 무대 기준으로 붙는다 */
+.stage {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+.stage [hidden] { display: none !important; }
+
 .container {
   background: var(--container-background-color);
   padding: 25px 40px;
@@ -324,8 +332,8 @@ body {
 }
 
 /* 계기판·홍보 줄이 붙은 쪽의 본체 모서리는 각지게 해서 한 덩어리로 보이게 한다 */
-.container.dash-bottom, .container.promo-bottom { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
-.container.dash-top, .container.promo-top { border-top-left-radius: 0; border-top-right-radius: 0; }
+.stage:not(.dp).dash-bottom .container, .stage:not(.dp).promo-bottom .container { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.stage:not(.dp).dash-top .container, .stage:not(.dp).promo-top .container { border-top-left-radius: 0; border-top-right-radius: 0; }
 
 /* 본체 배경을 투명하게 하면 계기판·홍보 줄이 따로 떠 보이므로 네 모서리를 모두 둥글게, 구분선 없이 */
 .transparent-container .release-container,
@@ -408,3 +416,32 @@ body {
 }
 .gauge-on .dash-kps.redline .gauge-fill { animation: redline-needle 0.42s linear infinite; }
 .gauge-on .dash-kps.redline .dash-value { animation: redline-value 0.28s linear infinite; }
+
+/* ─── DP: 1P 본체 + 검정 여백 + 2P 본체 ─────────────────────
+   두 본체는 가운데 쪽 모서리를 각지게 해서 검정 여백과 한 덩어리로 이어 보이게 한다.
+   계기판·홍보 줄은 전체 폭이 아니라 가운데에 붙는 사다리꼴 (자동차 계기판처럼) */
+.dp-gap {
+  width: 40px;
+  background: #000;
+}
+.stage.dp .container[data-side="1"] { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.stage.dp .container[data-side="2"] { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+
+.stage.dp .release-container,
+.stage.dp .promo-box {
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  border-radius: 0;
+}
+.stage.dp .release-container {
+  width: 600px;
+  padding: 0 48px;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 40px) 100%, 40px 100%);
+}
+.stage.dp .release-container.at-top {
+  clip-path: polygon(40px 0, calc(100% - 40px) 0, 100% 100%, 0 100%);
+}
+.stage.dp .promo-box { width: 520px; }
+.stage.dp #promo-top { clip-path: polygon(28px 0, calc(100% - 28px) 0, 100% 100%, 0 100%); }
+.stage.dp #promo-bottom { clip-path: polygon(0 0, 100% 0, calc(100% - 28px) 100%, 28px 100%); }

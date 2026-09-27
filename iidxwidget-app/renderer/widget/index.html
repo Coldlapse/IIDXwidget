@@ -10,7 +10,9 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
+  <!-- 무대: 본체(1P) + DP면 가운데 검정 여백과 2P 본체(1P 본체를 복제). 계기판·홍보 줄은 무대에 붙는다 -->
+  <div class="stage">
+  <div class="container" data-side="1">
     <!-- 디스크 전체 + 버튼 그리드 -->
     <div class="main-content">
       <div class="disc-wrapper">
@@ -42,7 +44,10 @@
         </div>
       </div>
     </div>
-    <!-- 계기판: 본체 아래(또는 위)에 붙는 세션 정보 패널. 입력 방식(KB)도 여기 표시한다 -->
+  </div> <!-- container 닫기 -->
+  <div class="dp-gap" hidden></div>
+
+    <!-- 계기판: 본체 아래(또는 위)에 붙는 세션 정보 패널. DP에서는 가운데에 사다리꼴로 붙는다 -->
     <div class="release-container">
       <div class="dash-cell dash-session"><span class="dash-label">Session</span><span class="dash-value" id="session-display">0</span></div>
       <div class="dash-cell dash-uptime"><span class="dash-label">Uptime</span><span class="dash-value" id="uptime-display">0:00:00</span></div>
@@ -56,8 +61,7 @@
 
     <div id="promo-top" class="promo-box">Try this! → https://github.com/Coldlapse/IIDXwidget</div>
     <div id="promo-bottom" class="promo-box">Try this! → https://github.com/Coldlapse/IIDXwidget</div>
-
-  </div> <!-- container 닫기 -->
+  </div> <!-- stage 닫기 -->
 
   <!-- OBS·브라우저에서 앱과의 연결이 끊기면 위젯 전체를 가리는 안내 -->
   <div id="connection-overlay" hidden>

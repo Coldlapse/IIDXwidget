@@ -1,20 +1,133 @@
 const { discDelta, formatUptime, kpsGauge } = window.widgetLogic;
 
-let lastDiscValue = null; // 첫 입력은 기준값으로만 쓴다
-let discRotation = 0;
-let lastDiscUpdateTime = 0;
-let is2PMode = false;
+// ─── 사이드 (SP는 1P 본체 하나, DP는 1P·2P 본체 두 개) ─────────────
+// 사이드마다 스크래치 회전·방향·점등, 건반 불빛, 건반 위 릴리즈 숫자를 따로 가진다.
+// 2P 본체는 1P 본체를 복제해서 만들고, 입력 이벤트의 side 값(없으면 1)으로 사이드를 고른다.
+const container1 = document.querySelector('.container[data-side="1"]');
+const container2 = container1.cloneNode(true);
+container2.dataset.side = '2';
+document.querySelector('.dp-gap').after(container2);
 
-let DISC_UPDATE_INTERVAL = 20; // 기본값
+function createSide(root, sideNumber) {
+  const q = selector => root.querySelector(selector);
+  const disc = q('#disc');
+  const upImg = q('#up-disc-image');
+  const downImg = q('#down-disc-image');
+  const needle = q('#disc-needle');
+  const upperIndicator = q('#upper-indicator');
+  const lowerIndicator = q('#lower-indicator');
+  const longNoteTimers = {};
+  let lastDiscValue = null; // 첫 입력은 기준값으로만 쓴다
+  let discRotation = 0;
+  let lastDiscUpdateTime = 0;
+  let isLatestDiscDirectionUp = true;
 
-let isLatestDiscDirectionUp = true;
+  const side = {
+    number: sideNumber,
+    root,
+    flipped: false,            // 스크래치가 오른쪽인 배치(2P)는 방향 표시를 뒤집는다
+    discUpdateInterval: 20,    // 키보드는 5ms (스크래치 키를 연타하므로)
+    statsPrefix: sideNumber === 2 ? 'p2-' : '',
 
-const disc = document.getElementById("disc");
-const upImg = document.getElementById('up-disc-image');
-const downImg = document.getElementById('down-disc-image');
-const needle = document.getElementById('disc-needle');
-const upperIndicator = document.getElementById("upper-indicator");
-const lowerIndicator = document.getElementById("lower-indicator");
+    rotateDisc(delta) {
+      discRotation -= delta * 2.5;
+      disc.style.transform = `translate(-50%, -50%) rotate(${discRotation}deg)`;
+    },
+
+    changeDiscImage(delta) {
+      if (delta === 0) return;
+      if (side.flipped) delta = -delta;
+      const isUp = delta > 0;
+      if (isLatestDiscDirectionUp == isUp) return;
+      if (isUp) {
+        downImg.style.display = 'none';
+        if (upImg.classList.contains('img-available')) {
+          upImg.style.display = 'block';
+          needle.style.display = 'none';   // 이미지 있으면 bar 숨기기
+        } else {
+          upImg.style.display = 'none';
+          needle.style.display = 'block';  // 기본 bar 보이기
+        }
+        isLatestDiscDirectionUp = true;
+      } else if (downImg.classList.contains('img-available')) {
+        upImg.style.display = 'none'; // 아랫방향 이미지가 있을 때만 윗방향 이미지를 숨긴다
+        downImg.style.display = 'block';
+        needle.style.display = 'none';
+        isLatestDiscDirectionUp = false;
+      }
+    },
+
+    updateBorders(delta) {
+      if (side.flipped) delta = -delta;
+      upperIndicator.classList.toggle('lit', delta > 0);
+      lowerIndicator.classList.toggle('lit', delta < 0);
+    },
+
+    // 버튼 불빛은 입력을 받는 즉시 직접 그린다 (숫자는 applyStats가 담당)
+    // 롱노트(CN) 판정 시간 이상 누르고 있으면 롱노트 색으로 바꾼다 (릴리즈 평균에서도 빠지는 입력)
+    updateButton(id, pressed) {
+      const key = q(`#button-${id}`);
+      if (!key) return;
+      key.classList.toggle('active', pressed);
+      clearTimeout(longNoteTimers[id]);
+      if (pressed) longNoteTimers[id] = setTimeout(() => key.classList.add('long'), cnThresholdMs);
+      else key.classList.remove('long');
+    },
+
+    handleData(data) {
+      const now = Date.now();
+      if (data.type === 'axis' && data.axis === 'X' && data.discRaw !== undefined) {
+        if (now - lastDiscUpdateTime >= side.discUpdateInterval) {
+          const newValue = data.discRaw;
+          if (lastDiscValue !== null) {
+            const delta = discDelta(lastDiscValue, newValue);
+            side.rotateDisc(delta);
+            side.changeDiscImage(delta);
+            side.updateBorders(delta);
+          }
+          lastDiscValue = newValue;
+          lastDiscUpdateTime = now;
+        }
+      }
+      if (data.type === 'button') side.updateButton(parseInt(data.button.split(' ')[1]), data.pressed);
+    },
+
+    applyDiscImage(upPath, downPath) {
+      isLatestDiscDirectionUp = true; // 이미지를 다시 적용하면 윗방향 상태로 초기화
+      upImg.classList.toggle('img-available', !!upPath);
+      upImg.src = upPath || '';
+      upImg.style.display = upPath ? 'block' : 'none';
+      needle.style.display = upPath ? 'none' : 'block'; // 이미지 있으면 bar 숨기기
+      downImg.classList.toggle('img-available', !!downPath);
+      downImg.src = downPath || '';
+      downImg.style.display = 'none';
+    },
+
+    // 건반 위 릴리즈 숫자 (2P는 'p2-N' 키)
+    applyRelease(perButton) {
+      root.querySelectorAll('.key').forEach(key => {
+        const id = key.id.replace('button-', '');
+        key.querySelector('.release-label').textContent = perButton[side.statsPrefix + id] ?? 99;
+      });
+    },
+
+    // 키보드 입력 표시 (건반 위)
+    showKB(show) {
+      q('.kb-indicator').style.display = show ? 'flex' : 'none';
+    },
+
+    // 배치: 스크래치 왼쪽(row) / 오른쪽(row-reverse)
+    setOrientation(scratchRight) {
+      q('.main-content').style.flexDirection = scratchRight ? 'row-reverse' : 'row';
+      side.flipped = scratchRight;
+    }
+  };
+  return side;
+}
+
+let cnThresholdMs = 200;
+const sides = [createSide(container1, 1), createSide(container2, 2)];
+const sideOf = data => sides[data.side === 2 ? 1 : 0];
 
 // ─── 이번 세션 통계 (앱 본체가 계산해서 보내준다) ──────────────
 // 타건 수·릴리즈·KPS·업타임은 앱 창과 OBS 위젯이 모두 같은 값을 보여준다.
@@ -27,10 +140,7 @@ function applyStats(stats) {
   document.getElementById('kps-display').textContent = `${stats.kps}`;
   renderKpsGauge(stats.kps);
   document.getElementById('release-display').textContent = stats.releaseAvg === null ? '--' : `${stats.releaseAvg}`;
-  document.querySelectorAll('.key').forEach(key => {
-    const id = key.id.replace('button-', '');
-    key.querySelector('.release-label').textContent = stats.perButton[id] ?? 99;
-  });
+  sides.forEach(side => side.applyRelease(stats.perButton));
   uptimeBase = { activeMs: stats.activeMs, receivedAt: performance.now() };
   renderUptime();
   fitDashValues();
@@ -133,121 +243,26 @@ function stopUptime() {
 
 setInterval(renderUptime, 1000);
 
-function rotateDisc(delta) {
-  discRotation -= delta * 2.5;
-  disc.style.transform = `translate(-50%, -50%) rotate(${discRotation}deg)`;
-}
-
-function changeDiscImage(delta) {
-  if (delta === 0) return;
-  if (is2PMode) delta = -delta;
-
-  const isUp = delta > 0;
-  if (isLatestDiscDirectionUp == isUp) return;
-
-  if (isUp) {
-    downImg.style.display = 'none';
-    if (upImg.classList.contains("img-available")) {
-      upImg.style.display = 'block';
-      needle.style.display = 'none';   // 이미지 있으면 bar 숨기기
-    } else {
-      upImg.style.display = 'none';
-      needle.style.display = 'block';  // 기본 bar 보이기
-    }
-    isLatestDiscDirectionUp = true;
-  } else { // Is down
-    if (downImg.classList.contains("img-available")) {
-      upImg.style.display = 'none'; // Remove the upDisc image only if the downDisc image is available
-      downImg.style.display = 'block';
-      needle.style.display = 'none';   // 이미지 있으면 bar 숨기기
-      isLatestDiscDirectionUp = false;
-    }
-  }
-}
-
-function updateBorders(delta) {
-  if (is2PMode) delta = -delta;
-  upperIndicator.classList.toggle("lit", delta > 0);
-  lowerIndicator.classList.toggle("lit", delta < 0);
-  if (delta === 0) {
-    upperIndicator.classList.remove("lit");
-    lowerIndicator.classList.remove("lit");
-  }
-}
-
-// 버튼 불빛은 입력을 받는 즉시 직접 그린다 (숫자는 applyStats가 담당)
-// 롱노트(CN) 판정 시간 이상 누르고 있으면 롱노트 색으로 바꾼다 (릴리즈 평균에서도 빠지는 입력)
-let cnThresholdMs = 200;
-const longNoteTimers = {};
-
-function updateButton(id, pressed) {
-  const key = document.getElementById(`button-${id}`);
-  if (!key) return;
-  key.classList.toggle('active', pressed);
-  clearTimeout(longNoteTimers[id]);
-  if (pressed) longNoteTimers[id] = setTimeout(() => key.classList.add('long'), cnThresholdMs);
-  else key.classList.remove('long');
-}
-
-
 function applyDiscImage(settings) {
   const resolve = p => window.imageUrl.resolveImageUrl(p, { protocol: location.protocol, serverPort: settings.serverPort });
-  const upDiscImagePath = resolve(settings.widget.discImagePath);
+  const upPath = resolve(settings.widget.discImagePath);
   // 아랫방향 이미지는 2장 모드에서만 사용 (1장 모드면 방향 전환이 일어나지 않음)
-  const downDiscImagePath = settings.widget.discImageMode === 'dual' ? resolve(settings.widget.downDiscImagePath) : '';
-
-  // 이미지를 다시 적용하면 윗방향 상태로 초기화
-  isLatestDiscDirectionUp = true;
-
-  if (upDiscImagePath) {
-    upImg.classList.add("img-available");
-    upImg.src = upDiscImagePath;
-    upImg.style.display = 'block';
-    needle.style.display = 'none';   // 이미지 있으면 bar 숨기기
-  } else {
-    upImg.classList.remove("img-available");
-    upImg.src = '';
-    upImg.style.display = 'none';
-    needle.style.display = 'block';  // 기본 bar 보이기
-  }
-
-  if (downDiscImagePath) {
-    downImg.classList.add("img-available");
-    downImg.src = downDiscImagePath;
-    downImg.style.display = 'none';
-  } else {
-    downImg.classList.remove("img-available");
-    downImg.src = '';
-    downImg.style.display = 'none';
-  }
+  const downPath = settings.widget.discImageMode === 'dual' ? resolve(settings.widget.downDiscImagePath) : '';
+  sides.forEach(side => side.applyDiscImage(upPath, downPath));
 }
 
 function handleData(data) {
-  const now = Date.now();
-  if (data.type === 'axis' && data.axis === 'X' && data.discRaw !== undefined) {
-    if (now - lastDiscUpdateTime >= DISC_UPDATE_INTERVAL) {
-      const newValue = data.discRaw;
-      if (lastDiscValue !== null) {
-        const delta = discDelta(lastDiscValue, newValue);
-        rotateDisc(delta);
-        changeDiscImage(delta);
-        updateBorders(delta);
-      }
-      lastDiscValue = newValue;
-      lastDiscUpdateTime = now;
-    }
-  }
-  if (data.type === 'button') {
-    const buttonNumber = parseInt(data.button.split(" ")[1]);
-    updateButton(buttonNumber, data.pressed);
-  }
+  sideOf(data).handleData(data);
 }
 
-// 키보드 입력이면 건반 위에 'INPUT · KB'를 작게 보여준다 (세션 정보를 숨긴 경우는 함께 숨김, 기존과 같음)
-function applyKBIndicatorPosition(position) {
-  const kbIndicator = document.querySelector('.kb-indicator');
-  if (!kbIndicator) return;
-  kbIndicator.style.display = (window.currentProfile === 'KB' && position !== 'none') ? 'flex' : 'none';
+// 키보드 입력인 사이드는 건반 위에 'INPUT · KB'를 작게 보여준다 (세션 정보를 숨긴 경우는 함께 숨김, 기존과 같음)
+function applyKBIndicators(settings) {
+  const position = settings?.widget?.infoPosition || 'bottom';
+  const profiles = [settings?.controllerProfile, settings?.player2?.controllerProfile];
+  sides.forEach((side, i) => {
+    side.showKB(profiles[i] === 'KB' && position !== 'none');
+    side.discUpdateInterval = profiles[i] === 'KB' ? 5 : 20;
+  });
 }
 
 const WS_RECONNECT_DELAY = 1000;
@@ -332,21 +347,25 @@ function scheduleReconnect() {
 }
 
 // 계기판을 본체 아래(bottom) 또는 위(top)에 붙인다. 붙은 쪽 모서리는 본체와 이어지도록 각지게 한다
+const stage = document.querySelector('.stage');
+
+// 계기판을 무대 아래(bottom) 또는 위(top)에 붙인다. 붙은 쪽 본체 모서리는 이어지도록 각지게 한다 (DP는 가운데 사다리꼴이라 제외)
 function applyReleaseContainerSettings(infoPosition) {
-  const container = document.querySelector('.container');
   const releaseContainer = document.querySelector('.release-container');
-  if (!container || !releaseContainer) return;
   releaseContainer.style.display = (infoPosition === 'none') ? 'none' : 'flex';
   releaseContainer.classList.toggle('at-top', infoPosition === 'top');
-  container.classList.toggle('dash-bottom', infoPosition === 'bottom');
-  container.classList.toggle('dash-top', infoPosition === 'top');
+  stage.classList.toggle('dash-bottom', infoPosition === 'bottom');
+  stage.classList.toggle('dash-top', infoPosition === 'top');
 }
 
+// 1P: 스크래치 왼쪽, 2P: 스크래치 오른쪽, DP: 1P 본체 + 검정 여백 + 2P 본체
 function applyButtonLayout(layout) {
-  const mainContent = document.querySelector('.main-content');
-  if (!mainContent) return;
-  mainContent.style.flexDirection = (layout === '2P') ? 'row-reverse' : 'row';
-  is2PMode = layout === '2P';
+  const isDP = layout === 'DP';
+  stage.classList.toggle('dp', isDP);
+  document.querySelector('.dp-gap').hidden = !isDP;
+  container2.hidden = !isDP;
+  sides[0].setOrientation(layout === '2P');
+  sides[1].setOrientation(true);
 }
 
 async function loadSettings() {
@@ -382,15 +401,7 @@ function applySettings(settings) {
     document.body.classList.toggle('hide-key-release', settings.widget.showKeyRelease === false);
   }
 
-  if (settings?.controllerProfile === 'KB') {
-    window.currentProfile = 'KB';
-    DISC_UPDATE_INTERVAL = 5;
-  } else {
-    window.currentProfile = 'PHOENIXWAN';
-    DISC_UPDATE_INTERVAL = 20;
-  }
-
-  applyKBIndicatorPosition(settings?.widget?.infoPosition || 'bottom');
+  applyKBIndicators(settings);
 
   if (settings?.language && settings.language !== widgetLanguage) {
     widgetLanguage = settings.language;
@@ -451,7 +462,6 @@ function applyPromoBox(settings) {
   const bottom = show && position === 'top';
   promoTop.style.display = top ? 'flex' : 'none';
   promoBottom.style.display = bottom ? 'flex' : 'none';
-  const container = document.querySelector('.container');
-  container.classList.toggle('promo-top', top);
-  container.classList.toggle('promo-bottom', bottom);
+  stage.classList.toggle('promo-top', top);
+  stage.classList.toggle('promo-bottom', bottom);
 }
