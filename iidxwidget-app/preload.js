@@ -18,6 +18,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onSettingsUpdated: (callback) => ipcRenderer.on('settings-updated', () => callback()),
   // 파일 선택 창을 열어 이미지를 복사하고 '/userImages/<파일>'을 돌려준다 (취소하면 null)
   pickUserImage: () => ipcRenderer.invoke('pick-user-image'),
+  readUserImage: (imagePath) => ipcRenderer.invoke('read-user-image', imagePath),
   // AUTO 매핑 학습: 결과 { status: 'generic' | 'dedicated' | 'none', device? }
   startMappingSession: (side = 1, devicePath = null) => ipcRenderer.invoke('start-mapping-session', side, devicePath),
   // 프로필에 맞는 연결된 컨트롤러 장치 목록: { devices: [{ path, name }], inUse: { 1: path, 2: path } }

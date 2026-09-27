@@ -128,6 +128,11 @@
       </div>
       <img id="down-disc-preview" class="disc-preview" alt="" />
     </div>
+    <div class="setting-group" id="auto-palette-group" hidden>
+      <label><input type="checkbox" id="autoPalette" /> <span data-i18n="settings.autoPalette">이 이미지에 어울리는 추천 색상 사용</span></label>
+      <p class="mapping-help" data-i18n="settings.autoPaletteHint"></p>
+      <p class="mapping-help" id="auto-palette-status" hidden></p>
+    </div>
     <div class="setting-group">
       <div class="color-setting-row">
         <label for="color-container-background" data-i18n="settings.containerBackground">위젯 컨테이너 배경색</label>
@@ -237,6 +242,7 @@
   <script src="../shared/overlayScroll.js"></script>
   <script src="../shared/i18n.js"></script>
   <script src="../shared/imageUrl.js"></script>
+  <script src="../shared/palette.js"></script>
   <script src="formLogic.js"></script>
   <script src="controllerPanel.js"></script>
   <script src="settings.js"></script>

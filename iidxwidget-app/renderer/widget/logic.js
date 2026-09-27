@@ -35,7 +35,16 @@
     return { fraction: KPS_GAUGE_SPLIT + (1 - KPS_GAUGE_SPLIT) * heat, heat };
   }
 
-  const api = { discDelta, formatUptime, kpsGauge, KPS_GAUGE_PRESETS, KPS_GAUGE_SPLIT };
+  // 위젯에 칠할 색. 이미지 추천 색상을 켰으면 추천 색(paletteColors), 아니면 직접 고른 색(colors)
+  // 추천 색이 없거나 이미지를 지웠으면 직접 고른 색으로 돌아간다 (직접 고른 색은 추천 색 때문에 바뀌지 않는다)
+  const COLOR_KEYS = ['containerBackground', 'background', 'accent', 'fontColor', 'activeColor', 'lnColor'];
+  function widgetColors(widget) {
+    const palette = widget?.paletteColors;
+    const valid = !!palette && COLOR_KEYS.every(key => /^#[0-9a-f]{6}$/i.test(palette[key]));
+    return widget?.autoPalette && widget?.discImagePath && valid ? palette : widget?.colors;
+  }
+
+  const api = { discDelta, formatUptime, kpsGauge, KPS_GAUGE_PRESETS, KPS_GAUGE_SPLIT, widgetColors, COLOR_KEYS };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.widgetLogic = api;
 })(typeof window !== 'undefined' ? window : globalThis);

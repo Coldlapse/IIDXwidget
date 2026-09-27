@@ -399,7 +399,7 @@ function applySettings(settings) {
     applyButtonLayout(settings.widget.buttonLayout || '1P');
     applyDiscImage(settings);
     applyPromoBox(settings);
-    applyCustomColors(settings.widget.colors, settings.widget.transparentContainer);
+    applyCustomColors(window.widgetLogic.widgetColors(settings.widget), settings.widget.transparentContainer);
     document.body.classList.toggle('transparent-container', !!settings.widget.transparentContainer);
     applyKpsGauge(settings.widget.kpsGauge);
     cnThresholdMs = settings.widget.cnThresholdMs || 200;

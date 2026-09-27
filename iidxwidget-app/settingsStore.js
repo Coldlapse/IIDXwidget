@@ -56,6 +56,9 @@ const DEFAULT_SETTINGS = {
     globalMALength: 2000,    // 전체 평균 릴리즈 표본 (Rag 원본과 같은 최근 2000개)
     perButtonMALength: 300,  // 건반별 평균 릴리즈 표본 (Rag 원본과 같은 최근 300개)
     cnThresholdMs: 200,      // 이 시간 이상 누르면 롱노트(CN)로 보고 릴리즈 평균에서 빼며, 건반을 롱노트 색으로 표시
+    // 스크래치 이미지에서 뽑은 추천 색상을 쓸지. 켜도 직접 고른 colors는 바꾸지 않고, 추천 색은 paletteColors에 따로 둔다
+    autoPalette: false,
+    paletteColors: null,
     colors: {
       containerBackground: '#000000',
       background: '#000000',

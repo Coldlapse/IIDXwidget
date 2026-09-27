@@ -71,14 +71,9 @@ $('save-button').addEventListener('click', async () => {
       globalMALength,
       perButtonMALength,
       cnThresholdMs,
-      colors: {
-        containerBackground: $('color-container-background').value,
-        background: $('color-background').value,
-        accent: $('color-accent').value,
-        fontColor: $('color-fontColor').value,
-        activeColor: $('color-activeColor').value,
-        lnColor: $('color-lnColor').value
-      }
+      autoPalette: paletteActive(),
+      paletteColors: paletteActive() ? paletteColors : null,
+      colors: paletteActive() ? { ...manualColors } : readColorInputs(),
     }
   };
 
@@ -146,8 +141,12 @@ for (const slotName of Object.keys(discSlots)) {
   $(`pick-${slotName}-disc-button`).addEventListener('click', async () => {
     const imagePath = await window.electronAPI.pickUserImage();
     if (imagePath) setDiscImage(slotName, imagePath);
+    if (slotName === 'up') updatePalette();
   });
-  $(`delete-${slotName}-disc-button`).addEventListener('click', () => setDiscImage(slotName, null));
+  $(`delete-${slotName}-disc-button`).addEventListener('click', () => {
+    setDiscImage(slotName, null);
+    if (slotName === 'up') updatePalette();
+  });
 }
 
 
@@ -184,13 +183,11 @@ for (const slotName of Object.keys(discSlots)) {
   await panels[1].load(settings.player2);
   await applyLayout();
 
-  const colors = settings.widget.colors;
-  $('color-container-background').value = colors.containerBackground;
-  $('color-background').value = colors.background;
-  $('color-accent').value = colors.accent;
-  $('color-fontColor').value = colors.fontColor;
-  $('color-activeColor').value = colors.activeColor;
-  $('color-lnColor').value = colors.lnColor;
+  manualColors = { ...settings.widget.colors };
+  showColors(manualColors);
+  $('autoPalette').checked = !!settings.widget.autoPalette;
+  paletteColors = window.palette.isPalette(settings.widget.paletteColors) ? settings.widget.paletteColors : null;
+  paletteSource = paletteColors ? settings.widget.discImagePath : null;
 
   const discImageMode = settings.widget.discImageMode === 'dual' ? 'dual' : 'single';
   $('discImageMode').value = discImageMode;
@@ -201,6 +198,7 @@ for (const slotName of Object.keys(discSlots)) {
   for (const name of ['container-background', 'background', 'accent', 'fontColor', 'activeColor', 'lnColor']) {
     bindColorPreview(`color-${name}`, `preview-${name}`);
   }
+  await updatePalette();
 
 })();
 
@@ -219,9 +217,77 @@ function bindColorPreview(inputId, previewId) {
 
 function updateContainerColorAvailability() {
   const transparent = $('transparent-container').checked;
-  $('color-container-background').disabled = transparent;
+  $('color-container-background').disabled = transparent || paletteActive();
   $('preview-container-background').style.opacity = transparent ? '0.35' : '1';
 }
+
+// 🎨 이미지 추천 색상
+// 직접 고른 색(widget.colors)은 추천 색 때문에 절대 바뀌지 않는다. 추천 색은 widget.paletteColors에 따로 저장하고,
+// 켜져 있는 동안 색상 칸은 추천 색을 보여주기만 한다(수정 불가). 끄면 직접 고른 색이 그대로 돌아온다.
+const COLOR_INPUTS = {
+  containerBackground: 'color-container-background', background: 'color-background', accent: 'color-accent',
+  fontColor: 'color-fontColor', activeColor: 'color-activeColor', lnColor: 'color-lnColor'
+};
+let manualColors = null;   // 직접 고른 색
+let paletteColors = null;  // 이미지에서 뽑은 추천 색
+let paletteSource = null;  // 추천 색을 뽑은 이미지
+
+const paletteActive = () => $('autoPalette').checked && !!discSlots.up.path && !!paletteColors;
+
+function readColorInputs() {
+  return Object.fromEntries(Object.entries(COLOR_INPUTS).map(([key, id]) => [key, $(id).value]));
+}
+
+function showColors(colors) {
+  if (!colors) return;
+  for (const [key, id] of Object.entries(COLOR_INPUTS)) {
+    if (!colors[key]) continue;
+    $(id).value = colors[key];
+    $(id).dispatchEvent(new Event('input'));
+  }
+}
+
+// 이미지를 64×64로 줄여 픽셀을 읽고 추천 색을 뽑는다 (GIF는 첫 장면)
+async function computePalette(imagePath) {
+  const dataUrl = await window.electronAPI.readUserImage(imagePath);
+  if (!dataUrl) return null;
+  const image = new Image();
+  await new Promise((resolve, reject) => { image.onload = resolve; image.onerror = reject; image.src = dataUrl; }).catch(() => null);
+  if (!image.naturalWidth) return null;
+  const canvas = document.createElement('canvas');
+  canvas.width = 64;
+  canvas.height = 64;
+  const context = canvas.getContext('2d', { willReadFrequently: true });
+  context.drawImage(image, 0, 0, 64, 64);
+  return window.palette.paletteFromPixels(context.getImageData(0, 0, 64, 64).data, 64, 64);
+}
+
+// 토글·이미지가 바뀔 때마다 부른다
+async function updatePalette() {
+  const hasImage = !!discSlots.up.path;
+  $('auto-palette-group').hidden = !hasImage;
+  const status = $('auto-palette-status');
+  status.hidden = true;
+  if ($('autoPalette').checked && hasImage && paletteSource !== discSlots.up.path) {
+    paletteColors = await computePalette(discSlots.up.path);
+    paletteSource = paletteColors ? discSlots.up.path : null;
+    if (!paletteColors) {
+      $('autoPalette').checked = false;
+      status.textContent = window.i18n.t('settings.autoPaletteFailed');
+      status.hidden = false;
+    }
+  }
+  const active = paletteActive();
+  showColors(active ? paletteColors : manualColors);
+  for (const id of Object.values(COLOR_INPUTS)) $(id).disabled = active;
+  updateContainerColorAvailability();
+}
+
+$('autoPalette').addEventListener('change', () => {
+  // 켜는 순간의 색상 칸 값(저장 전에 고친 것 포함)을 직접 고른 색으로 기억해 둔다
+  if ($('autoPalette').checked) manualColors = readColorInputs();
+  updatePalette();
+});
 
 $('transparent-container').addEventListener('change', updateContainerColorAvailability);
 

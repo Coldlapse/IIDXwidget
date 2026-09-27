@@ -677,6 +677,21 @@ ipcMain.handle('pick-user-image', async () => {
   }
 });
 
+// 이미지 추천 색상용: 설정 창에서만, '/userImages/<파일>'만 읽는다
+const IMAGE_MIME = { png: 'png', jpg: 'jpeg', jpeg: 'jpeg', gif: 'gif', webp: 'webp', bmp: 'bmp' };
+ipcMain.handle('read-user-image', (event, imagePath) => {
+  if (!settingsWindow || event.sender !== settingsWindow.webContents) return null;
+  const match = typeof imagePath === 'string' && imagePath.match(/^\/userImages\/([^/\\]+)$/);
+  if (!match) return null;
+  const mime = IMAGE_MIME[path.extname(match[1]).slice(1).toLowerCase()];
+  if (!mime) return null;
+  try {
+    return `data:image/${mime};base64,${fs.readFileSync(path.join(USER_IMAGE_DIR, match[1])).toString('base64')}`;
+  } catch (error) {
+    return null;
+  }
+});
+
 // 기타 컨트롤러 매핑 학습 (side: 1 또는 2, devicePath: 설정 창에서 고른 장치)
 ipcMain.handle('start-mapping-session', (event, side = 1, devicePath = null) => inputs.startMappingSession(side === 2 ? 2 : 1, events => {
   const physical = events.filter(e => e.type === 'physical-button');

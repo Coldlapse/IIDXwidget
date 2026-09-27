@@ -167,6 +167,7 @@ KPS speedometer presets:
 | **Show KPS speedometer gauge** | Shows KPS as a speedometer. On by default; turn it off to show just the number. The preset sets the red zone and the end of the gauge (table above). |
 | **Turntable image mode** | **Single image** : one image spins with the turntable. **Two images** : a different image for each spin direction. |
 | **Custom turntable image** | The image used for the disc (PNG, JPG, WEBP, BMP, and **animated images like GIFs**). **Delete** goes back to the default disc. |
+| **Use recommended colors for this image** | Shown only when a turntable image is set. When on, colors are picked from the image (the default/upward image in two-image mode) and applied to the widget background, keys, text and long notes. While on, the color fields below just show the recommended colors. **Your own colors are kept, so turning it off brings them back.** GIFs use their first frame. Off by default. |
 | **Colors** | Widget background, turntable background (also used for the dashboard and promotion strip), idle/active colors (the idle color also draws the dashboard dividers), text color, and the color of a key held as a long note. |
 
 ---
