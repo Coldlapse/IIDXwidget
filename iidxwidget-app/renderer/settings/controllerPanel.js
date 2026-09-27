@@ -78,7 +78,7 @@
       q('kb-container').hidden = p !== 'KB';
       q('generic-container').hidden = p !== 'AUTO';
       q('device-row').hidden = p === 'KB';
-      q('lr2-row').hidden = !(p === 'PHOENIXWAN' || p === 'FPS EMP Gen2');
+      q('lr2-row').hidden = !(p === 'PHOENIXWAN' || p === 'FPS EMP Gen2' || p === 'PHOENIXWAN LMT Classic');
     }
 
     async function onProfileChanged() {

@@ -9,11 +9,10 @@ const LR2_DEACTIVATE_THRESHOLD = 3;
 
 const isPhoenix = d => d.vendorId === 0x1CCF && d.productId === 0x8048 && d.interface === 1;
 const isFps = d => d.vendorId === 0x1CCF && d.productId === 0x8048 && d.interface === 0 && d.usagePage === 1;
-// PHOENIXWAN+ LMT Classic 기판. 범용 게임패드 칩(VID 0E8F)이라 제품 이름까지 본다 (펌웨어 표기가 'PHONENIXWAN')
-const isLmtBoard = d => d.vendorId === 0x0E8F && d.productId === 0x1228 && /NIXWAN/i.test(d.product || '');
-const isPhoenixLmt = d => isLmtBoard(d) && d.usagePage === 1 && d.usage === 4;
-// 공식 지원 컨트롤러(주작콘·FPS EMP 2세대)가 쓰는 USB 장치. 인터페이스와 상관없이 기타 컨트롤러에서는 고르지 않는다.
-// LMT Classic은 기타 컨트롤러에도 남긴다: LR2 모드만 실측했고, 일반 모드는 수동 매핑으로 잘 된다는 확인만 있어서
+// PHOENIXWAN+ LMT Classic 기판. 범용 게임패드 칩(VID 0E8F)이라 제품 이름까지 본다 (펌웨어 표기가 'PHONENIXWAN').
+// 기타 컨트롤러(수동 매핑)에서도 그대로 고를 수 있다
+const isPhoenixLmt = d => d.vendorId === 0x0E8F && d.productId === 0x1228 && d.usagePage === 1 && d.usage === 4 && /NIXWAN/i.test(d.product || '');
+// 공식 지원 컨트롤러(주작콘·FPS EMP 2세대)가 쓰는 USB 장치. 인터페이스와 상관없이 기타 컨트롤러에서는 고르지 않는다
 const isOfficiallySupported = d => d.vendorId === 0x1CCF && d.productId === 0x8048;
 
 // ─── 장치 찾기 ──────────────────────────────────────────────
@@ -21,8 +20,9 @@ const isOfficiallySupported = d => d.vendorId === 0x1CCF && d.productId === 0x80
 function findExactDedicatedDevice(devices, profile) {
   return devices.find(d => {
     if (!d.path) return false;
-    if (profile === 'PHOENIXWAN') return isPhoenix(d) || isPhoenixLmt(d);
+    if (profile === 'PHOENIXWAN') return isPhoenix(d);
     if (profile === 'FPS EMP Gen2') return isFps(d);
+    if (profile === 'PHOENIXWAN LMT Classic') return isPhoenixLmt(d);
     return false;
   });
 }
@@ -47,12 +47,13 @@ function findAutoController(devices) {
 
 // ─── 장치 목록과 선택 (1P·2P에 각각 장치를 고를 수 있도록) ───────
 
-const PARSER_BY_PROFILE = { PHOENIXWAN: 'PHOENIXWAN', 'FPS EMP Gen2': 'FPS_EMP', AUTO: 'GENERIC' };
+const PARSER_BY_PROFILE = { PHOENIXWAN: 'PHOENIXWAN', 'FPS EMP Gen2': 'FPS_EMP', 'PHOENIXWAN LMT Classic': 'PHOENIXWAN_LMT', AUTO: 'GENERIC' };
 
 // 프로필에 맞는 연결된 장치들 (찾는 순서대로)
 function profileCandidates(profile, devices) {
-  if (profile === 'PHOENIXWAN') return devices.filter(d => d.path && (isPhoenix(d) || isPhoenixLmt(d)));
+  if (profile === 'PHOENIXWAN') return devices.filter(d => d.path && isPhoenix(d));
   if (profile === 'FPS EMP Gen2') return devices.filter(d => d.path && isFps(d));
+  if (profile === 'PHOENIXWAN LMT Classic') return devices.filter(d => d.path && isPhoenixLmt(d));
   if (profile === 'AUTO') return autoCandidates(devices);
   return [];
 }
@@ -70,11 +71,12 @@ function listControllerDevices(profile, devices = getHID().devices()) {
 function chooseDevice(profile, { devicePath = null, excludePaths = [] } = {}, devices = getHID().devices()) {
   const available = profileCandidates(profile, devices).filter(d => !excludePaths.includes(d.path));
   const device = available.find(d => d.path === devicePath) || available[0];
-  return device ? { device, parser: profile === 'PHOENIXWAN' && isPhoenixLmt(device) ? 'PHOENIXWAN_LMT' : PARSER_BY_PROFILE[profile] } : null;
+  return device ? { device, parser: PARSER_BY_PROFILE[profile] } : null;
 }
 
 function describeDevice(device) {
   const hex = n => (n ?? 0).toString(16).padStart(4, '0');
+  // node-hid가 제조사 문자열을 깨뜨려 읽는 장치가 있어서(LMT Classic 등), 깨진 문자열은 이름에서 뺀다
   const readable = text => typeof text === 'string' && text.trim() && !/[\u0000-\u001f\ufffd]/.test(text);
   const name = [device.manufacturer, device.product].filter(readable).map(text => text.trim()).join(' ') || 'Unknown device';
   return `${name} [${hex(device.vendorId)}:${hex(device.productId)}]`;
@@ -193,10 +195,22 @@ function findAxisByte(reports, minDistinct = 8) {
   return best;
 }
 
-// ─── 전용 컨트롤러 (주작콘 / FPS EMP) ──────────────────────
+// ─── 전용 컨트롤러 (주작콘 / FPS EMP / 주작콘 LMT Classic) ──────────────
+//
+// 세 기판 모두 아래의 같은 처리(건반 비트, 턴테이블 값, LR2 모드 감지와 방향 처리)를 쓴다. 기판마다 다른 것은
+// 건반·턴테이블을 읽는 바이트 자리와 LR2 모드에서 턴테이블이 보내는 세 값(+ 방향 / - 방향 / 멈춤)뿐이다.
+// - 주작콘·FPS: 건반 buffer[2], 턴테이블 buffer[0], LR2 값 0x80(+) / 0x7F(-) / 0x00(멈춤)
+// - LMT Classic: 건반 buffer[2], 턴테이블 buffer[7], LR2 값 0xFF(+) / 0x00(-) / 0x80(멈춤)
+//   (2026-09-27 컨트롤러 정보 수집 실측, LR2 모드, 1000Hz. 0x00 = 시계 방향. 일반 모드는 아직 실측 없음)
+const DEDICATED_LAYOUTS = {
+  PHOENIXWAN: { keyByte: 2, turntableByte: 0, lr2: { plus: 0x80, minus: 0x7F, rest: 0x00 } },
+  FPS_EMP: { keyByte: 2, turntableByte: 0, lr2: { plus: 0x80, minus: 0x7F, rest: 0x00 } },
+  PHOENIXWAN_LMT: { keyByte: 2, turntableByte: 7, lr2: { plus: 0xFF, minus: 0x00, rest: 0x80 } }
+};
 
-function createDedicatedParserState() {
+function createDedicatedParserState(layout = DEDICATED_LAYOUTS.PHOENIXWAN) {
   return {
+    layout,
     lastButtonByte: 0,
     isLR2Active: false,
     lr2DetectEnabled: false,
@@ -210,7 +224,8 @@ function createDedicatedParserState() {
 
 function parseControllerData(buffer, state) {
   const events = [];
-  const buttonByte = buffer[2];
+  const { keyByte, turntableByte } = state.layout || DEDICATED_LAYOUTS.PHOENIXWAN;
+  const buttonByte = buffer[keyByte];
   const timestamp = Date.now();
 
   for (let i = 0; i < 7; i++) {
@@ -222,7 +237,7 @@ function parseControllerData(buffer, state) {
   }
   state.lastButtonByte = buttonByte;
 
-  const xRaw = buffer[0];
+  const xRaw = buffer[turntableByte];
   const direction = xRaw < 100 ? '-' : xRaw > 150 ? '+' : 'neutral';
   events.push({ type: 'axis', axis: 'X', direction, discRaw: xRaw, timestamp });
 
@@ -230,7 +245,8 @@ function parseControllerData(buffer, state) {
 }
 
 function detectLR2Mode(buffer, state, logger) {
-  const isStatic = [0x80, 0x7F, 0x00].includes(buffer[0]);
+  const { turntableByte, lr2 } = state.layout || DEDICATED_LAYOUTS.PHOENIXWAN;
+  const isStatic = [lr2.plus, lr2.minus, lr2.rest].includes(buffer[turntableByte]);
 
   if (isStatic) {
     if (!state.lr2PatternCount) state.lr2FirstStaticTime = Date.now();
@@ -255,7 +271,8 @@ function detectLR2Mode(buffer, state, logger) {
 }
 
 function handleDedicatedData(buffer, callback, state, logger) {
-  const xRaw = buffer[0];
+  const { turntableByte, lr2 } = state.layout || DEDICATED_LAYOUTS.PHOENIXWAN;
+  const xRaw = buffer[turntableByte];
   if (state.lr2DetectEnabled) detectLR2Mode(buffer, state, logger);
 
   const parsed = parseControllerData(buffer, state);
@@ -266,9 +283,9 @@ function handleDedicatedData(buffer, callback, state, logger) {
     return;
   }
 
-  // LR2 모드: 턴테이블 값이 0x80/0x7F로만 오므로 방향 전환 시점에만 회전값을 만들어 보냄
+  // LR2 모드: 턴테이블 값이 방향 값으로만 오므로 방향 전환 시점에만 회전값을 만들어 보냄
   const filtered = parsed.filter(e => !(e.type === 'axis' && e.axis === 'X'));
-  const direction = xRaw === 0x80 ? '+' : xRaw === 0x7F ? '-' : 'neutral';
+  const direction = xRaw === lr2.plus ? '+' : xRaw === lr2.minus ? '-' : 'neutral';
 
   if (direction !== 'neutral' && direction !== state.lastLR2Direction) {
     state.lastLR2Direction = direction;
@@ -280,70 +297,6 @@ function handleDedicatedData(buffer, callback, state, logger) {
   }
 
   if (filtered.length) callback(filtered);
-}
-
-// ─── PHOENIXWAN+ LMT Classic ──────────────────────────────
-//
-// 보고서 (report ID 포함 10바이트, 1000Hz로 계속 온다. 2026-09-27 실측):
-//   [0] report ID 0x01, [2] 건반 1~7 (bit 0~6, 공식 주작콘과 같은 자리), [3] E1~E4 (bit 0~3), [7] 턴테이블
-// 턴테이블: LR2 모드에서는 0x80(멈춤) / 0x00(시계) / 0xFF(반시계)만 온다. 멈춤에서 끝값으로 한 번에 건너뛰므로
-//   (0x80 ↔ 0x00/0xFF) 실제 회전량이 아니라 방향 신호다 → 공식 주작콘 LR2 처리처럼 방향이 바뀔 때만 회전을 만든다.
-//   일반 모드는 아직 기록이 없다 (수동 매핑으로는 잘 된다는 확인만 있음). 축 자리(6~9번 바이트, 멈추면 모두 0x80) 중
-//   0x00/0x80/0xFF 밖의 값이 오는 바이트를 절대 위치로 보고 공식 주작콘 일반 모드처럼 처리한다.
-//   (절대 위치는 1ms 사이에 0x80에서 끝값으로 건너뛸 수 없으므로 두 모드가 섞여 판단되지 않는다)
-// 방향 부호는 공식 주작콘 LR2와 같게 "값이 큰 쪽이 +"로 둔다 (0xFF = +, 0x00 = -)
-const LMT_DIGITAL = [0x00, 0x80, 0xFF];
-const LMT_TURNTABLE_BYTE = 7;          // LR2 모드 방향 신호
-const LMT_AXIS_BYTES = [6, 7, 8, 9];   // 일반 모드 절대 위치 후보
-
-function createLmtParserState() {
-  return { lastButtonByte: 0, lastTurntable: null, turntableMode: null, positionByte: null, lastPosition: null, currentDiscRaw: 0, lastDirection: 'neutral' };
-}
-
-function parseLmtData(buffer, state) {
-  const events = [];
-  const timestamp = Date.now();
-  const buttonByte = buffer[2] || 0;
-  for (let i = 0; i < 7; i++) {
-    const mask = 1 << i;
-    const pressed = !!(buttonByte & mask);
-    if (!!(state.lastButtonByte & mask) !== pressed) events.push({ type: 'button', button: `button ${i + 1}`, pressed, timestamp });
-  }
-  state.lastButtonByte = buttonByte;
-
-  const value = buffer[LMT_TURNTABLE_BYTE];
-  if (value === undefined) return events;
-  const previous = state.lastTurntable;
-  state.lastTurntable = value;
-  const jumpedFromRest = (previous === 0x80 && (value === 0x00 || value === 0xFF)) || ((previous === 0x00 || previous === 0xFF) && value === 0x80);
-  if (jumpedFromRest) {
-    state.turntableMode = 'direction';
-  } else {
-    const moving = LMT_AXIS_BYTES.find(i => buffer[i] !== undefined && !LMT_DIGITAL.includes(buffer[i]));
-    if (moving !== undefined && state.turntableMode !== 'position') {
-      state.turntableMode = 'position';
-      state.positionByte = moving;
-      state.lastPosition = null;
-    }
-  }
-
-  if (state.turntableMode === 'direction') {
-    const direction = value === 0xFF ? '+' : value === 0x00 ? '-' : 'neutral';
-    if (direction !== 'neutral' && direction !== state.lastDirection) {
-      state.currentDiscRaw = (state.currentDiscRaw + (direction === '+' ? 5 : -5) + 256) % 256;
-      events.push({ type: 'axis', axis: 'X', direction, discRaw: state.currentDiscRaw, timestamp });
-    } else if (direction === 'neutral' && state.lastDirection !== 'neutral') {
-      events.push({ type: 'axis', axis: 'X', direction, discRaw: state.currentDiscRaw, timestamp });
-    }
-    state.lastDirection = direction;
-  } else if (state.turntableMode === 'position') {
-    const position = buffer[state.positionByte];
-    const last = state.lastPosition;
-    state.lastPosition = position;
-    const direction = last === null || last === position ? 'neutral' : ((position - last + 256) % 256) < 128 ? '+' : '-';
-    events.push({ type: 'axis', axis: 'X', direction, discRaw: position, timestamp });
-  }
-  return events;
 }
 
 // ─── 장치 열기 ──────────────────────────────────────────────
@@ -361,10 +314,9 @@ function openReader(selection, callback, options) {
     return null;
   }
 
-  const dedicatedState = createDedicatedParserState();
+  const dedicatedState = createDedicatedParserState(DEDICATED_LAYOUTS[selection.parser] || DEDICATED_LAYOUTS.PHOENIXWAN);
   dedicatedState.lr2DetectEnabled = selection.parser !== 'GENERIC' && !!options.lr2ModeEnabled;
   const genericState = createGenericParserState(Number.isInteger(options.genericAxis) ? options.genericAxis : null);
-  const lmtState = createLmtParserState();
   const rawListeners = new Set();
 
   device.on('data', buffer => {
@@ -372,9 +324,6 @@ function openReader(selection, callback, options) {
     try {
       if (selection.parser === 'GENERIC') {
         const events = parseGenericControllerData(buffer, options.genericMapping, genericState);
-        if (events.length) callback(events);
-      } else if (selection.parser === 'PHOENIXWAN_LMT') {
-        const events = parseLmtData(buffer, lmtState);
         if (events.length) callback(events);
       } else {
         handleDedicatedData(buffer, callback, dedicatedState, logger);
@@ -447,6 +396,6 @@ module.exports = {
   parseGenericControllerData,
   parseControllerData,
   createDedicatedParserState,
-  parseLmtData,
-  createLmtParserState
+  handleDedicatedData,
+  DEDICATED_LAYOUTS
 };

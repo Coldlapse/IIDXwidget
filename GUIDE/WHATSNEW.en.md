@@ -44,7 +44,7 @@ You only need to do this once. From now on the widget follows settings changes a
 
 - **Antivirus false positive fixed** : Windows Defender no longer blocks the app as it did with 2.1.0 and earlier. The component that reads keyboard input was replaced.
 - **Korean / English** : Menu → Language
-- **PHOENIXWAN+ LMT Classic board, LR2 mode supported** : If you play in LR2 mode, switch the profile to PHOENIXWAN+ — the turntable registers right away, unlike manual mapping. Normal mode keeps working with Other controller (manual mapping).
+- **PHOENIXWAN+ LMT Classic board supported** : Pick the **PHOENIXWAN+ LMT Classic** profile in Settings and it works the same way as a PHOENIXWAN. For LR2 mode, also turn on **Detect LR2 mode**. Other controller (manual mapping) still works too.
 - **Other controller (manual mapping)** : Controllers that are not officially supported and DIY boards can be mapped by pressing their buttons. Boards whose turntable is an axis are found with "Learn".
 - **Widget redesign** : The floating session info box is now a dashboard attached to the widget body. The turntable and keys keep their size and position, and the widget takes up no more space than before.
 - **DP support** : Pick a controller for 1P and 2P separately; the widget shows both sides joined together. Use a 1320×600 OBS browser source. With several identical controllers, choose the device in Settings.

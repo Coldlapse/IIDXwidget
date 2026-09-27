@@ -6,6 +6,9 @@ const { startGlobalKeyboardReader } = require('./controller/keyboardReader');
 const { DEFAULT_SETTINGS } = require('./settingsStore');
 
 // 사이드별 설정. 1P는 기존 최상위 값, 2P는 settings.player2
+// 전용 파서가 있는 프로필 (설정 값)
+const DEDICATED_PROFILES = ['PHOENIXWAN', 'FPS EMP Gen2', 'PHOENIXWAN LMT Classic'];
+
 function sideConfig(settings, side) {
   if (side === 2) {
     const p2 = settings.player2 || DEFAULT_SETTINGS.player2;
@@ -53,7 +56,7 @@ function createInputManager({ dispatch, logger }) {
     const options = { devicePath: config.devicePath, excludePaths: usedPaths, logger };
     const reader = config.profile === 'AUTO'
       ? startAutoControllerReader(send, { ...options, genericMapping: config.genericMapping, genericAxis: config.genericAxis })
-      : startControllerReader(config.profile === 'FPS EMP Gen2' ? config.profile : 'PHOENIXWAN', send, { ...options, lr2ModeEnabled: config.lr2ModeEnabled });
+      : startControllerReader(DEDICATED_PROFILES.includes(config.profile) ? config.profile : 'PHOENIXWAN', send, { ...options, lr2ModeEnabled: config.lr2ModeEnabled });
     if (!reader) return;
     usedPaths.push(reader.path);
     readers.push({ side, kind: 'hid', reader });
