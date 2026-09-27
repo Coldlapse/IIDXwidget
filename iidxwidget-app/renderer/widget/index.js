@@ -24,8 +24,8 @@ let uptimeBase = null; // { activeMs, receivedAt }
 function applyStats(stats) {
   if (!stats) return;
   document.getElementById('session-display').textContent = `${stats.presses}`;
-  document.getElementById('kps-display').textContent = `${stats.kps} KPS`;
-  document.getElementById('release-display').textContent = stats.releaseAvg === null ? '00 ms' : `${stats.releaseAvg} ms`;
+  document.getElementById('kps-display').textContent = `${stats.kps}`;
+  document.getElementById('release-display').textContent = stats.releaseAvg === null ? '--' : `${stats.releaseAvg}`;
   document.querySelectorAll('.key').forEach(key => {
     const id = key.id.replace('button-', '');
     key.querySelector('.release-label').textContent = stats.perButton[id] ?? 99;
@@ -158,17 +158,13 @@ function handleData(data) {
   }
 }
 
+// 키보드 입력이면 계기판 맨 앞 칸에 'INPUT KB'를 보여준다
 function applyKBIndicatorPosition(position) {
   const kbIndicator = document.querySelector('.kb-indicator');
   if (!kbIndicator) return;
-
-  if (window.currentProfile !== 'KB' || position === 'none') {
-    kbIndicator.style.display = 'none';
-    return;
-  }
-
-  kbIndicator.style.display = 'flex';
-  kbIndicator.style.top = (position === 'top') ? '-26.8%' : '102%';
+  const show = window.currentProfile === 'KB' && position !== 'none';
+  kbIndicator.style.display = show ? 'flex' : 'none';
+  kbIndicator.parentElement.classList.toggle('with-kb', show);
 }
 
 const WS_RECONNECT_DELAY = 1000;
@@ -252,11 +248,15 @@ function scheduleReconnect() {
   }, WS_RECONNECT_DELAY);
 }
 
+// 계기판을 본체 아래(bottom) 또는 위(top)에 붙인다. 붙은 쪽 모서리는 본체와 이어지도록 각지게 한다
 function applyReleaseContainerSettings(infoPosition) {
+  const container = document.querySelector('.container');
   const releaseContainer = document.querySelector('.release-container');
-  if (!releaseContainer) return;
+  if (!container || !releaseContainer) return;
   releaseContainer.style.display = (infoPosition === 'none') ? 'none' : 'flex';
-  releaseContainer.style.top = (infoPosition === 'top') ? '-73.7%' : '102%';
+  releaseContainer.classList.toggle('at-top', infoPosition === 'top');
+  container.classList.toggle('dash-bottom', infoPosition === 'bottom');
+  container.classList.toggle('dash-top', infoPosition === 'top');
 }
 
 function applyButtonLayout(layout) {
@@ -292,6 +292,7 @@ function applySettings(settings) {
     applyDiscImage(settings);
     applyPromoBox(settings);
     applyCustomColors(settings.widget.colors, settings.widget.transparentContainer);
+    document.body.classList.toggle('transparent-container', !!settings.widget.transparentContainer);
     cnThresholdMs = settings.widget.cnThresholdMs || 200;
     // 건반 위 릴리즈 숫자 표시 (설정에 없으면 표시)
     document.body.classList.toggle('hide-key-release', settings.widget.showKeyRelease === false);
@@ -361,19 +362,12 @@ function applyPromoBox(settings) {
   const promoTop = document.getElementById('promo-top');
   const promoBottom = document.getElementById('promo-bottom');
 
-  if (show) {
-    if (position === 'top') {
-      promoBottom.style.display = 'block';  // 아래쪽에 보여줌
-      promoTop.style.display = 'none';
-    } else if (position === 'bottom') {
-      promoTop.style.display = 'block';     // 위쪽에 보여줌
-      promoBottom.style.display = 'none';
-    } else {
-      promoTop.style.display = 'none';
-      promoBottom.style.display = 'none';
-    }
-  } else {
-    promoTop.style.display = 'none';
-    promoBottom.style.display = 'none';
-  }
+  // 홍보 줄은 계기판 반대쪽에 붙는다 (계기판이 없으면 표시하지 않음, 기존과 같음)
+  const top = show && position === 'bottom';
+  const bottom = show && position === 'top';
+  promoTop.style.display = top ? 'flex' : 'none';
+  promoBottom.style.display = bottom ? 'flex' : 'none';
+  const container = document.querySelector('.container');
+  container.classList.toggle('promo-top', top);
+  container.classList.toggle('promo-bottom', bottom);
 }

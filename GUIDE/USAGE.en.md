@@ -13,7 +13,7 @@ The app window and the OBS widget **always show the same screen and the same num
 
 - **Turntable** : The disc spins with your turntable. You can use your own image.
 - **Keys** : Light up while pressed. When held long enough to be a long note (CN), the key switches to the long note color. The number above each key is that key's average release (ms).
-- **Session info**
+- **Session info (dashboard)** : The panel attached below (or above) the widget body. With the Keyboard profile, **INPUT KB** is shown first.
   - **Session** : Presses in this session
   - **Uptime** : Time since the app started
   - **Release** : Average release (ms) across all keys. Long-note presses are left out (same as [Rag](https://rag-oji.com/dakendisplay/)'s widget)
@@ -115,7 +115,7 @@ Only change these if another program already uses the port. The [connection guid
 
 | Setting | Meaning |
 |---|---|
-| **Session information position** | Put session info above or below the widget, or hide it. |
+| **Session information position** | Attach the session dashboard below or above the widget body, or hide it. The promotion strip goes on the opposite side. |
 | **Button layout** | 1P (turntable on the left) / 2P (turntable on the right) |
 
 ### Release sampling rules
@@ -139,7 +139,7 @@ When you save a new sample count or long note threshold, this session is recalcu
 | **Show each button's release value above it** | Shows or hides the release number above each key. On by default. |
 | **Turntable image mode** | **Single image** : one image spins with the turntable. **Two images** : a different image for each spin direction. |
 | **Custom turntable image** | The image used for the disc. **Delete** goes back to the default disc. |
-| **Colors** | Widget background, turntable background, idle/active colors, text color, and the color of a key held as a long note. |
+| **Colors** | Widget background, turntable background (also used for the dashboard and promotion strip), idle/active colors (the idle color also draws the dashboard dividers), text color, and the color of a key held as a long note. |
 
 ---
 

@@ -1,0 +1,4 @@
+/* 위젯 계기판 숫자·라벨 글꼴 (Chakra Petch, SIL Open Font License 1.1, fonts/OFL-ChakraPetch.txt). 오프라인 OBS에서도 보이도록 앱에 넣어 둔다 */
+@font-face { font-family: 'Chakra Petch'; font-style: normal; font-display: swap; font-weight: 500; src: url(./fonts/chakra-petch-latin-500-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Chakra Petch'; font-style: normal; font-display: swap; font-weight: 600; src: url(./fonts/chakra-petch-latin-600-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Chakra Petch'; font-style: normal; font-display: swap; font-weight: 700; src: url(./fonts/chakra-petch-latin-700-normal.woff2) format('woff2'); }

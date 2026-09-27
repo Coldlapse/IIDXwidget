@@ -5,6 +5,7 @@
   --font-color: #cccccc;
   --active-color: #ffffff;
   --ln-color: #ffb74d;
+  --dash-font: 'Chakra Petch', 'Nanum Gothic', sans-serif;
 }
 
 body {
@@ -149,18 +150,14 @@ body {
 }
 
 .release-label {
-  font-size: 18px; /* 숫자만 보여줄거니까 조금 더 크고 선명하게 */
+  font-family: var(--dash-font);
+  font-size: 17px;
+  font-weight: 600;
   color: var(--font-color);
+  font-variant-numeric: tabular-nums;
   pointer-events: none;
-  text-shadow:
-  -1px -1px 0 #000,
-   0px -1px 0 #000,
-   1px -1px 0 #000,
-  -1px  0px 0 #000,
-   1px  0px 0 #000,
-  -1px  1px 0 #000,
-   0px  1px 0 #000,
-   1px  1px 0 #000;
+  /* 밝은 입력 색 위에서도 읽히도록 얇은 테두리 그림자 */
+  text-shadow: 0 0 2px #000, 0 0 2px #000, 0 1px 1px #000;
 }
 
 .key.active {
@@ -172,94 +169,120 @@ body {
   background-color: var(--ln-color);
 }
 
-/* 🔥 release-container */
+/* ─── 계기판 (세션 정보) ─────────────────────────────
+   본체 아래(기본) 또는 위에 딱 붙는 패널. 기존 정보 박스가 차지하던 영역 안에 들어간다.
+   색은 커스터마이징 값을 그대로 쓴다: 배경 = 스크래치 배경색, 글자 = 폰트 색, 구분선 = 버튼 입력 전 색 */
 .release-container {
   position: absolute;
-  top: 102%; /* ✅ 메인 컨테이너 아래쪽 적당히 */
-  right: 0%;
-  transform: none;
-  background: var(--background-color);
-  padding: 15px 15px;
-  border-radius: 15px;
-  box-sizing: border-box;
+  left: 0;
+  right: 0;
+  top: 100%;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: flex-end;
-  width: 195px; /* release 박스 가로 고정 (원하면 수정 가능) */
+  align-items: stretch;
+  height: 78px;
+  padding: 0 8px;
+  box-sizing: border-box;
+  background: var(--background-color);
+  border-top: 1px solid color-mix(in srgb, var(--accent-color) 70%, transparent);
+  border-radius: 0 0 20px 20px;
+  font-family: var(--dash-font);
+}
+.release-container.at-top {
+  top: auto;
+  bottom: 100%;
+  border-top: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent-color) 70%, transparent);
+  border-radius: 20px 20px 0 0;
 }
 
-.kb-indicator {
-  position: absolute;
-  top: 102%; /* ✅ 메인 컨테이너 아래쪽 적당히 */
-  left: 0%;
-  transform: none;
-  background: var(--background-color);
-  padding: 15px 15px;
-  border-radius: 15px;
-  box-sizing: border-box;
+.dash-cell {
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
   align-items: center;
-  width: 185px; /* release 박스 가로 고정 (원하면 수정 가능) */
+  justify-content: center;
+  gap: 4px;
+  position: relative;
+}
+/* 칸 사이 짧은 세로 구분선 */
+.dash-cell + .dash-cell::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 22%;
+  bottom: 22%;
+  width: 1px;
+  background: color-mix(in srgb, var(--accent-color) 55%, transparent);
 }
 
+.dash-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--font-color) 55%, transparent);
+  padding-left: 0.22em; /* 자간 때문에 오른쪽으로 쏠리는 것 보정 */
+}
 
-.release-container > div:not(.release-line) {
-  font-size: 22px;
+.dash-value {
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1;
   color: var(--font-color);
-  text-align: right;
-  white-space: nowrap;     /* ✅ 줄바꿈 방지 */
-  overflow: hidden;        /* ✅ 넘치는 텍스트 숨김 */
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.dash-value small {
+  font-size: 13px;
+  font-weight: 500;
+  margin-left: 3px;
+  color: color-mix(in srgb, var(--font-color) 60%, transparent);
 }
 
-.kb-indicator > div {
-  font-size: 22px;
-  color: var(--font-color);
-  text-align: left;
+/* 입력 방식 칸이 숨어 있으면 첫 칸(SESSION) 왼쪽 구분선도 숨긴다 */
+.release-container:not(.with-kb) .kb-indicator + .dash-cell::before { display: none; }
+
+/* 입력 방식 칸 (키보드일 때만): 좁게, 강조색 */
+.kb-indicator { flex: 0.7 1 0; display: none; }
+.kb-indicator .dash-value { color: var(--active-color); font-size: 22px; }
+
+/* 계기판·홍보 줄이 붙은 쪽의 본체 모서리는 각지게 해서 한 덩어리로 보이게 한다 */
+.container.dash-bottom, .container.promo-bottom { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.container.dash-top, .container.promo-top { border-top-left-radius: 0; border-top-right-radius: 0; }
+
+/* 본체 배경을 투명하게 하면 계기판·홍보 줄이 따로 떠 보이므로 네 모서리를 모두 둥글게, 구분선 없이 */
+.transparent-container .release-container,
+.transparent-container .promo-box {
+  border: none;
+  border-radius: 16px;
 }
 
+/* 홍보 줄: 계기판 반대쪽에 붙는 얇은 띠 */
 .promo-box {
   position: absolute;
-  width: 100%;
-  height: 40px; /* KB indicator와 높이 맞춤 */
-  background-color: var(--background-color);
-  color: var(--font-color);
-  font-size: 18px;
-  line-height: 40px;
-  text-align: center;
-  border-radius: 10px;
-  font-family: 'Nanum Gothic', sans-serif;
+  left: 0;
+  right: 0;
+  height: 30px;
   display: none;
+  align-items: center;
+  justify-content: center;
+  background: var(--background-color);
+  color: color-mix(in srgb, var(--font-color) 75%, transparent);
+  font-family: var(--dash-font);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
 }
-
 #promo-top {
-  top: -19.2%; /* 컨테이너 위쪽 바깥으로 */
+  bottom: 100%;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent-color) 70%, transparent);
+  border-radius: 20px 20px 0 0;
 }
-
 #promo-bottom {
-  top: 102%;  /* 기존에 쓰던 위치 재활용 */
-}
-
-.release-line {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.label {
-  text-align: left;
-  flex: 1;
-  font-size: 22px;
-  color: var(--font-color);
-}
-
-.value {
-  text-align: right;
-  flex: 1;
-  font-size: 22px;
-  color: var(--font-color);
+  top: 100%;
+  border-top: 1px solid color-mix(in srgb, var(--accent-color) 70%, transparent);
+  border-radius: 0 0 20px 20px;
 }
 
 /* 설정에서 "키 위에 release 수치 표시"를 끈 경우 */
