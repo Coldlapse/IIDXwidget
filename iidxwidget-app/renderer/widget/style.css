@@ -418,11 +418,20 @@ body {
 .gauge-on .dash-kps.redline .dash-value { animation: redline-value 0.28s linear infinite; }
 
 /* ─── DP: 1P 본체 + 검정 여백 + 2P 본체 ─────────────────────
-   두 본체는 가운데 쪽 모서리를 각지게 해서 검정 여백과 한 덩어리로 이어 보이게 한다.
+   두 본체는 가운데 쪽 모서리를 각지게 해서 가운데 여백(본체 배경색)과 한 덩어리로 이어 보이게 한다.
    계기판·홍보 줄은 전체 폭이 아니라 가운데에 붙는 사다리꼴 (자동차 계기판처럼) */
 .dp-gap {
   width: 40px;
-  background: #000;
+  background: var(--container-background-color); /* 본체 배경색과 같게 (투명이면 여백도 투명) */
+}
+/* DP 키보드 표시: 두 본체 사이 가운데 위 (싱글의 건반 위 표시와 같은 높이) */
+.dp-kb-indicator {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  bottom: auto;
+  transform: translateX(-50%);
+  z-index: 1;
 }
 .stage.dp .container[data-side="1"] { border-top-right-radius: 0; border-bottom-right-radius: 0; }
 .stage.dp .container[data-side="2"] { border-top-left-radius: 0; border-bottom-left-radius: 0; }

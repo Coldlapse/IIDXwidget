@@ -256,13 +256,19 @@ function handleData(data) {
 }
 
 // 키보드 입력인 사이드는 건반 위에 'INPUT · KB'를 작게 보여준다 (세션 정보를 숨긴 경우는 함께 숨김, 기존과 같음)
+// DP에서는 두 본체 사이 가운데에 하나만 보여준다 (둘 다 키보드면 INPUT · KB, 한쪽이면 1P · KB / 2P · KB)
 function applyKBIndicators(settings) {
   const position = settings?.widget?.infoPosition || 'bottom';
-  const profiles = [settings?.controllerProfile, settings?.player2?.controllerProfile];
+  const isDP = settings?.widget?.buttonLayout === 'DP';
+  const kb = [settings?.controllerProfile === 'KB', isDP && settings?.player2?.controllerProfile === 'KB'];
   sides.forEach((side, i) => {
-    side.showKB(profiles[i] === 'KB' && position !== 'none');
-    side.discUpdateInterval = profiles[i] === 'KB' ? 5 : 20;
+    side.showKB(!isDP && kb[i] && position !== 'none');
+    side.discUpdateInterval = kb[i] ? 5 : 20;
   });
+  const center = document.querySelector('.dp-kb-indicator');
+  const show = isDP && (kb[0] || kb[1]) && position !== 'none';
+  center.style.display = show ? 'flex' : 'none';
+  center.querySelector('[data-role="dp-kb-text"]').textContent = kb[0] && kb[1] ? 'INPUT · KB' : kb[0] ? '1P · KB' : '2P · KB';
 }
 
 const WS_RECONNECT_DELAY = 1000;

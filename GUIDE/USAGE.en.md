@@ -61,7 +61,7 @@ Press **Save** to apply changes. Saved changes show up in the OBS widget right a
 | **Button layout** | **1P** (turntable on the left) / **2P** (turntable on the right) / **DP** (1P + 2P) |
 
 - Choosing **DP** adds a **2P controller** section so 1P and 2P each get their own controller. The two sides can use different profiles (e.g. PHOENIXWAN on 1P and FPS on 2P), and one side can be a keyboard.
-- The widget shows the 1P and 2P bodies joined by a black 40px gap, with the session dashboard as a trapezoid in the middle. Presses, KPS and average release combine both sides.
+- The widget shows the 1P and 2P bodies joined by a 40px gap in the widget background color, with the session dashboard as a trapezoid in the middle. If a side uses the keyboard, **1P · KB**, **2P · KB** (or **INPUT · KB** for both) appears at the top between the two bodies. Presses, KPS and average release combine both sides.
 - The DP widget is 1000px wide, so set the OBS browser source to **1320×600**. The app window also gets wider, only while DP is selected.
 - The chatter window shows a second keyboard for 2P below 1P and compares each side separately.
 
