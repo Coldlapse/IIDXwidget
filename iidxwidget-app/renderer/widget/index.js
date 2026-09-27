@@ -32,12 +32,31 @@ function applyStats(stats) {
   });
   uptimeBase = { activeMs: stats.activeMs, receivedAt: performance.now() };
   renderUptime();
+  fitDashValues();
+}
+
+document.fonts?.ready.then(() => fitDashValues());
+
+// 계기판 숫자가 칸보다 길면(세션 1000만 이상, 업타임 100시간 이상 등) 칸에 맞게 글자를 줄인다
+function fitDashValues() {
+  document.querySelectorAll('.dash-value').forEach(value => {
+    value.style.fontSize = '';
+    const room = value.parentElement.clientWidth - 8;
+    if (value.scrollWidth > room) {
+      const size = parseFloat(getComputedStyle(value).fontSize);
+      value.style.fontSize = `${Math.max(14, Math.floor(size * room / value.scrollWidth))}px`;
+    }
+  });
 }
 
 function renderUptime() {
   if (!uptimeBase) return;
   const ms = uptimeBase.activeMs + (performance.now() - uptimeBase.receivedAt);
-  document.getElementById('uptime-display').textContent = formatUptime(Math.floor(ms / 1000));
+  const display = document.getElementById('uptime-display');
+  const text = formatUptime(Math.floor(ms / 1000));
+  const lengthChanged = display.textContent.length !== text.length;
+  display.textContent = text;
+  if (lengthChanged) fitDashValues(); // 99:59:59 → 100:00:00처럼 자릿수가 늘 때
 }
 
 function stopUptime() {
@@ -158,13 +177,11 @@ function handleData(data) {
   }
 }
 
-// 키보드 입력이면 계기판 맨 앞 칸에 'INPUT KB'를 보여준다
+// 키보드 입력이면 건반 위에 'INPUT · KB'를 작게 보여준다 (세션 정보를 숨긴 경우는 함께 숨김, 기존과 같음)
 function applyKBIndicatorPosition(position) {
   const kbIndicator = document.querySelector('.kb-indicator');
   if (!kbIndicator) return;
-  const show = window.currentProfile === 'KB' && position !== 'none';
-  kbIndicator.style.display = show ? 'flex' : 'none';
-  kbIndicator.parentElement.classList.toggle('with-kb', show);
+  kbIndicator.style.display = (window.currentProfile === 'KB' && position !== 'none') ? 'flex' : 'none';
 }
 
 const WS_RECONNECT_DELAY = 1000;

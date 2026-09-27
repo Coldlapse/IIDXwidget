@@ -240,12 +240,38 @@ body {
   color: color-mix(in srgb, var(--font-color) 60%, transparent);
 }
 
-/* 입력 방식 칸이 숨어 있으면 첫 칸(SESSION) 왼쪽 구분선도 숨긴다 */
-.release-container:not(.with-kb) .kb-indicator + .dash-cell::before { display: none; }
+/* 칸 너비: 내용 길이에 맞게. KPS는 최대 두 자리라 좁게, 업타임(100시간 이상 9자)·세션(7자리)은 넓게 */
+.dash-session { flex-grow: 1.1; }
+.dash-uptime { flex-grow: 1.2; }
+.dash-release { flex-grow: 0.9; }
+.dash-kps { flex-grow: 0.55; }
 
-/* 입력 방식 칸 (키보드일 때만): 좁게, 강조색 */
-.kb-indicator { flex: 0.7 1 0; display: none; }
-.kb-indicator .dash-value { color: var(--active-color); font-size: 22px; }
+/* 키보드 입력 표시: 건반 묶음 위 빈 공간 가운데 (건반 배치에는 영향 없음) */
+.button-grid { position: relative; }
+.kb-indicator {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 14px);
+  transform: translateX(-50%);
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent-color) 80%, transparent);
+  color: color-mix(in srgb, var(--font-color) 80%, transparent);
+  font-family: var(--dash-font);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  white-space: nowrap;
+}
+.kb-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--active-color);
+}
 
 /* 계기판·홍보 줄이 붙은 쪽의 본체 모서리는 각지게 해서 한 덩어리로 보이게 한다 */
 .container.dash-bottom, .container.promo-bottom { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }

@@ -13,7 +13,7 @@ The app window and the OBS widget **always show the same screen and the same num
 
 - **Turntable** : The disc spins with your turntable. You can use your own image.
 - **Keys** : Light up while pressed. When held long enough to be a long note (CN), the key switches to the long note color. The number above each key is that key's average release (ms).
-- **Session info (dashboard)** : The panel attached below (or above) the widget body. With the Keyboard profile, **INPUT KB** is shown first.
+- **Session info (dashboard)** : The panel attached below (or above) the widget body. With the Keyboard profile, a small **INPUT · KB** tag appears above the keys.
   - **Session** : Presses in this session
   - **Uptime** : Time since the app started
   - **Release** : Average release (ms) across all keys. Long-note presses are left out (same as [Rag](https://rag-oji.com/dakendisplay/)'s widget)
