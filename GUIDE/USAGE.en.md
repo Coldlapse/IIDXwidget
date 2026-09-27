@@ -89,7 +89,7 @@ Only change these if another program already uses the port. The [connection guid
 | **Session information position** | Put session info above or below the widget, or hide it. |
 | **Button layout** | 1P (turntable on the left) / 2P (turntable on the right) |
 
-### Release and chatter
+### Release sampling rules
 
 Release is calculated with the same rules as [Rag](https://rag-oji.com/dakendisplay/)'s widget. See the [RELEASE guide](RELEASE.en.md) for details.
 
@@ -107,7 +107,7 @@ When you save a new sample count or long note threshold, this session is recalcu
 | Setting | Meaning |
 |---|---|
 | **Transparent container background** | Makes the background behind the widget transparent so only the widget shows on stream. |
-| **Show release value on each key** | Shows or hides the release number above each key. On by default. |
+| **Show each button's release value above it** | Shows or hides the release number above each key. On by default. |
 | **Turntable image mode** | **Single image** : one image spins with the turntable. **Two images** : a different image for each spin direction. |
 | **Custom turntable image** | The image used for the disc. **Delete** goes back to the default disc. |
 | **Colors** | Widget background, turntable background, idle/active colors, text color, and the color of a key held as a long note. |
