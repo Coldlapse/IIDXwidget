@@ -389,3 +389,22 @@ body {
 }
 .connection-box strong { font-size: 28px; }
 .connection-box span { font-size: 20px; color: #bbb; }
+
+/* 레드라인: 게이지 끝값에 닿아 있는 동안 채움 끝이 살짝 떨리고 숫자가 미세하게 흔들린다 (과하지 않게) */
+@keyframes redline-needle {
+  0%   { stroke-dashoffset: 0; }
+  18%  { stroke-dashoffset: 1.4; }
+  34%  { stroke-dashoffset: 0.3; }
+  52%  { stroke-dashoffset: 1.9; }
+  68%  { stroke-dashoffset: 0.6; }
+  84%  { stroke-dashoffset: 1.5; }
+  100% { stroke-dashoffset: 0; }
+}
+@keyframes redline-value {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(0.5px, -0.3px); }
+  50% { transform: translate(-0.4px, 0.4px); }
+  75% { transform: translate(0.3px, 0.2px); }
+}
+.gauge-on .dash-kps.redline .gauge-fill { animation: redline-needle 0.42s linear infinite; }
+.gauge-on .dash-kps.redline .dash-value { animation: redline-value 0.28s linear infinite; }

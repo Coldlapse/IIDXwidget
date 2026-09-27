@@ -81,6 +81,8 @@ function renderKpsGauge(kps) {
   const { fraction, heat } = kpsGauge(kps, kpsGaugePreset);
   const cell = document.querySelector('.dash-kps');
   cell.style.setProperty('--heat', heat.toFixed(3));
+  // 끝값에 닿으면 게이지 끝과 숫자가 살짝 떨린다 (레드라인)
+  cell.classList.toggle('redline', heat >= 1);
   document.getElementById('kps-gauge-fill').style.strokeDashoffset = (100 - fraction * 100).toFixed(2);
 }
 

@@ -17,7 +17,7 @@ The app window and the OBS widget **always show the same screen and the same num
   - **Session** : Presses in this session
   - **Uptime** : Time since the app started
   - **Release** : Average release (ms) across all keys. Long-note presses are left out (same as [Rag](https://rag-oji.com/dakendisplay/)'s widget)
-  - **KPS** : Presses in the last second. Shown as a **speedometer gauge** by default. The first 70% of the gauge is the normal range and the last 30% is the red zone; in the red zone the fill heats up from orange to red and starts to glow. Past the end of the gauge the needle stops, but the number keeps showing the real value.
+  - **KPS** : Presses in the last second. Shown as a **speedometer gauge** by default. The first 70% of the gauge is the normal range and the last 30% is the red zone; in the red zone the fill heats up from orange to red and starts to glow. At the end of the gauge, the fill and the number tremble slightly (redline); past the end the gauge stays full, but the number keeps showing the real value.
 
 > 📌 A **session** runs from when you start the app until you quit it. Every number starts at 0 when the app starts and is gone when you quit.
 
