@@ -22,7 +22,7 @@ const translations = {
         'rhombus9 : KB 모드 특수키 입력 매핑\n' +
         '멘탈바사삭 : FPS EMP 2세대 컨트롤러 지원\n' +
         'MellDa1024 : 스크래치 회전 방향별 이미지\n' +
-        'Ryochobi : 한국어/영어 지원, 그 외 컨트롤러 지원, 위젯 배경 설정'
+        'Ryochobi : 한국어/영어 지원, 기타 컨트롤러 지원, 위젯 배경 설정'
     },
     records: {
       title: '세션 기록',
@@ -91,6 +91,8 @@ const translations = {
     },
     controller: {
       notFound: '{profile} 장치를 찾을 수 없습니다.',
+      otherNotFound: '기타 컨트롤러를 찾을 수 없습니다. 컨트롤러가 연결되어 있는지 확인해 주세요.',
+      otherOnlyOfficial: '연결된 컨트롤러가 PHOENIXWAN+ / FPS EMP Gen2입니다. 기타 컨트롤러 대신 해당 프로필을 골라 주세요.',
       connecting: '{profile} 연결 시도',
       connected: '{profile} 연결 성공: {device}',
       openFailed: '{profile} 장치 열기 실패: {device}',
@@ -107,7 +109,7 @@ const translations = {
       autoLaunch: 'Windows 시작 시 자동 실행',
       promo: '위젯 홍보 박스 표시',
       controllerProfile: '컨트롤러 프로필',
-      auto: '그 외 컨트롤러',
+      auto: '기타 컨트롤러 (수동 매핑)',
       keyboard: 'BM으로 하라고 만든 게임을 꾸역꾸역 키보드로 하는 멍청이',
       account: 'beatmania.app 계정',
       apiPlaceholder: 'API 토큰 붙여 넣기',
@@ -131,10 +133,10 @@ const translations = {
       autoUploadOnQuit: '종료할 때 남은 타건 기록 자동 전송',
       autoUploadHint: 'beatmania.app 토큰이 있어야 동작합니다.',
       keyboardMapping: '키보드 매핑 (저는 KB를 하는 바보입니다)',
-      genericMapping: '그 외 컨트롤러 버튼 매핑',
+      genericMapping: '기타 컨트롤러 버튼 매핑',
       genericHelp: '각 칸을 클릭한 다음 원하는 컨트롤러 버튼을 누르세요. 칸을 비우면 매핑이 해제됩니다. 마지막에 저장을 누르세요.',
       mappingReady: '매핑할 컨트롤러: {device}',
-      mappingDedicated: '{device}는 전용 컨트롤러라 매핑 없이 인식됩니다.',
+      mappingOfficialOnly: '연결된 컨트롤러가 공식 지원 컨트롤러(PHOENIXWAN+ / FPS EMP Gen2)입니다. 컨트롤러 프로필에서 해당 프로필을 골라 주세요.',
       mappingNoDevice: '연결된 컨트롤러를 찾지 못했습니다. 컨트롤러를 연결한 뒤 프로필을 다시 선택해 주세요.',
       turntableAxis: '턴테이블 (축)',
       learnAxis: '학습',
@@ -323,6 +325,8 @@ const translations = {
     },
     controller: {
       notFound: 'Could not find the {profile} device.',
+      otherNotFound: 'No other controller found. Check that your controller is connected.',
+      otherOnlyOfficial: 'The connected controller is a PHOENIXWAN+ / FPS EMP Gen2. Choose its profile instead of Other controller.',
       connecting: 'Connecting to {profile}',
       connected: '{profile} connected: {device}',
       openFailed: 'Failed to open the {profile} device: {device}',
@@ -339,7 +343,7 @@ const translations = {
       autoLaunch: 'Launch automatically with Windows',
       promo: 'Show widget promotion box',
       controllerProfile: 'Controller Profile',
-      auto: 'Other controllers',
+      auto: 'Other controller (manual mapping)',
       keyboard: 'Keyboard',
       account: 'beatmania.app account',
       apiPlaceholder: 'Paste your API token',
@@ -366,7 +370,7 @@ const translations = {
       genericMapping: 'Other controller button mapping',
       genericHelp: 'Click a field, then press the controller button to map. Clear a field to unmap it. Press Save when finished.',
       mappingReady: 'Controller to map: {device}',
-      mappingDedicated: '{device} is a dedicated controller and works without mapping.',
+      mappingOfficialOnly: 'The connected controller is an officially supported one (PHOENIXWAN+ / FPS EMP Gen2). Choose its profile under Controller Profile.',
       mappingNoDevice: 'No controller found. Connect your controller and select the profile again.',
       turntableAxis: 'Turntable (axis)',
       learnAxis: 'Learn',

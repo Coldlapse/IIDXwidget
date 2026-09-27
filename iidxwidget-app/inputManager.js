@@ -1,5 +1,5 @@
 // 컨트롤러 프로필에 맞는 입력 리더(HID/키보드)를 켜고 끈다.
-const { startControllerReader, startAutoControllerReader, findAxisByte } = require('./controller/controllerReader');
+const { startControllerReader, startAutoControllerReader, hasOfficiallySupportedController, findAxisByte } = require('./controller/controllerReader');
 const { startGlobalKeyboardReader } = require('./controller/keyboardReader');
 const { DEFAULT_SETTINGS } = require('./settingsStore');
 
@@ -33,7 +33,6 @@ function createInputManager({ dispatch, logger }) {
       hidReader = startAutoControllerReader(dispatch, {
         genericMapping: settings.keyMapping?.GENERIC || {},
         genericAxis: settings.keyMapping?.GENERIC_AXIS ?? null,
-        lr2ModeEnabled: settings.lr2ModeEnabled,
         logger
       });
       return;
@@ -44,8 +43,8 @@ function createInputManager({ dispatch, logger }) {
     hidReader = startControllerReader(dedicated, dispatch, { lr2ModeEnabled: settings.lr2ModeEnabled, logger });
   }
 
-  // 설정 창에서 AUTO 매핑을 배우는 동안, 저장된 프로필과 상관없이 일반 컨트롤러를 읽는다.
-  // 반환값 status: 'generic' (매핑 가능), 'dedicated' (주작콘/FPS라 매핑 불필요), 'none' (장치 없음)
+  // 설정 창에서 기타 컨트롤러 매핑을 배우는 동안, 저장된 프로필과 상관없이 일반 컨트롤러를 읽는다.
+  // 반환값 status: 'generic' (매핑 가능), 'officialOnly' (주작콘/FPS만 있음 → 전용 프로필 안내), 'none' (장치 없음)
   function startMappingSession(onEvents) {
     stopMappingSession();
     if (hidReader?.parser === 'GENERIC') {
@@ -53,12 +52,7 @@ function createInputManager({ dispatch, logger }) {
       return { status: 'generic', device: hidReader.deviceName, shared: true };
     }
     const reader = startAutoControllerReader(onEvents, { genericMapping: {}, logger });
-    if (!reader) return { status: 'none' };
-    if (reader.parser !== 'GENERIC') {
-      const device = reader.deviceName;
-      reader.close();
-      return { status: 'dedicated', device };
-    }
+    if (!reader) return { status: hasOfficiallySupportedController() ? 'officialOnly' : 'none' };
     mappingReader = reader;
     return { status: 'generic', device: reader.deviceName };
   }

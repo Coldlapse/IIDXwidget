@@ -57,7 +57,7 @@ Press **Save** to apply changes. Saved changes show up in the OBS widget right a
 ### Controller profiles
 
 - **PHOENIXWAN+ / FPS EMP Gen2** : Works as soon as you select it.
-- **Other controllers** : For other controllers and DIY boards such as Arduino. A PHOENIXWAN or FPS is recognized without mapping; other boards are mapped by hand.
+- **Other controller (manual mapping)** : For controllers that are not officially supported and DIY boards such as Arduino. You map each button by hand. A PHOENIXWAN or FPS is not picked up by this profile; choose its own profile instead.
   - Click a field in the mapping table, then press the controller button. Clear a field to unmap it.
   - If your board reports the turntable as **buttons**, map them to 'Turntable clockwise / counterclockwise'.
   - If your board reports the turntable as an **axis**, press **Learn** next to 'Turntable (axis)' and spin the turntable for 2 seconds.

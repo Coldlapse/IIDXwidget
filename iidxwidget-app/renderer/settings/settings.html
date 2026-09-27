@@ -24,28 +24,11 @@
       </label><br>
       <label for="controllerProfile" data-i18n="settings.controllerProfile">컨트롤러 프로필</label>
       <select id="controllerProfile">
-        <option value="AUTO" data-i18n="settings.auto">그 외 컨트롤러</option>
+        <option value="AUTO" data-i18n="settings.auto">기타 컨트롤러 (수동 매핑)</option>
         <option value="PHOENIXWAN">PHOENIXWAN+</option>
         <option value="FPS EMP Gen2">FPS EMP Gen2</option>
         <option value="KB" data-i18n="settings.keyboard">BM으로 하라고 만든 게임을 꾸역꾸역 키보드로 하는 멍청이</option>
       </select>
-    </div>
-
-    <div class="setting-group">
-      <label for="apiToken" data-i18n="settings.account">beatmania.app 계정</label>
-      <p id="account-status" class="account-status"></p>
-      <div class="token-form">
-        <input type="password" id="apiToken" autocomplete="off" spellcheck="false" placeholder="API 토큰 붙여 넣기" data-i18n-placeholder="settings.apiPlaceholder" />
-        <button type="button" id="connect-token">연결</button>
-      </div>
-      <p id="token-message" class="token-message" aria-live="polite"></p>
-      <p class="account-links">
-        <a href="https://beatmania.app/account/token/" target="_blank" data-i18n="settings.viewTokenOnSite">사이트에서 토큰 보기</a>
-        <span id="profile-link-group" hidden> · <a id="profile-link" href="#" target="_blank" data-i18n="settings.myProfile">내 서열표 ↗</a></span>
-        <span id="disconnect-group" hidden> · <a href="#" id="disconnect-token" data-i18n="settings.disconnect">연결 해제</a></span>
-      </p>
-      <label><input type="checkbox" id="autoUploadOnQuit" /> <span data-i18n="settings.autoUploadOnQuit">종료할 때 남은 타건 기록 자동 전송</span></label>
-      <p class="mapping-help" data-i18n="settings.autoUploadHint">beatmania.app 토큰이 있어야 동작합니다.</p>
     </div>
 
     <div id="lr2-detect-row">
@@ -71,7 +54,7 @@
     </div>
 
     <div id="generic-mapping-container" class="setting-group" style="display: none;">
-      <label data-i18n="settings.genericMapping">그 외 컨트롤러 버튼 매핑</label>
+      <label data-i18n="settings.genericMapping">기타 컨트롤러 버튼 매핑</label>
       <p class="mapping-help" data-i18n="settings.genericHelp">각 칸을 클릭한 다음 원하는 컨트롤러 버튼을 누르세요. 칸을 비우면 매핑이 해제됩니다. 마지막에 저장을 누르세요.</p>
       <table id="generic-mapping-table">
         <tbody>
@@ -94,6 +77,23 @@
       </div>
       <p class="mapping-help" data-i18n="settings.axisHelp">턴테이블이 축으로 동작하는 기판이라면 '학습'을 누르고 2초 동안 턴테이블을 돌리세요.</p>
       <div id="mapping-status" aria-live="polite"></div>
+    </div>
+
+    <div class="setting-group">
+      <label for="apiToken" data-i18n="settings.account">beatmania.app 계정</label>
+      <p id="account-status" class="account-status"></p>
+      <div class="token-form">
+        <input type="password" id="apiToken" autocomplete="off" spellcheck="false" placeholder="API 토큰 붙여 넣기" data-i18n-placeholder="settings.apiPlaceholder" />
+        <button type="button" id="connect-token">연결</button>
+      </div>
+      <p id="token-message" class="token-message" aria-live="polite"></p>
+      <p class="account-links">
+        <a href="https://beatmania.app/account/token/" target="_blank" data-i18n="settings.viewTokenOnSite">사이트에서 토큰 보기</a>
+        <span id="profile-link-group" hidden> · <a id="profile-link" href="#" target="_blank" data-i18n="settings.myProfile">내 서열표 ↗</a></span>
+        <span id="disconnect-group" hidden> · <a href="#" id="disconnect-token" data-i18n="settings.disconnect">연결 해제</a></span>
+      </p>
+      <label><input type="checkbox" id="autoUploadOnQuit" /> <span data-i18n="settings.autoUploadOnQuit">종료할 때 남은 타건 기록 자동 전송</span></label>
+      <p class="mapping-help" data-i18n="settings.autoUploadHint">beatmania.app 토큰이 있어야 동작합니다.</p>
     </div>
 
     <div class="setting-group">

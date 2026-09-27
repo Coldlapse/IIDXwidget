@@ -107,8 +107,8 @@ $('save-button').addEventListener('click', async () => {
 function toggleKeyMappingUI(profile) {
   $('key-mapping-container').style.display = profile === 'KB' ? 'block' : 'none';
   $('generic-mapping-container').style.display = profile === 'AUTO' ? 'block' : 'none';
-  // AUTO도 주작콘/FPS를 잡으면 LR2 감지가 적용됨
-  $('lr2-detect-row').style.display = profile === 'KB' ? 'none' : 'block';
+  // LR2 모드 감지는 전용 프로필(주작콘)에서만 쓴다
+  $('lr2-detect-row').style.display = profile === 'PHOENIXWAN' || profile === 'FPS EMP Gen2' ? 'block' : 'none';
 }
 
 // ✅ 스크래치 이미지 모드 UI 토글 함수
@@ -223,7 +223,7 @@ async function startMappingSession() {
 function renderMappingSessionStatus() {
   if (!mappingSession || !window.i18n.ready) return;
   if (mappingSession.status === 'none') setMappingStatus(window.i18n.t('settings.mappingNoDevice'), { warning: true });
-  else if (mappingSession.status === 'dedicated') setMappingStatus(window.i18n.t('settings.mappingDedicated', { device: mappingSession.device }));
+  else if (mappingSession.status === 'officialOnly') setMappingStatus(window.i18n.t('settings.mappingOfficialOnly'), { warning: true });
   else setMappingStatus(window.i18n.t('settings.mappingReady', { device: mappingSession.device }));
 }
 

@@ -9,6 +9,8 @@ const LR2_DEACTIVATE_THRESHOLD = 3;
 
 const isPhoenix = d => d.vendorId === 0x1CCF && d.productId === 0x8048 && d.interface === 1;
 const isFps = d => d.vendorId === 0x1CCF && d.productId === 0x8048 && d.interface === 0 && d.usagePage === 1;
+// 공식 지원 컨트롤러(주작콘·FPS EMP 2세대)가 쓰는 USB 장치. 인터페이스와 상관없이 기타 컨트롤러에서는 고르지 않는다
+const isOfficiallySupported = d => d.vendorId === 0x1CCF && d.productId === 0x8048;
 
 // ─── 장치 찾기 ──────────────────────────────────────────────
 
@@ -21,17 +23,13 @@ function findExactDedicatedDevice(devices, profile) {
   });
 }
 
-// AUTO 모드: 전용 컨트롤러 → 이름으로 알아볼 수 있는 컨트롤러 → 아무 조이스틱/게임패드 순으로 찾음
+// 기타 컨트롤러(수동 매핑, 설정값 'AUTO'): 공식 지원하지 않는 컨트롤러만 찾는다.
+// 주작콘·FPS는 전용 프로필이 있으므로 여기서는 고르지 않는다.
+// 이름으로 알아볼 수 있는 IIDX 컨트롤러 → 아무 조이스틱/게임패드 순
 function findAutoController(devices) {
-  const usable = devices.filter(d => d.path);
+  const usable = devices.filter(d => d.path && !isOfficiallySupported(d));
 
-  const phoenix = usable.find(isPhoenix);
-  if (phoenix) return { device: phoenix, parser: 'PHOENIXWAN' };
-
-  const fps = usable.find(isFps);
-  if (fps) return { device: fps, parser: 'FPS_EMP' };
-
-  const terms = /phoenixwan|fps|emp|infinitas|inf&bms|iidx|beatmania|yuancon|gamo2/i;
+  const terms = /infinitas|inf&bms|iidx|beatmania|yuancon|gamo2/i;
   const isMouseOrKeyboard = d => d.usagePage === 1 && (d.usage === 2 || d.usage === 6);
   const named = usable.find(d => terms.test(`${d.product || ''} ${d.manufacturer || ''}`) && !isMouseOrKeyboard(d));
   if (named) return { device: named, parser: 'GENERIC' };
@@ -316,10 +314,16 @@ function startControllerReader(profile, callback, options = {}) {
   return openReader({ device, parser }, callback, { ...options, profile });
 }
 
+// 공식 지원 컨트롤러가 연결되어 있는지 (기타 컨트롤러로 못 찾았을 때 알맞은 프로필을 안내하려고)
+function hasOfficiallySupportedController(devices = getHID().devices()) {
+  return devices.some(d => d.path && isOfficiallySupported(d));
+}
+
 function startAutoControllerReader(callback, options = {}) {
-  const selection = findAutoController(getHID().devices());
+  const devices = getHID().devices();
+  const selection = findAutoController(devices);
   if (!selection) {
-    options.logger?.('error', 'notFound', { profile: 'AUTO' });
+    options.logger?.('error', hasOfficiallySupportedController(devices) ? 'otherOnlyOfficial' : 'otherNotFound');
     return null;
   }
   return openReader(selection, callback, { ...options, profile: 'AUTO' });
@@ -330,6 +334,7 @@ module.exports = {
   startAutoControllerReader,
   findExactDedicatedDevice,
   findAutoController,
+  hasOfficiallySupportedController,
   describeDevice,
   createGenericParserState,
   findAxisByte,

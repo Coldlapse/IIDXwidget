@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { findExactDedicatedDevice, findAutoController, parseGenericControllerData, parseControllerData, createDedicatedParserState } = require('../controller/controllerReader');
+const { findExactDedicatedDevice, findAutoController, hasOfficiallySupportedController, parseGenericControllerData, parseControllerData, createDedicatedParserState } = require('../controller/controllerReader');
 const phoenix = { path: 'phoenix', vendorId: 0x1CCF, productId: 0x8048, interface: 1, usagePage: 1 };
 const fps = { path: 'fps', vendorId: 0x1CCF, productId: 0x8048, interface: 0, usagePage: 1 };
 const arduino = { path: 'arduino', vendorId: 0x2341, productId: 0x8036, manufacturer: 'Arduino LLC', product: 'Arduino Leonardo', interface: 2, usagePage: 1, usage: 4 };
@@ -7,8 +7,13 @@ const keyboard = { path: 'keyboard', usagePage: 1, usage: 6 };
 assert.equal(findAutoController([arduino]).device, arduino);
 assert.equal(findExactDedicatedDevice([arduino], 'PHOENIXWAN'), undefined);
 assert.equal(findExactDedicatedDevice([arduino], 'FPS EMP Gen2'), undefined);
-assert.equal(findAutoController([arduino, phoenix]).device, phoenix);
-assert.equal(findAutoController([arduino, fps]).device, fps);
+// 기타 컨트롤러: 공식 지원 컨트롤러(주작콘·FPS)는 고르지 않는다
+assert.equal(findAutoController([phoenix, arduino]).device, arduino);
+assert.equal(findAutoController([fps, arduino]).device, arduino);
+assert.equal(findAutoController([phoenix]), null);
+assert.equal(findAutoController([{ ...phoenix, interface: 0, usagePage: 1, usage: 4 }]), null); // 같은 장치의 다른 인터페이스도 제외
+assert.equal(hasOfficiallySupportedController([keyboard, phoenix]), true);
+assert.equal(hasOfficiallySupportedController([keyboard, arduino]), false);
 assert.equal(findAutoController([keyboard]), null);
 const neutral = Buffer.from([6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
 const button1 = Buffer.from([6,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
