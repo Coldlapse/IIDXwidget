@@ -86,12 +86,6 @@ api.onLanguageChanged(language => {
   if (next !== current.file) openGuide(next);
 });
 
-const params = new URLSearchParams(location.search);
-// 앱이 스스로 띄운 가이드는 맨 아래 닫기 버튼을 보여준다
-if (params.get('popup') === '1') {
-  document.body.classList.add('popup');
-  document.getElementById('popup-footer').hidden = false;
-  document.getElementById('close-guide').addEventListener('click', () => window.close());
-}
+document.getElementById('close-guide').addEventListener('click', () => window.close());
 
-openGuide(params.get('file') || 'USAGE.md');
+openGuide(new URLSearchParams(location.search).get('file') || 'USAGE.md');
