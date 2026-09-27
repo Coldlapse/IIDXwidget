@@ -63,6 +63,35 @@ Press **Save** to apply changes. Saved changes show up in the OBS widget right a
   - If your board reports the turntable as an **axis**, press **Learn** next to 'Turntable (axis)' and spin the turntable for 2 seconds.
 - **Keyboard** : Click a field in the keyboard mapping table, then press the key you want.
 
+### Controller support
+
+| Level | Controllers | Notes |
+|---|---|---|
+| ✅ **Officially supported** | PHOENIXWAN+, FPS EMP Gen2 | Dedicated profiles. Works as soon as you select it. |
+| ✅ **Officially supported** | Keyboard | Map keys in the Keyboard profile. |
+| 🔧 **Manual mapping** (may work) | Other IIDX controllers, DIY boards | Map buttons by hand in the **Other controller (manual mapping)** profile. **Not guaranteed to work.** |
+
+Not every controller on the market is supported. The Other controller profile is built for arcade-style IIDX controllers and DIY boards, and no controller has been confirmed on real hardware yet.
+
+**Likely to work**
+- Arcade-style IIDX controllers that connect as a gamepad (HID)
+- DIY boards built with Arduino and similar
+- PS2 controllers connected through a USB adapter
+
+**May not work, or not checked yet**
+- Controllers in **Xbox (XInput) mode** : the app may not find the device. If your controller can switch modes, try gamepad (HID) mode.
+- Controllers in **keyboard mode** : use the **Keyboard** profile instead of Other controller.
+- **General gamepads** with many buttons or analog sticks : mapping may pick up the wrong numbers, or some buttons may not be read.
+- **Several gamepads** connected : only the first one found is used. Unplug the ones you don't use.
+- Konami's official INFINITAS controller : not checked yet.
+
+**How to check your controller**
+1. Set the controller profile to **Other controller (manual mapping)**.
+2. Click a field in the mapping table and press a controller button to see if a number comes in.
+3. Once all seven keys and the turntable are picked up, press **Save** and check that the widget reacts.
+
+**Confirmed controllers** : none yet. If you tried one with Other controller, please tell us its name and the result (works / partly works / doesn't work) in [Issues](https://github.com/Coldlapse/IIDXwidget/issues) and we'll add it here.
+
 ### beatmania.app play count
 
 | Setting | Meaning |
