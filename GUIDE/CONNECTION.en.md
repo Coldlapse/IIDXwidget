@@ -41,7 +41,7 @@ Always run IIDXwidget on **the computer your controller is plugged into (the gam
 3. Give it any name and click **OK**.
 4. Enter the following:
    - **URL** : `http://127.0.0.1:8080/widget/`
-   - **Width** : `800`, **Height** : `600`
+   - **Width** : `800`, **Height** : `600` (for DP, **Width** `1320`)
    - Leave **Local file** unchecked.
 5. Click **OK** and you're done. Press a key and check that the widget reacts in OBS.
 
@@ -76,7 +76,7 @@ Do this on the **stream PC**.
 1. In OBS, click **＋** under **Sources** → **Browser**.
 2. In **URL**, use the IP from step ①:
    - `http://192.168.0.12:8080/widget/` ← replace the numbers with your IP.
-3. Keep **Width** `800`, **Height** `600` and click **OK**.
+3. Keep **Width** `800`, **Height** `600` (for DP, width `1320`) and click **OK**.
 
 ### ④ Check that it works
 - Put the same address into a web browser (Chrome etc.) on the stream PC. If you see the widget, the connection works.

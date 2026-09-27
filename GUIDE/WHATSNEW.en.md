@@ -45,6 +45,7 @@ You only need to do this once. From now on the widget follows settings changes a
 - **Korean / English** : Menu → Language
 - **Other controller (manual mapping)** : Controllers that are not officially supported and DIY boards can be mapped by pressing their buttons. Boards whose turntable is an axis are found with "Learn".
 - **Widget redesign** : The floating session info box is now a dashboard attached to the widget body. The turntable and keys keep their size and position, and the widget takes up no more space than before.
+- **DP support** : Pick a controller for 1P and 2P separately; the widget shows both sides joined together. Use a 1320×600 OBS browser source. With several identical controllers, choose the device in Settings.
 - **KPS speedometer** : KPS on the dashboard is shown as a speedometer gauge that heats up in the red zone. Turn it off or pick a preset (IIDX / BMS up to ★★ / BMS ★★ and up) in Settings.
 - **Widget customization** : two-image turntable mode (a different image per spin direction), transparent widget background, show/hide release numbers on keys, long note color
 - **Instant settings and auto reconnect** : Saved settings show up in the OBS widget right away, and the widget reconnects by itself when you restart the app. While the app is off, OBS shows "Lost connection to IIDXwidget".

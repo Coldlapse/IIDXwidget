@@ -137,3 +137,7 @@ html { overflow: hidden; }
   font-weight: bold;
   cursor: pointer;
 }
+
+/* DP: 1P·2P 건반 묶음 제목 */
+.side-label { margin: 14px 0 -10px; text-align: center; font-size: 12px; font-weight: bold; letter-spacing: 0.2em; color: #888; }
+.keyboard[hidden], .side-label[hidden] { display: none; }

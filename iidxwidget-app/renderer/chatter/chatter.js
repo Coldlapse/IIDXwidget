@@ -1,6 +1,21 @@
 // 채터링 집계는 앱 본체가 모든 입력에서 계속 하고 있다 (이 창이 닫혀 있어도).
 // 이 창은 현재 숫자를 받아서 건반 위에 보여주기만 한다.
-const slots = [...document.querySelectorAll('.key-slot')];
+// DP면 2P 건반을 1P 건반 아래에 하나 더 놓는다 (버튼 키 'p2-N')
+const keyboard1 = document.querySelector('[data-keyboard="1"]');
+const label1 = document.querySelector('[data-side-label]');
+const label2 = label1.cloneNode(true);
+label2.textContent = '2P';
+const keyboard2 = keyboard1.cloneNode(true);
+keyboard2.dataset.keyboard = '2';
+keyboard2.querySelectorAll('.key-slot').forEach(slot => { slot.dataset.button = `p2-${slot.dataset.button}`; });
+keyboard1.after(label2, keyboard2);
+let slots = [...document.querySelectorAll('.key-slot')];
+
+function showDP(isDP) {
+  label1.hidden = label2.hidden = keyboard2.hidden = !isDP;
+  window.fitWindow?.();
+}
+window.electronAPI.loadSettings().then(settings => showDP(settings?.widget?.buttonLayout === 'DP'));
 
 // 그룹(1·3·5·7 / 2·4·6) 평균의 2배 이상인 건반만 강조한다
 function render(counts) {

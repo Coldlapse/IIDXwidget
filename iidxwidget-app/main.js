@@ -473,7 +473,19 @@ function restartApp() {
 }
 
 // 설정 저장 후 적용: 위젯에는 설정을 다시 불러오라고 알린다.
+// 앱 창 크기: 1P·2P는 원래 크기(1000×800) 그대로, DP만 위젯(1000px)이 잘리지 않게 가로를 넓힌다
+const MAIN_WINDOW_SIZE = { SP: [1000, 800], DP: [1340, 800] };
+function fitMainWindowToLayout() {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  const [width, height] = MAIN_WINDOW_SIZE[settings.widget.buttonLayout === 'DP' ? 'DP' : 'SP'];
+  const [currentWidth, currentHeight] = mainWindow.getSize();
+  if (currentWidth === width && currentHeight === height) return;
+  mainWindow.setSize(width, height);
+  mainWindow.center();
+}
+
 function applySettingsChange() {
+  fitMainWindowToLayout();
   startServers();
   inputs.start(settings);
   session.setConfig(currentStatsConfig());
@@ -726,6 +738,7 @@ app.whenReady().then(() => {
   inputs.start(settings);
 
   createMainWindow();
+  fitMainWindowToLayout();
   createStatusMenu();
   mainWindow.webContents.once('did-finish-load', () => showStartupGuide(!loaded.existed));
 });

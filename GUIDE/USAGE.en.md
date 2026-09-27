@@ -54,7 +54,23 @@ Press **Save** to apply changes. Saved changes show up in the OBS widget right a
 | **Controller Profile** | The controller you use. See [Controller profiles](#controller-profiles) below. |
 | **Detect LR2 mode (dedicated controller only)** | A PHOENIXWAN in LR2 sends turntable signals differently. With this on, the app detects LR2 mode and shows the turntable correctly. |
 
+### Button layout and DP
+
+| Setting | Meaning |
+|---|---|
+| **Button layout** | **1P** (turntable on the left) / **2P** (turntable on the right) / **DP** (1P + 2P) |
+
+- Choosing **DP** adds a **2P controller** section so 1P and 2P each get their own controller. The two sides can use different profiles (e.g. PHOENIXWAN on 1P and FPS on 2P), and one side can be a keyboard.
+- The widget shows the 1P and 2P bodies joined by a black 40px gap, with the session dashboard as a trapezoid in the middle. Presses, KPS and average release combine both sides.
+- The DP widget is 1000px wide, so set the OBS browser source to **1320×600**. The app window also gets wider, only while DP is selected.
+- The chatter window shows a second keyboard for 2P below 1P and compares each side separately.
+
 ### Controller profiles
+
+Choose a profile and a **device** for each side (one for SP, 1P and 2P for DP).
+
+- **Device** : Lists only connected controllers that match the profile; if there is just one, only one appears. Identical controllers get #1, #2 after the name. Press **Rescan** after plugging in a controller. If the saved device is missing, another connected one is used.
+- In DP, 1P and 2P can't use the same device.
 
 - **PHOENIXWAN+ / FPS EMP Gen2** : Works as soon as you select it.
 - **Other controller (manual mapping)** : For controllers that are not officially supported and DIY boards such as Arduino. You map each button by hand. A PHOENIXWAN or FPS is not picked up by this profile; choose its own profile instead.
@@ -116,7 +132,6 @@ Only change these if another program already uses the port. The [connection guid
 | Setting | Meaning |
 |---|---|
 | **Session information position** | Attach the session dashboard below or above the widget body, or hide it. The promotion strip goes on the opposite side. |
-| **Button layout** | 1P (turntable on the left) / 2P (turntable on the right) |
 
 ### Release sampling rules
 
