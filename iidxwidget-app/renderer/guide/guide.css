@@ -90,3 +90,31 @@ body {
 
 /* 위의 고정 도구 막대에 가리지 않게 */
 .markdown h1, .markdown h2, .markdown h3, .markdown h4 { scroll-margin-top: 56px; }
+
+/* 앱이 스스로 띄운 가이드: 창 맨 아래 고정 닫기 버튼 */
+.popup-footer {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  padding: 12px 20px;
+  background-color: #1a1a1a;
+  border-top: 1px solid #2a2a2a;
+}
+.popup-footer[hidden] { display: none; }
+.popup-footer button {
+  min-width: 160px;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 6px;
+  background-color: #2979ff;
+  color: #fff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.popup-footer button:hover { background-color: #448aff; }
+/* 내용이 짧아도 닫기 버튼이 창 맨 아래에 오게 */
+body.popup { display: flex; flex-direction: column; min-height: 100vh; }
+body.popup .markdown { flex: 1; width: 100%; box-sizing: border-box; }

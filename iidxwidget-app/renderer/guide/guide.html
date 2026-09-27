@@ -16,6 +16,10 @@
   <main id="content" class="markdown">
     <p class="status" data-i18n="guide.loading">가이드를 불러오는 중...</p>
   </main>
+  <!-- 앱이 스스로 띄운 가이드(첫 실행, 업데이트 안내)에만 보이는 닫기 버튼 -->
+  <footer class="popup-footer" id="popup-footer" hidden>
+    <button type="button" id="close-guide" data-i18n="guide.close">닫기</button>
+  </footer>
 
   <script src="../../node_modules/marked/lib/marked.umd.js"></script>
   <script src="../../node_modules/dompurify/dist/purify.min.js"></script>

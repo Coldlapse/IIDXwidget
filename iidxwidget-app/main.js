@@ -167,7 +167,8 @@ function createRecordsWindow() {
 const GUIDE_LOCAL_DIR = app.isPackaged ? path.join(process.resourcesPath, 'GUIDE') : path.join(__dirname, '..', 'GUIDE');
 
 // parent: 가이드를 연 창(설정·채터링 등). 그 창 위에 뜨되 모달은 아니어서 가이드를 보며 설정할 수 있다.
-function openGuide(id, { parent = mainWindow, onClosed } = {}) {
+// popup: 앱이 스스로 띄운 가이드(첫 실행, 업데이트 안내). 창 맨 아래에 닫기 버튼을 보여준다
+function openGuide(id, { parent = mainWindow, onClosed, popup = false } = {}) {
   const file = guideFile(GUIDE_IDS.includes(id) ? id : 'USAGE', normalizeLanguage(settings.language));
   if (guideWindow && !guideWindow.isDestroyed()) {
     sendTo(guideWindow, 'show-guide', file);
@@ -186,7 +187,7 @@ function openGuide(id, { parent = mainWindow, onClosed } = {}) {
     title: t('guide.menu'),
     webPreferences: { preload: preloadPath, contextIsolation: true, nodeIntegration: false }
   });
-  guideWindow.loadFile(path.join(__dirname, 'renderer/guide/guide.html'), { query: { file } });
+  guideWindow.loadFile(path.join(__dirname, 'renderer/guide/guide.html'), { query: popup ? { file, popup: '1' } : { file } });
   // 링크는 화면 쪽에서 처리한다 (다른 가이드는 뷰어에서, https는 기본 브라우저로). 창 자체는 다른 곳으로 가지 않는다
   guideWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   guideWindow.webContents.on('will-navigate', event => event.preventDefault());
@@ -224,6 +225,7 @@ function showStartupGuide(freshInstall) {
 
 function showGuideWithMenuNotice(id) {
   openGuide(id, {
+    popup: true,
     onClosed: () => {
       if (quitReady || shutdown.started || !mainWindow || mainWindow.isDestroyed()) return;
       dialog.showMessageBox(mainWindow, { type: 'info', title: t('guide.menu'), message: t('guide.tutorialDone'), buttons: [t('common.ok')] });
