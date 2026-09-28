@@ -135,6 +135,8 @@ body {
 .axis-value { flex: 1; color: #fff; }
 /* 턴테이블 방향 반전 + 미니 원판 (위젯과 같은 방향으로 돈다) */
 .legacy-row { display: block; margin-top: 8px; }
+/* 턴테이블 구역과 아래 상태 문구(매핑할 컨트롤러, 경고) 사이 여백 */
+[data-role="tt-button-section"], [data-role="tt-analog-section"] { margin-bottom: 14px; }
 /* 버튼 턴테이블 ↔ 아날로그 턴테이블 스위치 */
 .tt-mode-row { display: flex; align-items: center; gap: 10px; margin: 14px 0 6px; font-size: 14px; }
 .tt-mode-name { color: #777; }
