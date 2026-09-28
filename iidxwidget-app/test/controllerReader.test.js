@@ -115,8 +115,9 @@ console.log('controllerReader report-id tests passed');
   const devices = [phoenixA, arduino, phoenixB, keyboard];
   // 같은 이름이 여러 개면 번호가 붙는다
   assert.deepEqual(listControllerDevices('PHOENIXWAN', devices).map(d => d.path), ['phoenix-A', 'phoenix-B']);
-  assert.ok(/#1$/.test(listControllerDevices('PHOENIXWAN', devices)[0].name));
-  assert.ok(/#2$/.test(listControllerDevices('PHOENIXWAN', devices)[1].name));
+  // 드롭다운을 접어도 보이도록 번호는 이름 앞에 붙는다
+  assert.equal(listControllerDevices('PHOENIXWAN', devices)[0].name, '[#1] Konami PHOENIXWAN [1ccf:8048]');
+  assert.equal(listControllerDevices('PHOENIXWAN', devices)[1].name, '[#2] Konami PHOENIXWAN [1ccf:8048]');
   // 하나뿐이면 번호 없음
   assert.ok(!/#d$/.test(listControllerDevices('AUTO', devices)[0].name));
   assert.deepEqual(listControllerDevices('KB', devices), []);

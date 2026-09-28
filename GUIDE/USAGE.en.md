@@ -67,7 +67,7 @@ Press **Save** to apply changes. Saved changes show up in the OBS widget right a
 
 Choose a profile and a **device** for each side (one for SP, 1P and 2P for DP). The keyboard and other-controller mapping tables appear right below the profile.
 
-- **Device** : Lists only connected controllers that match the profile; if there is just one, only one appears. Identical controllers (two boards for 1P and 2P, for example) get the last 4 digits of their serial number after the name, or #1, #2 if they have no serial. Press **Rescan** to refresh the list. The serial lets the app find the same device even on a different USB port; if the saved device is missing, another connected one is used.
+- **Device** : Lists only connected controllers that match the profile; if there is just one, only one appears. Identical controllers (two boards for 1P and 2P, for example) get a tag in front of the name: the last 4 digits of the serial number such as `[S/N …1234]`, or `[#1]`, `[#2]` if they have no serial. Press **Rescan** to refresh the list. The serial lets the app find the same device even on a different USB port; if the saved device is missing, another connected one is used.
 - In DP, 1P and 2P can't use the same device.
 - If you unplug and replug a controller, or plug one in after starting the app, input comes back within about 2 seconds without saving or restarting.
 - **Detect LR2 mode (dedicated controller only)** : Shown only for the PHOENIXWAN, FPS and LMT Classic profiles. A PHOENIXWAN in LR2 sends turntable signals differently; with this on, the app detects LR2 mode and shows the turntable correctly. If you never use LR2 mode, you can leave it off.

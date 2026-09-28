@@ -83,7 +83,8 @@ function profileCandidates(profile, devices) {
 const serialOf = d => (typeof d.serialNumber === 'string' ? d.serialNumber.trim() : '');
 
 // 설정 화면의 장치 드롭다운용: [{ path, serial, name }].
-// 같은 이름이 여러 개면(같은 기판 두 대 등) 시리얼 끝 4자리를, 시리얼로도 못 가리면 번호를 붙인다
+// 같은 이름이 여러 개면(같은 기판 두 대 등) 시리얼 끝 4자리를, 시리얼로도 못 가리면 번호를 이름 앞에 붙인다
+// (뒤에 붙이면 드롭다운을 접었을 때 칸 폭에 잘려서 어느 쪽을 골랐는지 안 보인다). 기기 이름 자체는 바꾸지 않는다
 function listControllerDevices(profile, devices = getHID().devices()) {
   const list = profileCandidates(profile, devices).map(d => ({ path: d.path, serial: serialOf(d), name: describeDevice(d) }));
   const count = (key, value) => list.filter(d => d[key] === value).length;
@@ -91,9 +92,9 @@ function listControllerDevices(profile, devices = getHID().devices()) {
   return list.map(d => {
     if (count('name', d.name) < 2) return d;
     if (d.serial && list.filter(o => o.name === d.name && o.serial === d.serial).length === 1) {
-      return { ...d, name: `${d.name} (S/N …${d.serial.slice(-4)})` };
+      return { ...d, name: `[S/N …${d.serial.slice(-4)}] ${d.name}` };
     }
-    return { ...d, name: `${d.name} #${seen[d.name] = (seen[d.name] || 0) + 1}` };
+    return { ...d, name: `[#${seen[d.name] = (seen[d.name] || 0) + 1}] ${d.name}` };
   });
 }
 

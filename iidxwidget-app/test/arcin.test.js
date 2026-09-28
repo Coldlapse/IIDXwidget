@@ -148,10 +148,10 @@ test('같은 기판 두 대: 장치 목록에 시리얼 끝 4자리로 구분하
   const a = { ...ARCIN, product: 'arcin', serialNumber: '1234ABCD', path: 'port1' };
   const b = { ...ARCIN, product: 'arcin', serialNumber: '5678EF01', path: 'port2' };
   const names = listDevices('ARCIN', [a, b]).map(d => d.name);
-  assert.equal(names[0], 'arcin [1ccf:8048] (S/N …ABCD)');
-  assert.equal(names[1], 'arcin [1ccf:8048] (S/N …EF01)');
+  assert.equal(names[0], '[S/N …ABCD] arcin [1ccf:8048]');
+  assert.equal(names[1], '[S/N …EF01] arcin [1ccf:8048]');
   // 시리얼이 없으면 번호
-  assert.deepEqual(listDevices('ARCIN', [{ ...a, serialNumber: '' }, { ...b, serialNumber: '' }]).map(d => d.name.slice(-2)), ['#1', '#2']);
+  assert.deepEqual(listDevices('ARCIN', [{ ...a, serialNumber: '' }, { ...b, serialNumber: '' }]).map(d => d.name.slice(0, 4)), ['[#1]', '[#2]']);
   // 2P 보드를 다른 USB 포트에 꽂아 경로가 바뀐 경우
   const moved = { ...b, path: 'port3' };
   assert.equal(chooseDevice('ARCIN', { devicePath: 'port2', deviceSerial: '5678EF01' }, [a, moved]).device.path, 'port3');
