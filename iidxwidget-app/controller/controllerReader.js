@@ -7,13 +7,16 @@ function getHID() {
 const LR2_ACTIVATE_THRESHOLD = 120;
 const LR2_DEACTIVATE_THRESHOLD = 3;
 
-const isPhoenix = d => d.vendorId === 0x1CCF && d.productId === 0x8048 && d.interface === 1;
-const isFps = d => d.vendorId === 0x1CCF && d.productId === 0x8048 && d.interface === 0 && d.usagePage === 1;
+// arcin(zyp) 기판. INFINITAS 호환이라 주작콘과 같은 1CCF:8048을 쓰므로 제품 이름으로 가린다 (예: 'arcin (red1p)')
+const isArcin = d => d.vendorId === 0x1CCF && d.productId === 0x8048 && /arcin/i.test(d.product || '');
+const isPhoenix = d => d.vendorId === 0x1CCF && d.productId === 0x8048 && d.interface === 1 && !isArcin(d);
+const isFps = d => d.vendorId === 0x1CCF && d.productId === 0x8048 && d.interface === 0 && d.usagePage === 1 && !isArcin(d);
 // PHOENIXWAN+ LMT Classic 기판. 범용 게임패드 칩(VID 0E8F)이라 제품 이름까지 본다 (펌웨어 표기가 'PHONENIXWAN').
 // 기타 컨트롤러(수동 매핑)에서도 그대로 고를 수 있다
 const isPhoenixLmt = d => d.vendorId === 0x0E8F && d.productId === 0x1228 && d.usagePage === 1 && d.usage === 4 && /NIXWAN/i.test(d.product || '');
-// 공식 지원 컨트롤러(주작콘·FPS EMP 2세대)가 쓰는 USB 장치. 인터페이스와 상관없이 기타 컨트롤러에서는 고르지 않는다
-const isOfficiallySupported = d => d.vendorId === 0x1CCF && d.productId === 0x8048;
+// 공식 지원 컨트롤러(주작콘·FPS EMP 2세대)가 쓰는 USB 장치. 인터페이스와 상관없이 기타 컨트롤러에서는 고르지 않는다.
+// arcin은 같은 ID를 쓰지만 기타 컨트롤러(수동 매핑)에서도 고를 수 있게 둔다 (예전에는 ID만 보고 빠져서 목록에 안 나왔다)
+const isOfficiallySupported = d => d.vendorId === 0x1CCF && d.productId === 0x8048 && !isArcin(d);
 
 // ─── 장치 찾기 ──────────────────────────────────────────────
 
@@ -23,6 +26,7 @@ function findExactDedicatedDevice(devices, profile) {
     if (profile === 'PHOENIXWAN') return isPhoenix(d);
     if (profile === 'FPS EMP Gen2') return isFps(d);
     if (profile === 'PHOENIXWAN LMT Classic') return isPhoenixLmt(d);
+    if (profile === 'ARCIN') return isArcin(d);
     return false;
   });
 }
@@ -47,13 +51,14 @@ function findAutoController(devices) {
 
 // ─── 장치 목록과 선택 (1P·2P에 각각 장치를 고를 수 있도록) ───────
 
-const PARSER_BY_PROFILE = { PHOENIXWAN: 'PHOENIXWAN', 'FPS EMP Gen2': 'FPS_EMP', 'PHOENIXWAN LMT Classic': 'PHOENIXWAN_LMT', AUTO: 'GENERIC' };
+const PARSER_BY_PROFILE = { PHOENIXWAN: 'PHOENIXWAN', 'FPS EMP Gen2': 'FPS_EMP', 'PHOENIXWAN LMT Classic': 'PHOENIXWAN_LMT', ARCIN: 'ARCIN', AUTO: 'GENERIC' };
 
 // 프로필에 맞는 연결된 장치들 (찾는 순서대로)
 function profileCandidates(profile, devices) {
   if (profile === 'PHOENIXWAN') return devices.filter(d => d.path && isPhoenix(d));
   if (profile === 'FPS EMP Gen2') return devices.filter(d => d.path && isFps(d));
   if (profile === 'PHOENIXWAN LMT Classic') return devices.filter(d => d.path && isPhoenixLmt(d));
+  if (profile === 'ARCIN') return devices.filter(d => d.path && isArcin(d));
   if (profile === 'AUTO') return autoCandidates(devices);
   return [];
 }
@@ -202,10 +207,13 @@ function findAxisByte(reports, minDistinct = 8) {
 // - 주작콘·FPS: 건반 buffer[2], 턴테이블 buffer[0], LR2 값 0x80(+) / 0x7F(-) / 0x00(멈춤)
 // - LMT Classic: 건반 buffer[2], 턴테이블 buffer[7], LR2 값 0xFF(+) / 0x00(-) / 0x80(멈춤)
 //   (2026-09-27 컨트롤러 정보 수집 실측, LR2 모드, 1000Hz. 0x00 = 시계 방향. 일반 모드는 아직 실측 없음)
+// - arcin: 건반 buffer[1], 턴테이블 buffer[3] (절대 위치, 시계 방향이면 값이 줄어듦), E버튼 buffer[2]
+//   (2026-09-28 실측, INFINITAS 모드, 1000Hz). LR2 모드는 실측이 없어 감지하지 않는다 (lr2: null)
 const DEDICATED_LAYOUTS = {
   PHOENIXWAN: { keyByte: 2, turntableByte: 0, lr2: { plus: 0x80, minus: 0x7F, rest: 0x00 } },
   FPS_EMP: { keyByte: 2, turntableByte: 0, lr2: { plus: 0x80, minus: 0x7F, rest: 0x00 } },
-  PHOENIXWAN_LMT: { keyByte: 2, turntableByte: 7, lr2: { plus: 0xFF, minus: 0x00, rest: 0x80 } }
+  PHOENIXWAN_LMT: { keyByte: 2, turntableByte: 7, lr2: { plus: 0xFF, minus: 0x00, rest: 0x80 } },
+  ARCIN: { keyByte: 1, turntableByte: 3, lr2: null }
 };
 
 function createDedicatedParserState(layout = DEDICATED_LAYOUTS.PHOENIXWAN) {
@@ -315,7 +323,8 @@ function openReader(selection, callback, options) {
   }
 
   const dedicatedState = createDedicatedParserState(DEDICATED_LAYOUTS[selection.parser] || DEDICATED_LAYOUTS.PHOENIXWAN);
-  dedicatedState.lr2DetectEnabled = selection.parser !== 'GENERIC' && !!options.lr2ModeEnabled;
+  // LR2 값을 모르는 배치(arcin)는 설정과 관계없이 감지하지 않는다 (멈춘 위치값을 LR2로 잘못 볼 수 있어서)
+  dedicatedState.lr2DetectEnabled = selection.parser !== 'GENERIC' && !!options.lr2ModeEnabled && !!dedicatedState.layout.lr2;
   const genericState = createGenericParserState(Number.isInteger(options.genericAxis) ? options.genericAxis : null);
   const rawListeners = new Set();
 

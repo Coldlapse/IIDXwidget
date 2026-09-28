@@ -7,7 +7,7 @@ const { DEFAULT_SETTINGS } = require('./settingsStore');
 
 // 사이드별 설정. 1P는 기존 최상위 값, 2P는 settings.player2
 // 전용 파서가 있는 프로필 (설정 값)
-const DEDICATED_PROFILES = ['PHOENIXWAN', 'FPS EMP Gen2', 'PHOENIXWAN LMT Classic'];
+const DEDICATED_PROFILES = ['PHOENIXWAN', 'FPS EMP Gen2', 'PHOENIXWAN LMT Classic', 'ARCIN'];
 
 function sideConfig(settings, side) {
   if (side === 2) {
