@@ -14,7 +14,7 @@ const DIGITAL_TT_STILL_REPORTS = 250;
 // - 축: 값이 바뀔 때만 보내는 기기가 많아서, 이 시간 동안 안 바뀌면 같은 값을 한 번 더 보내 불을 끈다
 //   (위젯이 턴테이블 값을 받는 최소 간격 20ms보다 길게. 주작콘은 멈추고 20~40ms 뒤에 꺼진다)
 const GENERIC_TT_BUTTON_STEP = 5;
-// 'Button Turntable legacy'(수동 매핑 전용, 기본 꺼짐): 한 칸마다 버튼을 짧게 눌렀다 떼는 기판용으로 3.0.1까지의 방식.
+// 'Legacy Button Turntable'(수동 매핑 전용, 기본 꺼짐): 한 칸마다 버튼을 짧게 눌렀다 떼는 기판용으로 3.0.1까지의 방식.
 // 누를 때 2칸만 돌리고, 떼도 멈춤을 보내지 않는다 (천천히 돌릴 때 스크래치 불이 깜빡이지 않도록)
 const GENERIC_TT_LEGACY_STEP = 2;
 const GENERIC_TT_SETTLE_MS = 30;

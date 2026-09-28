@@ -223,7 +223,7 @@
       setAxis(genericAxis);
       renderSessionStatus();
       renderReverseHelp();
-      q('legacy-help').textContent = t('settings.buttonTurntableLegacyHelp');
+      q('legacy-row').title = t('settings.buttonTurntableLegacyHelp');
       q('lr2-row').title = t('settings.lr2Hint');
       if (profile() !== 'KB' && !q('device').options.length) refreshDevices();
     }
