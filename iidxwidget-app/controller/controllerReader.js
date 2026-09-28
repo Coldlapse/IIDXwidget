@@ -11,17 +11,20 @@ const LR2_DEACTIVATE_THRESHOLD = 3;
 const DIGITAL_TT_STILL_REPORTS = 250;
 
 // arcin(zyp) 기판. INFINITAS 호환이라 주작콘과 같은 1CCF:8048을 쓰므로 이름으로 가린다.
-// arcin-infinitas 펌웨어는 제품 이름을 항상 'arcin' 또는 'arcin (라벨)'로, 제조사를 'zyp'으로 보낸다 (라벨은 사용자가 바꿀 수 있음)
-const isArcin = d => d.vendorId === 0x1CCF && d.productId === 0x8048
+// arcin-infinitas 펌웨어는 제품 이름을 항상 'arcin' 또는 'arcin (라벨)'로, 제조사를 'zyp'으로 보낸다 (라벨은 사용자가 바꿀 수 있음).
+// 펌웨어는 게임패드(interface 0) 말고도 키보드 모드용 키보드(interface 1)를 늘 함께 내보내므로,
+// arcin 기판인지(isArcinBoard)와 입력을 읽을 게임패드 쪽인지(isArcin)를 나눈다
+const isArcinBoard = d => d.vendorId === 0x1CCF && d.productId === 0x8048
   && (/arcin/i.test(d.product || '') || /^zyp$/i.test((d.manufacturer || '').trim()));
-const isPhoenix = d => d.vendorId === 0x1CCF && d.productId === 0x8048 && d.interface === 1 && !isArcin(d);
-const isFps = d => d.vendorId === 0x1CCF && d.productId === 0x8048 && d.interface === 0 && d.usagePage === 1 && !isArcin(d);
+const isArcin = d => isArcinBoard(d) && d.usagePage === 1 && (d.usage === 4 || d.usage === 5);
+const isPhoenix = d => d.vendorId === 0x1CCF && d.productId === 0x8048 && d.interface === 1 && !isArcinBoard(d);
+const isFps = d => d.vendorId === 0x1CCF && d.productId === 0x8048 && d.interface === 0 && d.usagePage === 1 && !isArcinBoard(d);
 // PHOENIXWAN+ LMT Classic 기판. 범용 게임패드 칩(VID 0E8F)이라 제품 이름까지 본다 (펌웨어 표기가 'PHONENIXWAN').
 // 기타 컨트롤러(수동 매핑)에서도 그대로 고를 수 있다
 const isPhoenixLmt = d => d.vendorId === 0x0E8F && d.productId === 0x1228 && d.usagePage === 1 && d.usage === 4 && /NIXWAN/i.test(d.product || '');
 // 공식 지원 컨트롤러(주작콘·FPS EMP 2세대)가 쓰는 USB 장치. 기타 컨트롤러에서 장치를 못 찾았을 때
 // "전용 프로필을 고르라"는 안내를 띄울지 판단하는 데만 쓴다 (기타 컨트롤러 목록에서 빼지는 않는다)
-const isOfficiallySupported = d => d.vendorId === 0x1CCF && d.productId === 0x8048 && !isArcin(d);
+const isOfficiallySupported = d => d.vendorId === 0x1CCF && d.productId === 0x8048 && !isArcinBoard(d);
 
 // ─── 장치 찾기 ──────────────────────────────────────────────
 

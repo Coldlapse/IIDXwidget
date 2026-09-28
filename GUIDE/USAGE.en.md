@@ -74,13 +74,13 @@ Choose a profile and a **device** for each side (one for SP, 1P and 2P for DP). 
 - **Reverse turntable direction** : Available for every profile except Keyboard. The small disc next to it follows your turntable input and spins the same way as the OBS widget. If it spins the opposite way when you turn the turntable clockwise, turn this on. Changing the checkbox shows the result on the disc before you save. (If you changed the profile, the disc moves after you save.)
 
 - **PHOENIXWAN+ / PHOENIXWAN+ LMT Classic / FPS EMP Gen2** : Works as soon as you select it. For the PHOENIXWAN LMT Classic board, pick the **PHOENIXWAN+ LMT Classic** profile. It works the same way as the PHOENIXWAN; for LR2 mode, turn on **Detect LR2 mode** just like on a PHOENIXWAN.
-- **arcin** : For arcin boards (firmware that shows up as an INFINITAS controller, such as arcin-infinitas). Renaming the board (label) in the config tool is fine. Every turntable mode is followed automatically.
+- **arcin** : [arcin-infinitas](https://github.com/kinetic-flow/arcin-infinitas) — guaranteed to work only with arcin-infinitas, the INFINITAS firmware for arcin boards developed by kinetic-flow. Renaming the board (label) in the config tool is fine. Every turntable mode is followed automatically.
   - **Analog** (recommended for INFINITAS and beatoraja) : the turntable position is read as is.
   - **Digital** (recommended for LR2) : only the direction comes in, so the disc turns a little each time the direction changes, like PHOENIXWAN LR2 mode. There's no option to turn on.
   - **Digital + analog** : the analog position is read.
   - If you flipped the turntable direction in the arcin config tool (analog reversed, etc.), match the widget with **Reverse turntable direction** above.
   - If you use the arcin in **keyboard mode**, map it with the **Keyboard** profile.
-- **Other controller (manual mapping)** : For controllers that are not officially supported and DIY boards such as Arduino. You map each button by hand. Officially supported controllers (PHOENIXWAN, FPS, arcin, …) can be mapped here too, though their own profile is usually easier.
+- **Other controller (manual mapping)** : For controllers that are not officially supported and DIY boards such as Arduino. You map each button by hand. Officially supported controllers (PHOENIXWAN, FPS, arcin-infinitas, …) can be mapped here too, though their own profile is usually easier.
   - Click a field in the mapping table, then press the controller button. Clear a field to unmap it.
   - If your board reports the turntable as **buttons**, map them to 'Turntable clockwise / counterclockwise'.
   - If your board reports the turntable as an **axis**, press **Learn** next to 'Turntable (axis)' and spin the turntable for 2 seconds. Once learned, the disc next to it follows the turntable. If it spins the opposite way when you turn clockwise, turn on **Reverse turntable direction**.
@@ -91,7 +91,7 @@ Choose a profile and a **device** for each side (one for SP, 1P and 2P for DP). 
 
 | Level | Controllers | Notes |
 |---|---|---|
-| ✅ **Officially supported** | PHOENIXWAN+, PHOENIXWAN+ LMT Classic board, FPS EMP Gen2, arcin board | Dedicated profiles. Works as soon as you select it. |
+| ✅ **Officially supported** | PHOENIXWAN+, PHOENIXWAN+ LMT Classic board, FPS EMP Gen2, arcin-infinitas | Dedicated profiles. Works as soon as you select it. |
 | ✅ **Officially supported** | Keyboard | Map keys in the Keyboard profile. |
 | 🔧 **Manual mapping** (may work) | Other IIDX controllers, DIY boards | Map buttons by hand in the **Other controller (manual mapping)** profile. **Not guaranteed to work.** |
 

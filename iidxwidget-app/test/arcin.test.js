@@ -158,3 +158,14 @@ test('같은 기판 두 대: 장치 목록에 시리얼 끝 4자리로 구분하
   // 경로가 그대로면 경로가 우선
   assert.equal(chooseDevice('ARCIN', { devicePath: 'port1', deviceSerial: '5678EF01' }, [a, b]).device.path, 'port1');
 });
+
+test('arcin 펌웨어가 늘 함께 내보내는 키보드 인터페이스(interface 1)는 arcin·주작콘 목록 어디에도 넣지 않는다', () => {
+  // 예전에는 이 키보드 쪽이 arcin 목록에 섞여, 먼저 잡히면 입력이 안 들어오고 DP에서는 2P 자리에 1P 보드의 키보드가 잡힐 수 있었다
+  const keyboard = { ...ARCIN, usagePage: 1, usage: 6, interface: 1, path: 'arcin-1p-kb' };
+  const devices = [keyboard, ARCIN, ARCIN_2P];
+  assert.deepEqual(listControllerDevices('ARCIN', devices).map(d => d.path), ['arcin-1p', 'arcin-2p']);
+  assert.equal(chooseDevice('ARCIN', {}, devices).device.path, 'arcin-1p');
+  assert.equal(chooseDevice('ARCIN', { excludePaths: ['arcin-1p'] }, devices).device.path, 'arcin-2p');
+  assert.deepEqual(listControllerDevices('PHOENIXWAN', devices), []);
+  assert.deepEqual(listControllerDevices('AUTO', devices).map(d => d.path), ['arcin-1p', 'arcin-2p']);
+});
