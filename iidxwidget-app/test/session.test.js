@@ -87,7 +87,7 @@ const press = (n, pressed, timestamp) => ({ type: 'button', button: `button ${n}
   m.handleEvents([press(1, true, T0 + 10)]);
   m.handleEvents([press(1, false, T0 + 40), press(2, true, T0 + 45)]);
   await new Promise(r => setTimeout(r, 80));
-  assert.equal(changes.length, 1); // 50ms 안의 변경은 한 번으로
+  assert.equal(changes.length, 1); // 묶음 간격(16ms) 안의 변경은 한 번으로
   assert.equal(changes[0].presses, 2);
   m.recordUpload(2, 2);
   assert.equal(changes.at(-1).remaining, 0);
@@ -108,3 +108,25 @@ const press = (n, pressed, timestamp) => ({ type: 'button', button: `button ${n}
   assert.equal(snap.perButton['p2-1'], 60);
   console.log('session DP tests passed');
 }
+
+// 매니저: 연타하는 동안에도 묶음 간격마다 갱신한다 (KPS 감소 타이머 때문에 250ms마다만 갱신되던 문제)
+(async () => {
+  const times = [];
+  const start = Date.now();
+  const m = createSessionManager({ config: { maLengths: { global: 2000, perButton: 300 } }, onChange: () => times.push(Date.now() - start), now: Date.now });
+  for (let i = 0; i < 20; i++) {
+    const t = Date.now();
+    m.handleEvents([press(1 + (i % 7), true, t), press(1 + (i % 7), false, t + 1)]);
+    await new Promise(r => setTimeout(r, 25));
+  }
+  const during = times.filter(t => t < 20 * 25);
+  const gaps = during.slice(1).map((t, i) => t - during[i]);
+  assert.ok(during.length >= 12, `치는 동안 갱신 횟수: ${during.length}`);
+  assert.ok(Math.max(...gaps) < 150, `치는 동안 가장 긴 갱신 간격: ${Math.max(...gaps)}ms`);
+  // 멈춘 뒤에는 KPS가 떨어지는 것을 보여주려고 계속 알린다
+  const before = times.length;
+  await new Promise(r => setTimeout(r, 600));
+  assert.ok(times.length > before);
+  m.dispose();
+  console.log('session broadcast interval tests passed');
+})().catch(e => { console.error(e); process.exit(1); });
