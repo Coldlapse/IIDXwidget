@@ -440,6 +440,7 @@ function openReader(selection, callback, options) {
     logger('log', 'connected', { profile: options.profile, device: deviceName, parser: selection.parser });
   } catch (error) {
     logger('error', 'openFailed', { profile: options.profile, device: deviceName, error });
+    if (process.platform === 'linux') logger('error', 'linuxPermission');
     return null;
   }
 

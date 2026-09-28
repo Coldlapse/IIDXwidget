@@ -1,6 +1,6 @@
 {
     "name": "iidxwidget",
-    "version": "3.0.2",
+    "version": "3.0.3",
     "description": "iidxwidget",
     "author": "Sadang",
     "license": "MIT",
@@ -29,12 +29,11 @@
             "shutdown.js",
             "guides.js",
             "controllerProbe.js",
+            "linuxAutostart.js",
             "controller/controllerReader.js",
             "controller/keyboardReader.js",
             "localization/**",
             "renderer/**",
-            "!node_modules/uiohook-napi/prebuilds/{darwin,linux}-*/**",
-            "!node_modules/uiohook-napi/prebuilds/win32-arm64/**",
             "!node_modules/uiohook-napi/{src,libuiohook}/**"
         ],
         "extraResources": [
@@ -45,6 +44,10 @@
             {
                 "from": "../images",
                 "to": "images"
+            },
+            {
+                "from": "../linux/70-iidxwidget.rules",
+                "to": "70-iidxwidget.rules"
             }
         ],
         "directories": {
@@ -52,7 +55,11 @@
         },
         "win": {
             "target": "nsis",
-            "icon": "build/icon.ico"
+            "icon": "build/icon.ico",
+            "files": [
+                "!node_modules/uiohook-napi/prebuilds/{darwin,linux}-*/**",
+                "!node_modules/uiohook-napi/prebuilds/win32-arm64/**"
+            ]
         },
         "nsis": {
             "installerHeaderIcon": "build/icon.ico"
@@ -63,7 +70,25 @@
                 "owner": "Coldlapse",
                 "repo": "IIDXwidget"
             }
-        ]
+        ],
+        "linux": {
+            "target": [
+                {
+                    "target": "AppImage",
+                    "arch": [
+                        "x64"
+                    ]
+                }
+            ],
+            "icon": "build/icons",
+            "category": "AudioVideo",
+            "synopsis": "IIDX controller input widget for OBS",
+            "artifactName": "${productName}-${version}-x86_64.${ext}",
+            "files": [
+                "!node_modules/uiohook-napi/prebuilds/{darwin,win32}-*/**",
+                "!node_modules/uiohook-napi/prebuilds/linux-{arm64,loong64}/**"
+            ]
+        }
     },
     "dependencies": {
         "dompurify": "^3.4.16",

@@ -17,6 +17,10 @@ const { createShutdown } = require('./shutdown');
 const { setupUpdater } = require('./updater');
 const { GUIDE_IDS, UPDATE_GUIDE_VERSION, guideFile, loadGuide } = require('./guides');
 const { groupProbeDevices, openProbe } = require('./controllerProbe');
+const linuxAutostart = require('./linuxAutostart');
+const IS_LINUX = process.platform === 'linux';
+// 리눅스 Wayland 세션에서는 키보드 전역 입력(uiohook, X11 전용)을 받을 수 없다
+const IS_WAYLAND = IS_LINUX && (process.env.XDG_SESSION_TYPE === 'wayland' || !!process.env.WAYLAND_DISPLAY);
 const { translations, normalizeLanguage, translate } = require('./localization/translations');
 const {
   DEFAULT_SETTINGS, applyUpdate, settingsForWindow, validChatterConfig, CHATTER_RANGE, readSettingsFile, writeSettingsFile, publicSettings, referencedImageFiles
@@ -452,6 +456,16 @@ function persistSettings() {
 // 시작프로그램 등록은 설치본에서, 값이 바뀔 때만 한다 (개발 실행 중 electron.exe가 등록되지 않도록)
 function applyAutoLaunch(enabled) {
   if (!app.isPackaged) return;
+  if (IS_LINUX) {
+    // AppImage는 실행할 때마다 임시 폴더에 풀리므로 AppImage 파일 경로를 등록한다
+    const appImagePath = process.env.APPIMAGE || app.getPath('exe');
+    try {
+      if (linuxAutostart.setEnabled(enabled, appImagePath)) console.log(t(enabled ? 'log.autoLaunchOn' : 'log.autoLaunchOff', { path: appImagePath }));
+    } catch (error) {
+      console.error(t('log.autoLaunchFailed'), error);
+    }
+    return;
+  }
   const exePath = app.getPath('exe');
   if (app.getLoginItemSettings({ path: exePath }).openAtLogin === enabled) return;
   app.setLoginItemSettings({ openAtLogin: enabled, path: exePath });
@@ -629,8 +643,19 @@ function finishImmediately() {
 }
 
 
+// 리눅스·macOS 로그아웃·종료 때는 SIGTERM이 온다 (Windows의 session-end에 해당). 종료 창을 띄우지 않고 정리만 하고 끝낸다
+if (process.platform !== 'win32') {
+  process.on('SIGTERM', () => {
+    finishImmediately();
+    app.quit();
+  });
+}
+
+
 // 📡 IPC
 ipcMain.handle('get-language', () => normalizeLanguage(settings.language));
+// 설정 창의 운영체제별 문구 (자동 실행, 리눅스 Wayland의 키보드 모드 안내)
+ipcMain.handle('get-platform-info', () => ({ platform: process.platform, wayland: IS_WAYLAND }));
 ipcMain.handle('get-translations', () => translations);
 ipcMain.handle('request-log-buffer', () => logBuffer);
 ipcMain.handle('get-app-version', () => appVersion);
@@ -755,6 +780,8 @@ ipcMain.handle('set-api-token', async (event, raw) => {
   const token = typeof raw === 'string' ? raw.trim() : '';
   if (!token) return { ok: false, error: 'unauthorized' };
   if (!safeStorage.isEncryptionAvailable()) return { ok: false, error: 'encryption' };
+  // 리눅스에서 키링(KWallet, GNOME 키링)이 없으면 약한 방식(basic_text)으로 저장된다
+  if (IS_LINUX && safeStorage.getSelectedStorageBackend?.() === 'basic_text') console.warn(t('log.tokenWeakStorage'));
   const result = await whoami({ token });
   if (result.kind === 'unauthorized') return { ok: false, error: 'unauthorized' };
   if (result.kind === 'network') return { ok: false, error: 'network', detail: result.error };

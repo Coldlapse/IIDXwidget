@@ -3,6 +3,8 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('electronAPI', {
   onControllerData: (callback) => ipcRenderer.on('controller-data', (event, data) => callback(data)),
   getLanguage: () => ipcRenderer.invoke('get-language'),
+  // { platform: 'win32' | 'linux' | ..., wayland: 리눅스 Wayland 세션인지 }
+  getPlatformInfo: () => ipcRenderer.invoke('get-platform-info'),
   getTranslations: () => ipcRenderer.invoke('get-translations'),
   onLanguageChanged: callback => {
     const listener = (_, language) => callback(language);

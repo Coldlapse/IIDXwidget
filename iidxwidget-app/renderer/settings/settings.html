@@ -17,7 +17,7 @@
     </div>
     <div class="setting-group">
       <label class="section-label" data-i18n="settings.app">앱 기본 설정</label>
-      <label><input type="checkbox" id="autoLaunch" /> <span data-i18n="settings.autoLaunch">Windows 시작 시 자동 실행</span></label>
+      <label><input type="checkbox" id="autoLaunch" /> <span id="autoLaunch-label" data-i18n="settings.autoLaunch">Windows 시작 시 자동 실행</span></label>
     </div>
 
     <hr class="section-divider" />
@@ -213,6 +213,7 @@
 
     <div class="setting-group" data-role="kb-container" hidden>
       <label data-i18n="settings.keyboardMapping">키보드 매핑 (저는 KB를 하는 바보입니다)</label>
+      <p class="mapping-help warning-text" data-role="kb-wayland" data-i18n="settings.keyboardWayland" hidden></p>
       <table class="key-mapping-table">
         <tr><td>SCup</td><td><input type="text" data-key="SCup" readonly /></td></tr>
         <tr><td>SCdown</td><td><input type="text" data-key="SCdown" readonly /></td></tr>

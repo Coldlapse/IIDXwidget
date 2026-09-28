@@ -1,0 +1,19 @@
+# IIDXwidget: 로그인한 사용자가 컨트롤러 입력(hidraw)을 읽을 수 있게 합니다.
+# Lets the logged-in user read controller input (hidraw) for IIDXwidget.
+#
+# 설치 / Install:
+#   sudo cp 70-iidxwidget.rules /etc/udev/rules.d/
+#   sudo udevadm control --reload && sudo udevadm trigger
+#   그다음 컨트롤러를 뺐다 다시 꽂아 주세요. / Then unplug and replug the controller.
+#
+# uaccess는 73번 규칙보다 먼저 적용돼야 하므로 파일 이름을 70으로 시작합니다.
+# uaccess must be applied before rule 73, so the file name starts with 70.
+
+# PHOENIXWAN+ / FPS EMP Gen2 / arcin-infinitas (1CCF:8048)
+KERNEL=="hidraw*", ATTRS{idVendor}=="1ccf", ATTRS{idProduct}=="8048", TAG+="uaccess"
+# PHOENIXWAN+ LMT Classic (0E8F:1228)
+KERNEL=="hidraw*", ATTRS{idVendor}=="0e8f", ATTRS{idProduct}=="1228", TAG+="uaccess"
+
+# 기타 컨트롤러(수동 매핑): 앱의 컨트롤러 정보 수집이나 `lsusb`로 확인한 VID:PID를 아래처럼 한 줄 추가하세요.
+# Other controllers (manual mapping): add one line with your VID:PID (from the app's controller probe or `lsusb`).
+# KERNEL=="hidraw*", ATTRS{idVendor}=="xxxx", ATTRS{idProduct}=="yyyy", TAG+="uaccess"

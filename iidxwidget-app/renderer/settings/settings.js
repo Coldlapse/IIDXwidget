@@ -101,6 +101,17 @@ $('save-button').addEventListener('click', async () => {
 // ✅ 사이드별 컨트롤러 (1P, DP면 2P까지)
 const panels = [window.createControllerPanel(1), window.createControllerPanel(2)];
 
+// 운영체제별 문구: 리눅스는 '로그인할 때 자동 실행', Wayland 세션이면 키보드 모드 안내
+window.electronAPI.getPlatformInfo().then(info => {
+  window.platformInfo = info;
+  if (info.platform === 'linux') {
+    const label = $('autoLaunch-label');
+    label.dataset.i18n = 'settings.autoLaunchLinux';
+    if (window.i18n.ready) label.textContent = window.i18n.t('settings.autoLaunchLinux');
+  }
+  document.dispatchEvent(new CustomEvent('platform-info'));
+});
+
 // 버튼 레이아웃이 DP면 2P 컨트롤러 구역을 보이고, 1P·2P 제목과 권장 크기 안내를 보인다
 async function applyLayout() {
   const isDP = $('buttonLayout').value === 'DP';

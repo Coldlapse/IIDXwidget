@@ -108,8 +108,13 @@ function createInputManager({ dispatch, logger, hid = controllerReader, reconnec
   function startSide(side, config, usedPaths, { quiet = false } = {}) {
     const send = events => dispatch(tagSide(side, events));
     if (config.profile === 'KB') {
-      const reader = startGlobalKeyboardReader(config.kbMapping, data => send([data]));
-      readers.push({ side, kind: 'keyboard', reader });
+      try {
+        const reader = startGlobalKeyboardReader(config.kbMapping, data => send([data]));
+        readers.push({ side, kind: 'keyboard', reader });
+      } catch (error) {
+        // 키보드 훅을 쓸 수 없는 환경 (리눅스 Wayland, X11 라이브러리 없음 등). 앱은 그대로 켜 둔다
+        logger('error', 'keyboardUnavailable', { reason: error.message });
+      }
       return;
     }
     let reader = null;

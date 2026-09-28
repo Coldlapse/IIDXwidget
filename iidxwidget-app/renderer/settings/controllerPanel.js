@@ -153,6 +153,7 @@
       q('device-row').hidden = p === 'KB';
       q('lr2-row').hidden = !(p === 'PHOENIXWAN' || p === 'FPS EMP Gen2' || p === 'PHOENIXWAN LMT Classic');
       q('reverse-row').hidden = p === 'KB';
+      q('kb-wayland').hidden = !(p === 'KB' && window.platformInfo?.wayland);
       q('reverse-help').hidden = p === 'KB';
       // 기타 컨트롤러는 반전이 축(아날로그 턴테이블)에만 적용되므로 아날로그 턴테이블 구역의 축 학습 줄 밑에 둔다
       (p === 'AUTO' ? q('axis-help') : q('lr2-row')).after(q('reverse-row'), q('reverse-help'));
@@ -232,6 +233,7 @@
       if (profile() !== 'KB' && !q('device').options.length) refreshDevices();
     }
     document.addEventListener('i18n-changed', localize);
+    document.addEventListener('platform-info', () => applyProfileUI());
 
     const panel = {
       side,

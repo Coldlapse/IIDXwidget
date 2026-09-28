@@ -1,11 +1,19 @@
-const { uIOhook, UiohookKey } = require('uiohook-napi');
-
-// uiohook keycode -> KeyboardEvent.code (설정 화면에서 저장하는 형식)
-const KEYCODE_TO_CODE = buildKeycodeTable();
+// uiohook은 키보드 프로필을 쓸 때 처음 불러온다. 리눅스에서는 X11 라이브러리(libXt 등)가 없으면 불러오기부터 실패하는데,
+// 시작할 때 불러오면 키보드 모드를 안 쓰는 사람도 앱이 켜지지 않기 때문이다. 실패하면 예외를 던지고 부르는 쪽이 로그로 알린다
+let hook = null;
+function loadHook() {
+  if (!hook) {
+    const { uIOhook, UiohookKey } = require('uiohook-napi');
+    // uiohook keycode -> KeyboardEvent.code (설정 화면에서 저장하는 형식)
+    hook = { uIOhook, KEYCODE_TO_CODE: buildKeycodeTable(UiohookKey) };
+  }
+  return hook;
+}
 
 let activeReaders = 0;
 
 function startGlobalKeyboardReader(mapping, onEventCallback) {
+  const { uIOhook, KEYCODE_TO_CODE } = loadHook();
   let currentDiscRaw = 128; // ✅ 스크래치 초기값
   const pressed = new Set();
 
@@ -49,7 +57,16 @@ function startGlobalKeyboardReader(mapping, onEventCallback) {
 
   uIOhook.on('keydown', onDown);
   uIOhook.on('keyup', onUp);
-  if (activeReaders++ === 0) uIOhook.start();
+  if (activeReaders === 0) {
+    try {
+      uIOhook.start();
+    } catch (error) {
+      uIOhook.off('keydown', onDown);
+      uIOhook.off('keyup', onUp);
+      throw error;
+    }
+  }
+  activeReaders++;
 
   console.log('🟢 Global keyboard listener active');
 
@@ -65,7 +82,7 @@ function startGlobalKeyboardReader(mapping, onEventCallback) {
   };
 }
 
-function buildKeycodeTable() {
+function buildKeycodeTable(UiohookKey) {
   const renamed = {
     Ctrl: 'ControlLeft',
     CtrlRight: 'ControlRight',
