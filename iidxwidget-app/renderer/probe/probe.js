@@ -32,7 +32,8 @@ async function refreshDevices() {
   select.replaceChildren(...groups.map(g => {
     const option = document.createElement('option');
     option.value = g.id;
-    option.textContent = `${g.name || g.manufacturer || '?'} [${g.id}]${g.gamepad ? ` · ${t('probe.gamepad')}` : ''}`;
+    // 같은 기판 두 대는 시리얼 끝 4자리로 구분한다
+    option.textContent = `${g.name || g.manufacturer || '?'} [${g.vidPid}${g.serial ? ` S/N …${g.serial.slice(-4)}` : ''}]${g.gamepad ? ` · ${t('probe.gamepad')}` : ''}`;
     return option;
   }));
   if (!groups.length) {

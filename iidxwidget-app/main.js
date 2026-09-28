@@ -699,6 +699,12 @@ ipcMain.handle('start-mapping-session', (event, side = 1, devicePath = null) => 
 }, typeof devicePath === 'string' ? devicePath : null));
 ipcMain.handle('stop-mapping-session', () => inputs.stopMappingSession());
 ipcMain.handle('learn-turntable-axis', (event, side = 1) => inputs.learnTurntableAxis(side === 2 ? 2 : 1));
+// 기타 컨트롤러 턴테이블 미리보기: 학습한 축 바이트 값을 설정 창으로 보낸다
+ipcMain.handle('start-axis-preview', (event, side = 1, byteIndex = null) => {
+  const s = side === 2 ? 2 : 1;
+  return inputs.startAxisPreview(s, Number.isInteger(byteIndex) ? byteIndex : null, value => sendTo(settingsWindow, 'axis-preview', { side: s, value }));
+});
+ipcMain.handle('stop-axis-preview', () => inputs.endAxisPreview());
 // 설정 창 장치 드롭다운: 프로필에 맞는 연결된 장치 목록
 ipcMain.handle('list-controller-devices', (event, profile) => inputs.listDevices(String(profile)));
 
@@ -767,7 +773,7 @@ ipcMain.handle('probe-list', event => {
   } catch (error) {
     probeGroups = [];
   }
-  return probeGroups.map(({ id, name, manufacturer, gamepad, interfaces }) => ({ id, name, manufacturer, gamepad, interfaces: interfaces.length }));
+  return probeGroups.map(({ id, vidPid, serial, name, manufacturer, gamepad, interfaces }) => ({ id, vidPid, serial, name, manufacturer, gamepad, interfaces: interfaces.length }));
 });
 ipcMain.handle('probe-open', (event, id) => {
   if (!fromProbe(event)) return null;
@@ -782,7 +788,7 @@ ipcMain.handle('probe-close', event => { if (fromProbe(event)) closeProbe(); });
 let probeSavedPath = null;
 ipcMain.handle('probe-save', async (event, result) => {
   if (!fromProbe(event) || !result || typeof result !== 'object') return null;
-  const side = s => s && { controllerProfile: s.controllerProfile, lr2ModeEnabled: s.lr2ModeEnabled,
+  const side = s => s && { controllerProfile: s.controllerProfile, lr2ModeEnabled: s.lr2ModeEnabled, turntableReverse: s.turntableReverse,
     genericMapping: s.keyMapping?.GENERIC, genericAxis: s.keyMapping?.GENERIC_AXIS };
   const full = { ...result, app: { version: appVersion, platform: `${process.platform} ${process.arch}`, buttonLayout: settings.widget?.buttonLayout,
     side1: side(settings), side2: settings.widget?.buttonLayout === 'DP' ? side(settings.player2) : undefined } };

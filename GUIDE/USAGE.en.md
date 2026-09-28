@@ -68,16 +68,23 @@ Press **Save** to apply changes. Saved changes show up in the OBS widget right a
 
 Choose a profile and a **device** for each side (one for SP, 1P and 2P for DP). The keyboard and other-controller mapping tables appear right below the profile.
 
-- **Device** : Lists only connected controllers that match the profile; if there is just one, only one appears. Identical controllers get #1, #2 after the name. Press **Rescan** after plugging in a controller. If the saved device is missing, another connected one is used.
+- **Device** : Lists only connected controllers that match the profile; if there is just one, only one appears. Identical controllers (two boards for 1P and 2P, for example) get the last 4 digits of their serial number after the name, or #1, #2 if they have no serial. Press **Rescan** after plugging in a controller. The serial lets the app find the same device even on a different USB port; if the saved device is missing, another connected one is used.
 - In DP, 1P and 2P can't use the same device.
 - **Detect LR2 mode (dedicated controller only)** : Shown only for the PHOENIXWAN, FPS and LMT Classic profiles. A PHOENIXWAN in LR2 sends turntable signals differently; with this on, the app detects LR2 mode and shows the turntable correctly.
+- **Reverse turntable direction** : Available for every profile except Keyboard. The small disc next to it follows your turntable input and spins the same way as the OBS widget. If it spins the opposite way when you turn the turntable clockwise, turn this on. Changing the checkbox shows the result on the disc before you save. (If you changed the profile, the disc moves after you save.)
 
 - **PHOENIXWAN+ / PHOENIXWAN+ LMT Classic / FPS EMP Gen2** : Works as soon as you select it. For the PHOENIXWAN LMT Classic board, pick the **PHOENIXWAN+ LMT Classic** profile. It works the same way as the PHOENIXWAN; for LR2 mode, turn on **Detect LR2 mode** just like on a PHOENIXWAN.
-- **arcin** : For arcin boards. Confirmed in INFINITAS mode; LR2 mode isn't confirmed yet, so LR2 mode detection isn't used. An arcin can also be used with Other controller (manual mapping).
+- **arcin** : For arcin boards (firmware that shows up as an INFINITAS controller, such as arcin-infinitas). Renaming the board (label) in the config tool is fine. Every turntable mode is followed automatically.
+  - **Analog** (recommended for INFINITAS and beatoraja) : the turntable position is read as is.
+  - **Digital** (recommended for LR2) : only the direction comes in, so the disc turns a little each time the direction changes, like PHOENIXWAN LR2 mode. There's no option to turn on.
+  - **Digital + analog** : the analog position is read.
+  - If you flipped the turntable direction in the arcin config tool (analog reversed, etc.), match the widget with **Reverse turntable direction** above.
+  - If you use the arcin in **keyboard mode**, map it with the **Keyboard** profile.
 - **Other controller (manual mapping)** : For controllers that are not officially supported and DIY boards such as Arduino. You map each button by hand. Officially supported controllers (PHOENIXWAN, FPS, arcin, …) can be mapped here too, though their own profile is usually easier.
   - Click a field in the mapping table, then press the controller button. Clear a field to unmap it.
   - If your board reports the turntable as **buttons**, map them to 'Turntable clockwise / counterclockwise'.
-  - If your board reports the turntable as an **axis**, press **Learn** next to 'Turntable (axis)' and spin the turntable for 2 seconds.
+  - If your board reports the turntable as an **axis**, press **Learn** next to 'Turntable (axis)' and spin the turntable for 2 seconds. Once learned, the disc next to it follows the turntable. If it spins the opposite way when you turn clockwise, turn on **Reverse turntable direction**.
+  - Reversing applies only to a turntable read as an axis. If a turntable mapped to **buttons** is backwards, swap the numbers in the clockwise and counterclockwise fields.
 - **Keyboard** : Click a field in the keyboard mapping table, then press the key you want.
 
 ### Controller support
@@ -99,7 +106,7 @@ Not every controller on the market is supported. The Other controller profile is
 - Controllers in **Xbox (XInput) mode** : the app may not find the device. If your controller can switch modes, try gamepad (HID) mode.
 - Controllers in **keyboard mode** : use the **Keyboard** profile instead of Other controller.
 - **General gamepads** with many buttons or analog sticks : mapping may pick up the wrong numbers, or some buttons may not be read.
-- **Several gamepads** connected : they all appear in the list, so pick the one you use under **Device**. Identical names get #1, #2; if that's confusing, unplug the ones you don't use.
+- **Several gamepads** connected : they all appear in the list, so pick the one you use under **Device**. Identical names are told apart by the last 4 digits of the serial number (or #1, #2); if that's confusing, unplug the ones you don't use.
 - Konami's official INFINITAS controller : not checked yet.
 
 **How to check your controller**

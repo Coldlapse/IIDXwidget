@@ -6,9 +6,14 @@ function getHID() {
 
 const LR2_ACTIVATE_THRESHOLD = 120;
 const LR2_DEACTIVATE_THRESHOLD = 3;
+// arcin 디지털 턴테이블 모드 판단: 축이 가운데 값에서 이만큼의 보고서 동안 안 움직였으면 아날로그가 꺼진 것으로 본다
+// (1000Hz 기준 0.25초. 펌웨어는 디지털 신호를 멈춘 뒤 200ms 동안 유지하므로 그보다 길게 둔다)
+const DIGITAL_TT_STILL_REPORTS = 250;
 
-// arcin(zyp) 기판. INFINITAS 호환이라 주작콘과 같은 1CCF:8048을 쓰므로 제품 이름으로 가린다 (예: 'arcin (red1p)')
-const isArcin = d => d.vendorId === 0x1CCF && d.productId === 0x8048 && /arcin/i.test(d.product || '');
+// arcin(zyp) 기판. INFINITAS 호환이라 주작콘과 같은 1CCF:8048을 쓰므로 이름으로 가린다.
+// arcin-infinitas 펌웨어는 제품 이름을 항상 'arcin' 또는 'arcin (라벨)'로, 제조사를 'zyp'으로 보낸다 (라벨은 사용자가 바꿀 수 있음)
+const isArcin = d => d.vendorId === 0x1CCF && d.productId === 0x8048
+  && (/arcin/i.test(d.product || '') || /^zyp$/i.test((d.manufacturer || '').trim()));
 const isPhoenix = d => d.vendorId === 0x1CCF && d.productId === 0x8048 && d.interface === 1 && !isArcin(d);
 const isFps = d => d.vendorId === 0x1CCF && d.productId === 0x8048 && d.interface === 0 && d.usagePage === 1 && !isArcin(d);
 // PHOENIXWAN+ LMT Classic 기판. 범용 게임패드 칩(VID 0E8F)이라 제품 이름까지 본다 (펌웨어 표기가 'PHONENIXWAN').
@@ -63,19 +68,29 @@ function profileCandidates(profile, devices) {
   return [];
 }
 
-// 설정 화면의 장치 드롭다운용: [{ path, name }]. 같은 이름이 여러 개면 번호를 붙인다
+const serialOf = d => (typeof d.serialNumber === 'string' ? d.serialNumber.trim() : '');
+
+// 설정 화면의 장치 드롭다운용: [{ path, serial, name }].
+// 같은 이름이 여러 개면(같은 기판 두 대 등) 시리얼 끝 4자리를, 시리얼로도 못 가리면 번호를 붙인다
 function listControllerDevices(profile, devices = getHID().devices()) {
-  const list = profileCandidates(profile, devices).map(d => ({ path: d.path, name: describeDevice(d) }));
-  const counts = {};
-  list.forEach(d => { counts[d.name] = (counts[d.name] || 0) + 1; });
+  const list = profileCandidates(profile, devices).map(d => ({ path: d.path, serial: serialOf(d), name: describeDevice(d) }));
+  const count = (key, value) => list.filter(d => d[key] === value).length;
   const seen = {};
-  return list.map(d => counts[d.name] > 1 ? { ...d, name: `${d.name} #${seen[d.name] = (seen[d.name] || 0) + 1}` } : d);
+  return list.map(d => {
+    if (count('name', d.name) < 2) return d;
+    if (d.serial && list.filter(o => o.name === d.name && o.serial === d.serial).length === 1) {
+      return { ...d, name: `${d.name} (S/N …${d.serial.slice(-4)})` };
+    }
+    return { ...d, name: `${d.name} #${seen[d.name] = (seen[d.name] || 0) + 1}` };
+  });
 }
 
-// 장치 고르기: 저장된 경로가 있으면 그 장치, 없거나 빠져 있으면 다른 사이드가 쓰지 않는 첫 장치
-function chooseDevice(profile, { devicePath = null, excludePaths = [] } = {}, devices = getHID().devices()) {
+// 장치 고르기: 저장된 경로 → 저장된 시리얼(다른 USB 포트에 꽂아 경로가 바뀐 경우) → 다른 사이드가 쓰지 않는 첫 장치
+function chooseDevice(profile, { devicePath = null, deviceSerial = null, excludePaths = [] } = {}, devices = getHID().devices()) {
   const available = profileCandidates(profile, devices).filter(d => !excludePaths.includes(d.path));
-  const device = available.find(d => d.path === devicePath) || available[0];
+  const device = available.find(d => d.path === devicePath)
+    || (deviceSerial && available.find(d => serialOf(d) === deviceSerial))
+    || available[0];
   return device ? { device, parser: PARSER_BY_PROFILE[profile] } : null;
 }
 
@@ -200,20 +215,22 @@ function findAxisByte(reports, minDistinct = 8) {
   return best;
 }
 
-// ─── 전용 컨트롤러 (주작콘 / FPS EMP / 주작콘 LMT Classic) ──────────────
+// ─── 전용 컨트롤러 (주작콘 / FPS EMP / 주작콘 LMT Classic / arcin) ──────────────
 //
-// 세 기판 모두 아래의 같은 처리(건반 비트, 턴테이블 값, LR2 모드 감지와 방향 처리)를 쓴다. 기판마다 다른 것은
+// 모든 기판이 아래의 같은 처리(건반 비트, 턴테이블 값, LR2 모드 감지와 방향 처리)를 쓴다. 기판마다 다른 것은
 // 건반·턴테이블을 읽는 바이트 자리와 LR2 모드에서 턴테이블이 보내는 세 값(+ 방향 / - 방향 / 멈춤)뿐이다.
 // - 주작콘·FPS: 건반 buffer[2], 턴테이블 buffer[0], LR2 값 0x80(+) / 0x7F(-) / 0x00(멈춤)
 // - LMT Classic: 건반 buffer[2], 턴테이블 buffer[7], LR2 값 0xFF(+) / 0x00(-) / 0x80(멈춤)
 //   (2026-09-27 컨트롤러 정보 수집 실측, LR2 모드, 1000Hz. 0x00 = 시계 방향. 일반 모드는 아직 실측 없음)
-// - arcin: 건반 buffer[1], 턴테이블 buffer[3] (절대 위치, 시계 방향이면 값이 줄어듦), E버튼 buffer[2]
-//   (2026-09-28 실측, INFINITAS 모드, 1000Hz). LR2 모드는 실측이 없어 감지하지 않는다 (lr2: null)
+// - arcin: 건반 buffer[1], 턴테이블 buffer[3] (절대 위치, 시계 방향이면 값이 줄어듦), E버튼 buffer[2] 하위 4비트
+//   (2026-09-28 실측 1P·2P, 1000Hz). 주작콘식 LR2 모드는 없고, 펌웨어 설정으로 디지털 턴테이블을 켜면
+//   buffer[2]의 0x10(시계 방향) / 0x20(반시계 방향)이 켜진다 (멈춘 뒤 200ms 유지). 디지털만 쓰면 축은 127로 고정된다.
+//   아날로그 축이 살아 있으면 축을 읽고, 축이 127에 멈춰 있을 때만 디지털 신호로 방향을 만든다 (digitalTT)
 const DEDICATED_LAYOUTS = {
   PHOENIXWAN: { keyByte: 2, turntableByte: 0, lr2: { plus: 0x80, minus: 0x7F, rest: 0x00 } },
   FPS_EMP: { keyByte: 2, turntableByte: 0, lr2: { plus: 0x80, minus: 0x7F, rest: 0x00 } },
   PHOENIXWAN_LMT: { keyByte: 2, turntableByte: 7, lr2: { plus: 0xFF, minus: 0x00, rest: 0x80 } },
-  ARCIN: { keyByte: 1, turntableByte: 3, lr2: null }
+  ARCIN: { keyByte: 1, turntableByte: 3, lr2: null, digitalTT: { byte: 2, clockwise: 0x10, counterclockwise: 0x20, axisRest: 127 } }
 };
 
 function createDedicatedParserState(layout = DEDICATED_LAYOUTS.PHOENIXWAN) {
@@ -226,7 +243,10 @@ function createDedicatedParserState(layout = DEDICATED_LAYOUTS.PHOENIXWAN) {
     normalPatternCount: 0,
     lr2FirstStaticTime: null,
     currentDiscRaw: 0,
-    lastLR2Direction: 'neutral'
+    lastLR2Direction: 'neutral',
+    lastAxisRaw: null,
+    axisStillReports: 0,
+    isDigitalTTActive: false
   };
 }
 
@@ -278,22 +298,48 @@ function detectLR2Mode(buffer, state, logger) {
   }
 }
 
+// arcin 디지털 턴테이블: 축이 가운데(127)에서 한동안 멈춰 있으면 아날로그가 꺼진 것으로 보고, 디지털 신호의 방향을 돌려준다.
+// 아날로그가 켜져 있으면(축이 움직이면) null → 축 값을 그대로 쓴다. 실행 중 펌웨어 모드를 바꿔도 보고서마다 따라간다
+function digitalTTDirection(buffer, state, logger) {
+  const { turntableByte, digitalTT } = state.layout;
+  const xRaw = buffer[turntableByte];
+  if (xRaw === state.lastAxisRaw) state.axisStillReports++;
+  else {
+    state.lastAxisRaw = xRaw;
+    state.axisStillReports = 0;
+  }
+  const active = xRaw === digitalTT.axisRest && state.axisStillReports >= DIGITAL_TT_STILL_REPORTS;
+  if (active !== state.isDigitalTTActive) {
+    state.isDigitalTTActive = active;
+    if (active) state.currentDiscRaw = xRaw; // 위젯이 마지막으로 받은 값에서 이어서 돌도록
+    logger('log', active ? 'digitalTTActivated' : 'digitalTTDeactivated');
+  }
+  if (!active) return null;
+  const bits = buffer[digitalTT.byte];
+  // 시계 방향 = 값이 줄어드는 쪽('-'), 아날로그 축과 같은 규칙
+  return bits & digitalTT.clockwise ? '-' : bits & digitalTT.counterclockwise ? '+' : 'neutral';
+}
+
 function handleDedicatedData(buffer, callback, state, logger) {
-  const { turntableByte, lr2 } = state.layout || DEDICATED_LAYOUTS.PHOENIXWAN;
+  const { turntableByte, lr2, digitalTT } = state.layout || DEDICATED_LAYOUTS.PHOENIXWAN;
   const xRaw = buffer[turntableByte];
   if (state.lr2DetectEnabled) detectLR2Mode(buffer, state, logger);
 
   const parsed = parseControllerData(buffer, state);
 
+  // 턴테이블이 방향으로만 오는 경우: 주작콘 LR2 모드, arcin 디지털 턴테이블
+  let direction = null;
+  if (state.isLR2Active) direction = xRaw === lr2.plus ? '+' : xRaw === lr2.minus ? '-' : 'neutral';
+  else if (digitalTT) direction = digitalTTDirection(buffer, state, logger);
+
   // ✅ 일반 모드일 경우 parsed 원본을 그대로 반영
-  if (!state.isLR2Active) {
+  if (direction === null) {
     if (parsed.length) callback(parsed);
     return;
   }
 
-  // LR2 모드: 턴테이블 값이 방향 값으로만 오므로 방향 전환 시점에만 회전값을 만들어 보냄
+  // 방향 모드: 턴테이블 값이 방향으로만 오므로 방향 전환 시점에만 회전값을 만들어 보냄
   const filtered = parsed.filter(e => !(e.type === 'axis' && e.axis === 'X'));
-  const direction = xRaw === lr2.plus ? '+' : xRaw === lr2.minus ? '-' : 'neutral';
 
   if (direction !== 'neutral' && direction !== state.lastLR2Direction) {
     state.lastLR2Direction = direction;
@@ -306,6 +352,21 @@ function handleDedicatedData(buffer, callback, state, logger) {
 
   if (filtered.length) callback(filtered);
 }
+
+// ─── 턴테이블 방향 반전 ─────────────────────────────────────
+//
+// 축(또는 방향 신호)에서 만든 턴테이블 값만 뒤집는다 (255 − 값이면 위젯이 계산하는 회전 방향이 반대가 된다).
+// 기타 컨트롤러에서 버튼으로 매핑한 턴테이블(SCup/SCdown, physicalButton이 있는 이벤트)은 뒤집지 않는다.
+// 버튼 매핑은 두 칸을 서로 바꾸면 되기 때문이다
+const FLIPPED_DIRECTION = { '+': '-', '-': '+' };
+
+function reverseTurntableEvents(events) {
+  return events.map(e => (e.type === 'axis' && e.axis === 'X' && e.physicalButton === undefined && Number.isInteger(e.discRaw))
+    ? { ...e, discRaw: 255 - e.discRaw, direction: FLIPPED_DIRECTION[e.direction] || e.direction }
+    : e);
+}
+
+const reverseTurntable = callback => events => callback(reverseTurntableEvents(events));
 
 // ─── 장치 열기 ──────────────────────────────────────────────
 
@@ -322,8 +383,9 @@ function openReader(selection, callback, options) {
     return null;
   }
 
+  if (options.turntableReverse) callback = reverseTurntable(callback);
   const dedicatedState = createDedicatedParserState(DEDICATED_LAYOUTS[selection.parser] || DEDICATED_LAYOUTS.PHOENIXWAN);
-  // LR2 값을 모르는 배치(arcin)는 설정과 관계없이 감지하지 않는다 (멈춘 위치값을 LR2로 잘못 볼 수 있어서)
+  // 주작콘식 LR2 모드가 없는 기판(arcin)은 설정과 관계없이 감지하지 않는다 (arcin 디지털 턴테이블은 따로 자동으로 처리)
   dedicatedState.lr2DetectEnabled = selection.parser !== 'GENERIC' && !!options.lr2ModeEnabled && !!dedicatedState.layout.lr2;
   const genericState = createGenericParserState(Number.isInteger(options.genericAxis) ? options.genericAxis : null);
   const rawListeners = new Set();
@@ -406,5 +468,6 @@ module.exports = {
   parseControllerData,
   createDedicatedParserState,
   handleDedicatedData,
+  reverseTurntableEvents,
   DEDICATED_LAYOUTS
 };

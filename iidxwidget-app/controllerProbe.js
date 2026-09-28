@@ -11,14 +11,17 @@ function isExcludedCollection(d) {
   return d.usagePage === 12 || d.usagePage === 13; // 소비자 제어(미디어 키), 디지타이저
 }
 
-// 수집할 수 있는 장치를 제품(VID:PID)별로 묶는다. 게임패드·조이스틱이 있는 제품을 앞에 둔다
+// 수집할 수 있는 장치를 기기별로 묶는다. 게임패드·조이스틱이 있는 기기를 앞에 둔다.
+// 같은 기판 두 대(1P·2P)는 VID:PID가 같으므로 시리얼(없으면 제품 이름)까지 보고 따로 묶는다
 function groupProbeDevices(devices) {
   const groups = new Map();
   for (const d of devices) {
     if (isExcludedCollection(d)) continue;
-    const id = vidPidOf(d);
+    const vidPid = vidPidOf(d);
+    const serial = (d.serialNumber || '').trim();
+    const id = `${vidPid}|${serial || (d.product || '').trim()}`;
     if (!groups.has(id)) {
-      groups.set(id, { id, vendorId: d.vendorId, productId: d.productId, name: (d.product || '').trim(), manufacturer: (d.manufacturer || '').trim(), gamepad: false, interfaces: [] });
+      groups.set(id, { id, vidPid, serial, vendorId: d.vendorId, productId: d.productId, name: (d.product || '').trim(), manufacturer: (d.manufacturer || '').trim(), gamepad: false, interfaces: [] });
     }
     const group = groups.get(id);
     if (!group.name && d.product) group.name = d.product.trim();
@@ -29,7 +32,7 @@ function groupProbeDevices(devices) {
 }
 
 // 결과 파일에 넣을 장치 정보 (장치 경로는 PC마다 다른 값이라 넣지 않는다)
-const interfaceInfo = (group, i) => ({ index: i, vidPid: group.id, vendorId: group.vendorId, productId: group.productId, product: group.name,
+const interfaceInfo = (group, i) => ({ index: i, vidPid: group.vidPid, vendorId: group.vendorId, productId: group.productId, product: group.name,
   interface: group.interfaces[i].interface, usagePage: group.interfaces[i].usagePage, usage: group.interfaces[i].usage });
 
 // 제품의 인터페이스를 모두 열고 신호를 onReport(index, hex, 시각ms)로 넘긴다. 반환값은 닫기 함수와 연 인터페이스 정보

@@ -126,6 +126,12 @@ body {
 .axis-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 14px; color: #aaa; }
 .axis-row button { padding: 6px 10px; font-size: 13px; background-color: #333; color: #fff; }
 .axis-value { flex: 1; color: #fff; }
+/* 턴테이블 방향 반전 + 미니 원판 (위젯과 같은 방향으로 돈다) */
+.reverse-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
+.tt-preview { position: relative; width: 40px; height: 40px; flex: none; border-radius: 50%; border: 2px solid #888; background: #222; }
+.tt-preview.idle { opacity: 0.35; }
+.tt-needle { position: absolute; inset: 0; }
+.tt-needle::after { content: ''; position: absolute; left: 50%; top: 3px; width: 2px; height: 15px; margin-left: -1px; background: #fff; border-radius: 1px; }
 .mapping-status.warning, #form-status.error, .side-error { color: #ff5252; }
 #form-status { min-height: 0; font-size: 14px; color: #00c853; }
 #form-status:empty { display: none; }

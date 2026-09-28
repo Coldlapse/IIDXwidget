@@ -53,7 +53,9 @@ $('save-button').addEventListener('click', async () => {
     webSocketPort,
     controllerProfile: side1.controllerProfile,
     controllerDevice: side1.controllerDevice,
+    controllerDeviceSerial: side1.controllerDeviceSerial,
     lr2ModeEnabled: side1.lr2ModeEnabled,
+    turntableReverse: side1.turntableReverse,
     player2: side2,
     autoLaunch: $('autoLaunch').checked,
     autoUploadOnQuit: $('autoUploadOnQuit').checked,
@@ -110,7 +112,10 @@ $('buttonLayout').addEventListener('change', applyLayout);
 window.electronAPI.onControllerData(events => {
   const event = events.find(item => item.type === 'physical-button' && item.pressed);
   if (event) panels.forEach(panel => panel.handlePhysical(event));
+  panels.forEach(panel => panel.handleTurntable(events));
 });
+// 기타 컨트롤러 턴테이블 미리보기 (학습한 축 바이트 값)
+window.electronAPI.onAxisPreview(data => panels.forEach(panel => panel.handleAxisPreview(data)));
 
 // ✅ 스크래치 이미지 모드 UI 토글 함수
 function toggleDiscImageModeUI(mode) {
@@ -177,7 +182,9 @@ for (const slotName of Object.keys(discSlots)) {
   await panels[0].load({
     controllerProfile: settings.controllerProfile,
     controllerDevice: settings.controllerDevice,
+    controllerDeviceSerial: settings.controllerDeviceSerial,
     lr2ModeEnabled: settings.lr2ModeEnabled,
+    turntableReverse: settings.turntableReverse,
     keyMapping: settings.keyMapping
   });
   await panels[1].load(settings.player2);

@@ -161,7 +161,9 @@ const translations = {
       closeFailed: 'HID 닫기 실패',
       dataError: '컨트롤러 데이터 처리 오류',
       lr2Activated: 'LR2 모드 활성화됨',
-      lr2Deactivated: 'LR2 모드 비활성화됨'
+      lr2Deactivated: 'LR2 모드 비활성화됨',
+      digitalTTActivated: '디지털 턴테이블 신호로 읽는 중 (arcin)',
+      digitalTTDeactivated: '아날로그 턴테이블 축으로 읽는 중 (arcin)'
     },
     settings: {
       title: '설정',
@@ -199,6 +201,10 @@ const translations = {
       myProfile: '내 서열표 ↗',
       disconnect: '연결 해제',
       lr2: 'LR2 모드 감지 (주작콘 전용)',
+      turntableReverse: '턴테이블 방향 반전',
+      turntableReverseHelp: '턴테이블을 시계 방향으로 돌렸을 때 옆의 원판이 반대로 돌면 켜세요. 원판은 OBS 위젯과 같은 방향으로 돕니다.',
+      turntableReverseHelpUnsaved: '프로필을 바꿨다면 저장한 뒤에 옆의 원판으로 방향을 확인할 수 있습니다.',
+      turntableReverseHelpGeneric: "위에서 학습한 턴테이블 축에만 적용됩니다. 축을 학습하면 옆의 원판이 돌아가니, 시계 방향으로 돌렸을 때 반대로 돌면 켜세요. 버튼으로 매핑한 턴테이블은 '시계 방향'과 '반시계 방향' 칸을 서로 바꾸세요.",
       autoUploadOnQuit: '종료할 때 남은 타건 기록 자동 전송',
       autoUploadHint: 'beatmania.app 토큰이 있어야 동작합니다.',
       keyboardMapping: '키보드 매핑 (저는 KB를 하는 바보입니다)',
@@ -474,7 +480,9 @@ const translations = {
       closeFailed: 'Failed to close HID device',
       dataError: 'Controller data error',
       lr2Activated: 'LR2 mode activated',
-      lr2Deactivated: 'LR2 mode deactivated'
+      lr2Deactivated: 'LR2 mode deactivated',
+      digitalTTActivated: 'Reading the digital turntable signal (arcin)',
+      digitalTTDeactivated: 'Reading the analog turntable axis (arcin)'
     },
     settings: {
       title: 'Settings',
@@ -512,6 +520,10 @@ const translations = {
       myProfile: 'My profile ↗',
       disconnect: 'Disconnect',
       lr2: 'Detect LR2 mode (dedicated controller only)',
+      turntableReverse: 'Reverse turntable direction',
+      turntableReverseHelp: 'Turn this on if the disc next to it spins the opposite way when you turn the turntable clockwise. The disc spins the same way as the OBS widget.',
+      turntableReverseHelpUnsaved: 'If you changed the profile, save first; then the disc next to it shows the direction.',
+      turntableReverseHelpGeneric: "Applies only to the turntable axis learned above. Once the axis is learned the disc next to it spins; turn this on if it spins the opposite way when you turn clockwise. For a turntable mapped to buttons, swap the clockwise and counterclockwise fields instead.",
       autoUploadOnQuit: 'Upload remaining presses when quitting',
       autoUploadHint: 'Requires a beatmania.app token.',
       keyboardMapping: 'Keyboard mapping',

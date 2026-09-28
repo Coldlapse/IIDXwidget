@@ -197,6 +197,11 @@
         </div>
       </div>
       <label data-role="lr2-row"><input type="checkbox" data-role="lr2" /> <span data-i18n="settings.lr2">LR2 모드 감지 (주작콘 전용)</span></label>
+      <div class="reverse-row" data-role="reverse-row">
+        <label><input type="checkbox" data-role="tt-reverse" /> <span data-i18n="settings.turntableReverse">턴테이블 방향 반전</span></label>
+        <div class="tt-preview idle" data-role="tt-preview" aria-hidden="true"><div class="tt-needle" data-role="tt-disc"></div></div>
+      </div>
+      <p class="mapping-help" data-role="reverse-help"></p>
     </div>
 
     <div class="setting-group" data-role="kb-container" hidden>
@@ -236,7 +241,7 @@
         <button type="button" data-role="learn-axis" data-i18n="settings.learnAxis">학습</button>
         <button type="button" data-role="clear-axis" data-i18n="settings.clearAxis">지우기</button>
       </div>
-      <p class="mapping-help" data-i18n="settings.axisHelp">턴테이블이 축으로 동작하는 기판이라면 '학습'을 누르고 2초 동안 턴테이블을 돌리세요.</p>
+      <p class="mapping-help" data-role="axis-help" data-i18n="settings.axisHelp">턴테이블이 축으로 동작하는 기판이라면 '학습'을 누르고 2초 동안 턴테이블을 돌리세요.</p>
       <div class="mapping-status" data-role="mapping-status" aria-live="polite"></div>
     </div>
   </template>
