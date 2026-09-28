@@ -438,7 +438,7 @@ if (window.electronAPI?.onStats) {
 }
 
 window.iidxapi?.getAppVersion?.().then(version => {
-  document.title = `IIDXwidget v${version} by Sadang`;
+  document.title = `IIDXwidget v${version} by Coldlapse`;
 });
 
 function applyCustomColors(colors, transparentContainer = false) {

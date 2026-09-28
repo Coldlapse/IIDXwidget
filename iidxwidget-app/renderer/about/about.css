@@ -1,8 +1,30 @@
 .dev { display: flex; gap: 18px; align-items: flex-start; }
-.dev-photo { width: 96px; height: 96px; border-radius: 16px; background-color: #2a2a2a; object-fit: contain; flex-shrink: 0; }
+/* 개발자 카드: coldlapse.dev처럼 서리 낀 푸른빛을 아주 옅게 */
+.panel.dev {
+  background-image: radial-gradient(120% 90% at 0% 0%, rgba(58, 120, 255, 0.13), rgba(159, 231, 255, 0.03) 45%, transparent 70%);
+  border: 1px solid rgba(159, 231, 255, 0.16);
+}
+.dev-photo { width: 96px; height: 96px; border-radius: 16px; background-color: #2a2a2a; object-fit: contain; flex-shrink: 0; box-shadow: 0 0 0 1px rgba(159, 231, 255, 0.22); }
 .dev-body { min-width: 0; }
 .dev-body h2 { font-size: 22px; margin: 0 0 4px; }
-.dev-body h2 small { font-size: 14px; color: #999; font-weight: normal; margin-left: 4px; }
+/* 이름: 서리 그라데이션 글자와 반짝이 두 개 */
+.dev-body h2.dev-name {
+  position: relative;
+  display: inline-block;
+  margin: 2px 0 6px 0.2em;
+  font-family: 'Chakra Petch', 'Nanum Gothic', sans-serif;
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  background: linear-gradient(180deg, #ffffff 0%, #9fe7ff 38%, #3a78ff 72%, #bfeeff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.dev-name .spark { position: absolute; color: #8fb8ff; }
+.dev-name .s1 { width: 0.36em; height: 0.36em; left: -0.28em; top: -0.12em; }
+.dev-name .s2 { width: 0.2em; height: 0.2em; right: -0.3em; top: 0.4em; opacity: 0.7; }
 .app-line { margin: 0 0 10px; font-size: 13px; color: #aaa; }
 .bio { margin: 0 0 12px; font-size: 13px; line-height: 1.6; color: #ccc; }
 

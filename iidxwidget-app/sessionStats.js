@@ -21,7 +21,7 @@ const DEFAULT_CONFIG = {
 
 // 채터링 프리셋: 뗀 뒤 다시 누르기까지의 간격(gap)으로 판단
 // - rag: 기준(upperMs) 미만이면 모두 채터링 (Rag 님 dakendisplay와 같음)
-// - sadang: 하한(lowerMs) 초과, 기준 미만만 채터링. 하한 이하는 게임이 걸러 내는 떨림으로 보고 세지 않는다
+// - sadang(화면 이름 Coldlapse, 설정 값은 호환을 위해 'sadang' 그대로): 하한(lowerMs) 초과, 기준 미만만 채터링. 하한 이하는 게임이 걸러 내는 떨림으로 보고 세지 않는다
 const CHATTER_PRESETS = {
   rag: (gap, { upperMs }) => gap < upperMs,
   sadang: (gap, { upperMs, lowerMs }) => gap > lowerMs && gap < upperMs

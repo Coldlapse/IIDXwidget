@@ -19,7 +19,7 @@ const translations = {
     about: {
       title: '개발자 정보/기여자',
       repository: 'GitHub 저장소',
-      bio: '2022년에 IIDX와 BMS를 시작해 SP 발광개전(★★)을 취득한 BMS 플레이어입니다. IIDX 인피니타스를 위한 서열표 사이트가 없다는 점에 착안해 beatmania.app을 만들어 운영하고 있고, IIDXwidget도 그 연장선에서 개발했습니다. 방송하며 직접 쓰는 도구를 만듭니다.',
+      bio: '2022년에 IIDX와 BMS를 시작한 플레이어입니다. IIDX 인피니타스를 위한 서열표 사이트가 없다는 점에 착안해 beatmania.app을 만들어 운영하고 있고, IIDXwidget도 그 연장선에서 개발했습니다. 방송하며 직접 쓰는 도구를 만듭니다.',
       sponsorTitle: '후원',
       sponsorText: 'IIDXwidget은 무료입니다. 도움이 되셨다면 커피 한 잔으로 후원해 주시면 큰 힘이 됩니다.',
       contributorsTitle: '기여자',
@@ -325,7 +325,7 @@ const translations = {
       save: '저장',
       back: '돌아가기',
       saved: '저장했습니다. 이번 세션 기록을 새 기준으로 다시 셌습니다.',
-      invalid: '❗ 기준은 {min}~{max}ms 사이 정수이고, Sadang은 하한이 기준보다 작아야 합니다.'
+      invalid: '❗ 기준은 {min}~{max}ms 사이 정수이고, Coldlapse는 하한이 기준보다 작아야 합니다.'
     },
     logs: { title: '로그 보기' },
     widget: {
@@ -372,7 +372,7 @@ const translations = {
     about: {
       title: 'Developer & Contributors',
       repository: 'GitHub repository',
-      bio: 'A BMS player who started IIDX and BMS in 2022 and holds SP ★★ (発狂皆伝). Noticing that INFINITAS had no rank-table site of its own, Coldlapse built and runs beatmania.app. IIDXwidget grew out of the same work: tools made for real use on stream.',
+      bio: 'A player who started IIDX and BMS in 2022. Noticing that INFINITAS had no rank-table site of its own, Coldlapse built and runs beatmania.app. IIDXwidget grew out of the same work: tools made for real use on stream.',
       sponsorTitle: 'Support',
       sponsorText: 'IIDXwidget is free. If it has helped you, buying a coffee would mean a lot.',
       contributorsTitle: 'Contributors',
@@ -678,7 +678,7 @@ const translations = {
       save: 'Save',
       back: 'Back',
       saved: 'Saved. This session was recounted with the new rule.',
-      invalid: '❗ Values must be whole numbers from {min} to {max}ms, and for Sadang the lower limit must be below the threshold.'
+      invalid: '❗ Values must be whole numbers from {min} to {max}ms, and for Coldlapse the lower limit must be below the threshold.'
     },
     logs: { title: 'Logs' },
     widget: {

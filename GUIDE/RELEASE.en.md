@@ -9,7 +9,7 @@ Release is the time (ms) from pressing a key to letting go of it.
 
 ## 📊 It depends on the player and the chart
 
-For example, here is what the developer (Sadang) gets:
+For example, here is what the developer (Coldlapse) gets:
 
 | Chart type | Examples | Release |
 |---|---|---|

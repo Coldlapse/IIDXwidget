@@ -30,7 +30,7 @@ You only need to do this once. From now on the widget follows settings changes a
 ### Chatter detection works differently
 - Before: a press held for 15ms or less was chatter
 - Now: judged by **the gap between releasing a key and pressing it again** (same approach as Rag's widget)
-- Choose between two presets (Rag / Sadang) and set the thresholds with **⚙ Settings** in the chatter window.
+- Choose between two presets (Rag / Coldlapse) and set the thresholds with **⚙ Settings** in the chatter window.
 - The window groups keys 1-3-5-7 and 2-4-6 and highlights in red only keys that stand out within their group (at least twice the group average).
 - Details: [chatter guide](CHATTER.en.md)
 

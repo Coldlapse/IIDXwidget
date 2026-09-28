@@ -5,16 +5,19 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:" />
   <title data-i18n="about.title">개발자 정보/기여자</title>
   <link rel="stylesheet" href="../shared/fonts.css" />
+  <link rel="stylesheet" href="../shared/dashFonts.css" />
   <link rel="stylesheet" href="../shared/window.css" />
   <link rel="stylesheet" href="../shared/scrollbar.css" />
   <link rel="stylesheet" href="about.css" />
 </head>
 <body>
+  <!-- 이름 옆 반짝이 (coldlapse.dev와 같은 모양) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="spark" viewBox="0 0 32 32"><path fill="currentColor" d="M16 0C17 11 21 15 32 16 21 17 17 21 16 32 15 21 11 17 0 16 11 15 15 11 16 0Z"/></symbol></svg>
   <!-- 개발자 카드 (소개 페이지 iidxwidget.coldlapse.dev의 '만든 사람'과 같은 내용) -->
   <section class="panel dev">
     <img class="dev-photo" src="coldlapse.png" alt="Coldlapse" width="96" height="96" />
     <div class="dev-body">
-      <h2>Coldlapse <small>Sadang</small></h2>
+      <h2 class="dev-name"><svg class="spark s1" aria-hidden="true"><use href="#spark"/></svg>Coldlapse<svg class="spark s2" aria-hidden="true"><use href="#spark"/></svg></h2>
       <p class="app-line">IIDXwidget <span id="version"></span> · <a href="https://github.com/Coldlapse/IIDXwidget" target="_blank" data-i18n="about.repository">GitHub 저장소</a></p>
       <p class="bio" data-i18n="about.bio"></p>
       <div class="links">

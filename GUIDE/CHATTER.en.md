@@ -50,21 +50,21 @@ Change them with **⚙ Settings** at the top right of the chatter window. You ca
 | Preset | Counted as chatter | Defaults |
 |---|---|---|
 | **Rag** (default) | Every gap **below the threshold** | Threshold 30ms |
-| **Sadang** | Only gaps **above the lower limit and below the threshold** | Lower limit 10ms, threshold 30ms |
+| **Coldlapse** | Only gaps **above the lower limit and below the threshold** | Lower limit 10ms, threshold 30ms |
 
 ### Rag: see every switch bounce
 - Same rule as Rag's widget. Every gap shorter than the threshold (default 30ms) is counted.
 - It tells you first when a switch starts to bounce.
 - It also counts tiny bounces that games filter out by themselves, so the number can go up even when the game plays fine.
 
-### Sadang: see only what can matter in-game
+### Coldlapse: see only what can matter in-game
 - Tiny bounces at or below the lower limit (default 10ms) are treated as **chatter the game throws away** and are not counted.
 - Only gaps between the lower limit and the threshold (default over 10ms and under 30ms) are counted. That range can get past the game's filter and become an input you never made.
 - Set the lower limit for the game you play most. For example, beatoraja and LR2 filter changes within 16ms (see [How games handle input](#-how-games-handle-input) below), so a lower limit of 16ms is closer to "bounce that still gets through in that game".
 
 ### When you change the settings
 - **As soon as you save**, the whole session so far is recounted with the new rule. No restart needed.
-- The threshold and lower limit are whole numbers from 1 to 100ms, and for Sadang the lower limit must be below the threshold.
+- The threshold and lower limit are whole numbers from 1 to 100ms, and for Coldlapse the lower limit must be below the threshold.
 
 ---
 
@@ -131,7 +131,7 @@ The same bounce is treated differently by each game. This looks at the open-sour
 ### So
 - **beatoraja** filters bounce within 16ms on both press and release. Only bounce with longer gaps causes trouble.
 - **LR2** filters bounce on press but **not on release**. If a switch bounces on release, LR2 can register inputs you never made, such as empty POORs.
-- That's why chatter detection has two presets. Use **Rag** to see the switch itself, or **Sadang** with a lower limit that fits your game to see only bounce that matters in-game.
+- That's why chatter detection has two presets. Use **Rag** to see the switch itself, or **Coldlapse** with a lower limit that fits your game to see only bounce that matters in-game.
 - IIDX (INFINITAS and arcade) is not open source, so it couldn't be checked.
 
 ---
