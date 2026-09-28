@@ -139,7 +139,8 @@ const EXTERNAL_LINK_PREFIXES = [
   'https://discord.gg/RxjwbvWa8D',
   'https://boku.tachi.ac/u/Sadang',
   'https://buymeacoffee.com/sadang',
-  'https://github.com/Coldlapse/IIDXwidget/issues/new'
+  'https://github.com/Coldlapse/IIDXwidget/issues/new',
+  'https://coldlapse.dev/'
 ];
 
 function createSettingsWindow() {

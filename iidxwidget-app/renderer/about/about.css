@@ -38,6 +38,13 @@
   text-decoration: none;
 }
 .links a:hover { border-color: #666; }
+/* coldlapse.dev 버튼만 이름과 같은 서리 파란색을 살짝 */
+.links a.home {
+  border-color: rgba(159, 231, 255, 0.35);
+  background: linear-gradient(180deg, rgba(159, 231, 255, 0.08), rgba(58, 120, 255, 0.08));
+  color: #bfeeff;
+}
+.links a.home:hover { border-color: rgba(159, 231, 255, 0.6); }
 
 .sponsor h2 { margin-bottom: 8px; }
 .sponsor p { margin: 0 0 12px; font-size: 13px; line-height: 1.6; color: #ccc; }
