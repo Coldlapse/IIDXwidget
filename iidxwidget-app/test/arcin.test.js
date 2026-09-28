@@ -169,3 +169,25 @@ test('arcin 펌웨어가 늘 함께 내보내는 키보드 인터페이스(inter
   assert.deepEqual(listControllerDevices('PHOENIXWAN', devices), []);
   assert.deepEqual(listControllerDevices('AUTO', devices).map(d => d.path), ['arcin-1p', 'arcin-2p']);
 });
+
+test('수동 매핑 축 턴테이블: 멈추고 30ms 동안 값이 안 바뀌면 같은 값을 한 번 더 보내 위젯의 스크래치 불을 끈다', async () => {
+  const { createTurntableSettle } = require('../controller/controllerReader');
+  const sent = [];
+  const settle = createTurntableSettle(events => sent.push(...events), 30);
+  settle.onEvents([{ type: 'axis', axis: 'X', direction: '-', discRaw: 100 }]);
+  settle.onEvents([{ type: 'axis', axis: 'X', direction: '-', discRaw: 98 }]);
+  // 버튼 매핑 턴테이블(physicalButton)이나 멈춤 이벤트는 타이머를 건드리지 않는다
+  settle.onEvents([{ type: 'axis', axis: 'X', direction: '+', discRaw: 5, physicalButton: 8 }]);
+  await new Promise(r => setTimeout(r, 15));
+  assert.deepEqual(sent, []);
+  await new Promise(r => setTimeout(r, 40));
+  assert.deepEqual(sent.map(e => [e.discRaw, e.direction]), [[98, 'neutral']]);
+  // 위젯 계산으로 차이 0 → 불이 꺼진다
+  const delta = (a, b) => { let d = (b - a + 256) % 256; return d > 127 ? d - 256 : d; };
+  assert.equal(delta(98, sent[0].discRaw), 0);
+  // 닫으면 남은 타이머를 취소한다
+  settle.onEvents([{ type: 'axis', axis: 'X', direction: '+', discRaw: 99 }]);
+  settle.cancel();
+  await new Promise(r => setTimeout(r, 50));
+  assert.equal(sent.length, 1);
+});

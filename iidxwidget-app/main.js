@@ -145,6 +145,7 @@ function createSettingsWindow() {
     settingsWindow.on('closed', () => {
       settingsWindow = null;
       inputs.stopMappingSession();
+      inputs.endTurntablePreview();
     });
   }
 }
@@ -699,12 +700,18 @@ ipcMain.handle('start-mapping-session', (event, side = 1, devicePath = null) => 
 }, typeof devicePath === 'string' ? devicePath : null));
 ipcMain.handle('stop-mapping-session', () => inputs.stopMappingSession());
 ipcMain.handle('learn-turntable-axis', (event, side = 1) => inputs.learnTurntableAxis(side === 2 ? 2 : 1));
-// 기타 컨트롤러 턴테이블 미리보기: 학습한 축 바이트 값을 설정 창으로 보낸다
-ipcMain.handle('start-axis-preview', (event, side = 1, byteIndex = null) => {
+// 설정 창 미니 원판: 고른 프로필·장치의 턴테이블 값을 설정 창으로 보낸다 (저장 전에도 확인)
+ipcMain.handle('start-turntable-preview', (event, side = 1, options = {}) => {
   const s = side === 2 ? 2 : 1;
-  return inputs.startAxisPreview(s, Number.isInteger(byteIndex) ? byteIndex : null, value => sendTo(settingsWindow, 'axis-preview', { side: s, value }));
+  const o = options && typeof options === 'object' ? options : {};
+  return inputs.startTurntablePreview(s, {
+    profile: String(o.profile || ''),
+    devicePath: typeof o.devicePath === 'string' ? o.devicePath : null,
+    byteIndex: Number.isInteger(o.byteIndex) ? o.byteIndex : null,
+    lr2ModeEnabled: !!o.lr2ModeEnabled
+  }, value => sendTo(settingsWindow, 'turntable-preview', { side: s, value }));
 });
-ipcMain.handle('stop-axis-preview', () => inputs.endAxisPreview());
+ipcMain.handle('stop-turntable-preview', (event, side = null) => inputs.endTurntablePreview(side === 1 || side === 2 ? side : null));
 // 설정 창 장치 드롭다운: 프로필에 맞는 연결된 장치 목록
 ipcMain.handle('list-controller-devices', (event, profile) => inputs.listDevices(String(profile)));
 

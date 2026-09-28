@@ -112,10 +112,9 @@ $('buttonLayout').addEventListener('change', applyLayout);
 window.electronAPI.onControllerData(events => {
   const event = events.find(item => item.type === 'physical-button' && item.pressed);
   if (event) panels.forEach(panel => panel.handlePhysical(event));
-  panels.forEach(panel => panel.handleTurntable(events));
 });
-// 기타 컨트롤러 턴테이블 미리보기 (학습한 축 바이트 값)
-window.electronAPI.onAxisPreview(data => panels.forEach(panel => panel.handleAxisPreview(data)));
+// 미니 원판 미리보기 (고른 프로필·장치의 턴테이블 값)
+window.electronAPI.onTurntablePreview(data => panels.forEach(panel => panel.handleTurntablePreview(data)));
 
 // ✅ 스크래치 이미지 모드 UI 토글 함수
 function toggleDiscImageModeUI(mode) {

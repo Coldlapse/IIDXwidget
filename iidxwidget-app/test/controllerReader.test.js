@@ -27,11 +27,12 @@ events = parseGenericControllerData(button2, { 7: 2 }, state);
 assert.equal(events.find(e => e.type === 'button').button, 'button 7');
 const turntableState = { previousButtons: 0, currentDiscRaw: 128 };
 events = parseGenericControllerData(button1, { SCup: 1 }, turntableState);
+// 버튼 매핑 턴테이블은 주작콘 LR2 모드와 같다: 누르면 5칸, 떼면 같은 값으로 한 번 더 (위젯의 스크래치 불 끄기)
 assert.deepEqual(events.map(e => e.type), ['physical-button', 'axis']);
-assert.equal(events[1].discRaw, 130);
+assert.equal(events[1].discRaw, 133);
 assert.equal(events[1].direction, '+');
 events = parseGenericControllerData(neutral, { SCup: 1 }, turntableState);
-assert.deepEqual(events.map(e => e.type), ['physical-button']);
+assert.deepEqual(events.map(e => [e.type, e.discRaw, e.direction]), [['physical-button', undefined, undefined], ['axis', 133, 'neutral']]);
 events = parseGenericControllerData(button2, { SCdown: 2 }, turntableState);
 assert.equal(events.find(e => e.type === 'axis').discRaw, 128);
 assert.equal(events.find(e => e.type === 'axis').direction, '-');

@@ -9,6 +9,12 @@ const LR2_DEACTIVATE_THRESHOLD = 3;
 // arcin 디지털 턴테이블 모드 판단: 축이 가운데 값에서 이만큼의 보고서 동안 안 움직였으면 아날로그가 꺼진 것으로 본다
 // (1000Hz 기준 0.25초. 펌웨어는 디지털 신호를 멈춘 뒤 200ms 동안 유지하므로 그보다 길게 둔다)
 const DIGITAL_TT_STILL_REPORTS = 250;
+// 수동 매핑 턴테이블. 위젯은 턴테이블 값의 차이가 0인 이벤트를 받아야 스크래치 불을 끈다 (주작콘은 보고서마다 값을 보내서 저절로 꺼짐)
+// - 버튼 매핑: 주작콘 LR2 모드와 같게 누를 때 5칸 돌리고, 뗄 때 같은 값을 한 번 더 보내 불을 끈다
+// - 축: 값이 바뀔 때만 보내는 기기가 많아서, 이 시간 동안 안 바뀌면 같은 값을 한 번 더 보내 불을 끈다
+//   (위젯이 턴테이블 값을 받는 최소 간격 20ms보다 길게. 주작콘은 멈추고 20~40ms 뒤에 꺼진다)
+const GENERIC_TT_BUTTON_STEP = 5;
+const GENERIC_TT_SETTLE_MS = 30;
 
 // arcin(zyp) 기판. INFINITAS 호환이라 주작콘과 같은 1CCF:8048을 쓰므로 이름으로 가린다.
 // arcin-infinitas 펌웨어는 제품 이름을 항상 'arcin' 또는 'arcin (라벨)'로, 제조사를 'zyp'으로 보낸다 (라벨은 사용자가 바꿀 수 있음).
@@ -191,10 +197,15 @@ function buttonEvents(previousButtons, buttons, mapping, state, timestamp) {
     const logical = Object.keys(mapping).find(key => Number(mapping[key]) === physicalButton);
     if (/^[1-7]$/.test(logical)) {
       events.push({ type: 'button', button: `button ${logical}`, physicalButton, pressed, timestamp });
-    } else if (pressed && (logical === 'SCup' || logical === 'SCdown')) {
-      const isUp = logical === 'SCup';
-      state.currentDiscRaw = (state.currentDiscRaw + (isUp ? 2 : -2) + 256) % 256;
-      events.push({ type: 'axis', axis: 'X', direction: isUp ? '+' : '-', discRaw: state.currentDiscRaw, physicalButton, timestamp });
+    } else if (logical === 'SCup' || logical === 'SCdown') {
+      if (pressed) {
+        const isUp = logical === 'SCup';
+        state.currentDiscRaw = (state.currentDiscRaw + (isUp ? GENERIC_TT_BUTTON_STEP : -GENERIC_TT_BUTTON_STEP) + 256) % 256;
+        events.push({ type: 'axis', axis: 'X', direction: isUp ? '+' : '-', discRaw: state.currentDiscRaw, physicalButton, timestamp });
+      } else {
+        // 떼면 값 변화 없이 한 번 더 보내 위젯의 스크래치 불을 끈다 (LR2 모드의 멈춤, 키보드와 같음)
+        events.push({ type: 'axis', axis: 'X', direction: 'neutral', discRaw: state.currentDiscRaw, physicalButton, timestamp });
+      }
     }
   }
   return events;
@@ -371,6 +382,24 @@ function reverseTurntableEvents(events) {
 
 const reverseTurntable = callback => events => callback(reverseTurntableEvents(events));
 
+// 수동 매핑의 축 턴테이블: 움직인 뒤 GENERIC_TT_SETTLE_MS 동안 값이 안 바뀌면 같은 값을 한 번 더 보낸다 (스크래치 불 끄기)
+function createTurntableSettle(callback, delayMs = GENERIC_TT_SETTLE_MS) {
+  let timer = null;
+  return {
+    onEvents(events) {
+      const moves = events.filter(e => e.type === 'axis' && e.axis === 'X' && e.physicalButton === undefined && e.direction !== 'neutral');
+      if (!moves.length) return;
+      const discRaw = moves[moves.length - 1].discRaw;
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        timer = null;
+        callback([{ type: 'axis', axis: 'X', direction: 'neutral', discRaw, timestamp: Date.now() }]);
+      }, delayMs);
+    },
+    cancel() { clearTimeout(timer); timer = null; }
+  };
+}
+
 // ─── 장치 열기 ──────────────────────────────────────────────
 
 function openReader(selection, callback, options) {
@@ -391,6 +420,7 @@ function openReader(selection, callback, options) {
   // 주작콘식 LR2 모드가 없는 기판(arcin)은 설정과 관계없이 감지하지 않는다 (arcin 디지털 턴테이블은 따로 자동으로 처리)
   dedicatedState.lr2DetectEnabled = selection.parser !== 'GENERIC' && !!options.lr2ModeEnabled && !!dedicatedState.layout.lr2;
   const genericState = createGenericParserState(Number.isInteger(options.genericAxis) ? options.genericAxis : null);
+  const settle = selection.parser === 'GENERIC' ? createTurntableSettle(callback) : null;
   const rawListeners = new Set();
 
   device.on('data', buffer => {
@@ -398,7 +428,10 @@ function openReader(selection, callback, options) {
     try {
       if (selection.parser === 'GENERIC') {
         const events = parseGenericControllerData(buffer, options.genericMapping, genericState);
-        if (events.length) callback(events);
+        if (events.length) {
+          callback(events);
+          settle.onEvents(events);
+        }
       } else {
         handleDedicatedData(buffer, callback, dedicatedState, logger);
       }
@@ -420,6 +453,7 @@ function openReader(selection, callback, options) {
     },
     close() {
       rawListeners.clear();
+      settle?.cancel();
       try {
         device.removeAllListeners();
         device.close();
@@ -472,5 +506,6 @@ module.exports = {
   createDedicatedParserState,
   handleDedicatedData,
   reverseTurntableEvents,
+  createTurntableSettle,
   DEDICATED_LAYOUTS
 };

@@ -28,10 +28,9 @@
     let genericAxis = null;
     let savedDevice = null;
     let savedSerial = null;
-    let savedProfile = null;
-    let savedReverse = false; // 지금 입력 리더에 적용된 반전 (저장된 값)
     let mappingSession = null;
-    let axisPreviewOn = false;
+    let previewOn = false;
+    let previewKey = null; // 지금 미리보기 중인 { 프로필, 장치, 축, LR2 } (같으면 다시 열지 않음)
     // 미니 원판: 위젯과 같은 방향으로 돈다 (값이 줄면 시계 방향)
     const disc = { last: null, rotation: 0, frame: null, idleTimer: null };
 
@@ -55,7 +54,7 @@
       sessionSide = side;
       mappingSession = await api.startMappingSession(side, devicePath());
       renderSessionStatus();
-      refreshAxisPreview();
+      refreshPreview();
     }
 
     function stopSession() {
@@ -63,7 +62,6 @@
       if (sessionSide !== side) return;
       sessionSide = null;
       mappingSession = null;
-      axisPreviewOn = false;
       api.stopMappingSession();
     }
 
@@ -72,18 +70,28 @@
       q('axis-value').textContent = genericAxis === null
         ? (window.i18n.ready ? t('settings.axisNone') : '')
         : t('settings.axisByte', { index: genericAxis });
-      refreshAxisPreview();
+      refreshPreview();
     }
 
-    // 기타 컨트롤러: 학습한 축 바이트의 값을 받아 원판을 돌린다 (매핑 학습 중인 사이드만)
-    async function refreshAxisPreview() {
+    // 미니 원판: 설정 창에서 고른 프로필·장치를 따로 읽어 돌린다 (저장 전에도 바로 확인)
+    // 기타 컨트롤러는 매핑 학습 중인 사이드에서 축을 학습했을 때만
+    async function refreshPreview({ force = false } = {}) {
+      const p = profile();
+      let options = null;
+      if (!root.hidden && p !== 'KB') {
+        if (p !== 'AUTO') options = { profile: p, devicePath: devicePath(), lr2ModeEnabled: q('lr2').checked };
+        else if (sessionSide === side && genericAxis !== null) options = { profile: p, byteIndex: genericAxis };
+      }
+      const key = options && JSON.stringify(options);
+      if (!force && key === previewKey) return;
+      previewKey = key;
       disc.last = null;
-      if (profile() !== 'AUTO' || sessionSide !== side || genericAxis === null) {
-        if (axisPreviewOn) api.stopAxisPreview();
-        axisPreviewOn = false;
+      if (!options) {
+        if (previewOn) api.stopTurntablePreview(side);
+        previewOn = false;
         return;
       }
-      axisPreviewOn = await api.startAxisPreview(side, genericAxis);
+      previewOn = await api.startTurntablePreview(side, options);
     }
 
     function spinDisc(value, reversed) {
@@ -104,10 +112,7 @@
 
     function renderReverseHelp() {
       if (!window.i18n.ready) return;
-      const p = profile();
-      let key = p === 'AUTO' ? 'settings.turntableReverseHelpGeneric' : 'settings.turntableReverseHelp';
-      if (p !== 'AUTO' && p !== savedProfile) key = 'settings.turntableReverseHelpUnsaved';
-      q('reverse-help').textContent = t(key);
+      q('reverse-help').textContent = t(profile() === 'AUTO' ? 'settings.turntableReverseHelpGeneric' : 'settings.turntableReverseHelp');
     }
 
     // 장치 드롭다운: 연결된 장치만 보여준다 (1개면 1개만). 없으면 '연결된 장치 없음'
@@ -146,13 +151,16 @@
       if (profile() !== 'KB') await refreshDevices();
       if (profile() === 'AUTO') startSession();
       else stopSession();
+      refreshPreview();
     }
 
     q('profile').addEventListener('change', onProfileChanged);
-    q('device').addEventListener('change', () => { if (profile() === 'AUTO') startSession(); });
+    q('device').addEventListener('change', () => { if (profile() === 'AUTO') startSession(); else refreshPreview(); });
+    q('lr2').addEventListener('change', () => refreshPreview());
     q('refresh').addEventListener('click', async () => {
       await refreshDevices();
       if (profile() === 'AUTO') startSession();
+      else refreshPreview({ force: true }); // 컨트롤러를 새로 꽂은 경우 다시 연다
     });
 
     // 기타 컨트롤러 매핑: 칸을 누르면 그 사이드로 학습을 옮기고 버튼을 기다린다
@@ -214,9 +222,7 @@
         q('tt-reverse').checked = !!config.turntableReverse;
         savedDevice = config.controllerDevice || null;
         savedSerial = config.controllerDeviceSerial || null;
-        savedProfile = config.controllerProfile;
-        savedReverse = !!config.turntableReverse;
-        disc.last = null;
+        previewKey = null; // 저장 뒤 다시 불러오면 미리보기를 새로 연다
         const kb = config.keyMapping?.KB || {};
         root.querySelectorAll('.key-mapping-table input').forEach(input => input.value = kb[input.dataset.key] || '');
         const generic = config.keyMapping?.GENERIC || {};
@@ -231,7 +237,10 @@
         root.hidden = !visible;
         q('title').hidden = !showTitle;
         if (visible) await onProfileChanged();
-        else stopSession();
+        else {
+          stopSession();
+          refreshPreview();
+        }
       },
       collect() {
         const kb = {};
@@ -262,19 +271,9 @@
         const keys = generic.invalid.length ? generic.invalid : generic.duplicates[0];
         return t('settings.invalidGenericMapping', { keys: keys.map(mappingLabel).join(', ') });
       },
-      // 전용 프로필 미리보기: 지금 읽고 있는 입력(저장된 프로필, 저장된 반전이 적용된 값)으로 원판을 돌린다.
-      // 체크를 저장값과 다르게 바꾸면 반대로 돌려서 저장 후 모습을 미리 보여준다
-      handleTurntable(events) {
-        const p = profile();
-        if (root.hidden || p === 'KB' || p === 'AUTO' || p !== savedProfile) return;
-        for (const e of events) {
-          if (e.type !== 'axis' || e.axis !== 'X' || (e.side || 1) !== side || !Number.isInteger(e.discRaw)) continue;
-          spinDisc(e.discRaw, q('tt-reverse').checked !== savedReverse);
-        }
-      },
-      // 기타 컨트롤러 미리보기: 학습한 축 바이트의 원래 값 (반전 전)
-      handleAxisPreview({ side: from, value }) {
-        if (from !== side || profile() !== 'AUTO' || !axisPreviewOn) return;
+      // 미니 원판 미리보기: 방향 반전 전 원래 값이 오므로 체크 상태대로 뒤집어 돌린다
+      handleTurntablePreview({ side: from, value }) {
+        if (from !== side || !previewOn) return;
         spinDisc(value, q('tt-reverse').checked);
       },
       // 매핑 학습 중 누른 물리 버튼 (이 사이드에서 온 것만)

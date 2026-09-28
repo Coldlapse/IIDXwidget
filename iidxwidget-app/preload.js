@@ -26,10 +26,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   stopMappingSession: () => ipcRenderer.invoke('stop-mapping-session'),
   // 턴테이블을 돌리는 동안 축 바이트를 찾는다. 결과 { byteIndex, distinct } 또는 null
   learnTurntableAxis: (side = 1) => ipcRenderer.invoke('learn-turntable-axis', side),
-  // 기타 컨트롤러 턴테이블 미리보기: 학습한 축 바이트의 값을 { side, value }로 받는다 (방향 반전 전 원래 값)
-  startAxisPreview: (side = 1, byteIndex = null) => ipcRenderer.invoke('start-axis-preview', side, byteIndex),
-  stopAxisPreview: () => ipcRenderer.invoke('stop-axis-preview'),
-  onAxisPreview: (callback) => ipcRenderer.on('axis-preview', (_, data) => callback(data)),
+  // 설정 창 미니 원판: 고른 프로필·장치의 턴테이블 값을 { side, value }로 받는다 (방향 반전 전 원래 값)
+  // options: { profile, devicePath, byteIndex(기타 컨트롤러), lr2ModeEnabled }
+  startTurntablePreview: (side = 1, options = {}) => ipcRenderer.invoke('start-turntable-preview', side, options),
+  stopTurntablePreview: (side = null) => ipcRenderer.invoke('stop-turntable-preview', side),
+  onTurntablePreview: (callback) => ipcRenderer.on('turntable-preview', (_, data) => callback(data)),
   // 이번 세션 통계 (타건 수, 릴리즈, KPS, 업타임 등). 앱 창과 OBS 위젯이 같은 값을 받는다
   getStats: () => ipcRenderer.invoke('get-stats'),
   onStats: (callback) => ipcRenderer.on('stats', (_, stats) => callback(stats)),

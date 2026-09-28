@@ -41,7 +41,7 @@ const tagSide = (side, events) => events.map(event => ({ ...event, side }));
 function createInputManager({ dispatch, logger }) {
   let readers = [];          // [{ side, kind: 'hid' | 'keyboard', reader }]
   let mappingReader = null;  // 설정 창 매핑 학습용으로 따로 연 리더 { side, reader }
-  let stopAxisPreview = null; // 설정 창 턴테이블 미리보기 구독 해제
+  const previews = new Map(); // 설정 창 턴테이블 미리보기, 사이드별 { kind: 'axis' | 'dedicated', stop }
   let lastSettings = null;
 
   function stop() {
@@ -118,31 +118,57 @@ function createInputManager({ dispatch, logger }) {
     }, durationMs));
   }
 
-  // 기타 컨트롤러 매핑: 학습한 축 바이트의 원래 값(방향 반전 전)을 설정 창 미리보기로 보낸다.
+  // 설정 창의 미니 원판: 설정 창에서 고른 프로필·장치의 턴테이블 값(방향 반전 전)을 보낸다. 저장 전에도 바로 확인할 수 있다.
+  // - 기타 컨트롤러: 매핑 학습 리더에서 학습한 축 바이트의 값
+  // - 전용 프로필: 그 장치를 미리보기용으로 따로 열어 전용 파서(LR2·arcin 디지털 턴테이블 포함)를 거친 값.
+  //   입력 리더가 같은 장치를 읽고 있어도 함께 열 수 있다 (Windows HID는 공유로 열림)
   // 1000Hz 보고서를 그대로 보내지 않고 약 60fps로 줄인다 (마지막 값은 꼭 보낸다)
-  function startAxisPreview(side, byteIndex, onValue, intervalMs = 16) {
-    endAxisPreview();
-    const reader = mappingReaderOf(side);
-    if (!reader || !Number.isInteger(byteIndex)) return false;
+  function throttled(onValue, intervalMs = 16) {
     let last = null, sentAt = 0, timer = null;
     const flush = () => { timer = null; sentAt = Date.now(); onValue(last); };
-    const unsubscribe = reader.addRawListener(buffer => {
-      if (byteIndex >= buffer.length || buffer[byteIndex] === last) return;
-      last = buffer[byteIndex];
-      if (Date.now() - sentAt >= intervalMs) flush();
-      else if (!timer) timer = setTimeout(flush, intervalMs);
-    });
-    stopAxisPreview = () => { unsubscribe(); clearTimeout(timer); };
+    return {
+      push(value) {
+        if (value === last) return;
+        last = value;
+        if (Date.now() - sentAt >= intervalMs) flush();
+        else if (!timer) timer = setTimeout(flush, intervalMs);
+      },
+      cancel: () => clearTimeout(timer)
+    };
+  }
+
+  // options: { profile, devicePath, byteIndex(기타 컨트롤러), lr2ModeEnabled(전용) }
+  function startTurntablePreview(side, options, onValue) {
+    endTurntablePreview(side);
+    const out = throttled(onValue);
+    if (options.profile === 'AUTO') {
+      const reader = mappingReaderOf(side);
+      const byteIndex = options.byteIndex;
+      if (!reader || !Number.isInteger(byteIndex)) return false;
+      const unsubscribe = reader.addRawListener(buffer => { if (byteIndex < buffer.length) out.push(buffer[byteIndex]); });
+      previews.set(side, { kind: 'axis', stop: () => { unsubscribe(); out.cancel(); } });
+      return true;
+    }
+    if (!DEDICATED_PROFILES.includes(options.profile)) return false;
+    const reader = startControllerReader(options.profile, events => {
+      for (const e of events) if (e.type === 'axis' && e.axis === 'X' && Number.isInteger(e.discRaw)) out.push(e.discRaw);
+    }, { devicePath: options.devicePath || null, lr2ModeEnabled: !!options.lr2ModeEnabled, logger: () => {} });
+    if (!reader) return false;
+    previews.set(side, { kind: 'dedicated', stop: () => { out.cancel(); reader.close(); } });
     return true;
   }
 
-  function endAxisPreview() {
-    stopAxisPreview?.();
-    stopAxisPreview = null;
+  // side를 빼면 모든 사이드. kind를 주면 그 종류만 멈춘다
+  function endTurntablePreview(side = null, kind = null) {
+    for (const [s, preview] of [...previews]) {
+      if ((side !== null && s !== side) || (kind && preview.kind !== kind)) continue;
+      try { preview.stop(); } catch (e) {}
+      previews.delete(s);
+    }
   }
 
   function stopMappingSession() {
-    endAxisPreview();
+    endTurntablePreview(null, 'axis'); // 학습 리더를 닫으므로 그 리더에 붙은 미리보기도 멈춘다
     if (mappingReader) {
       try { mappingReader.reader.close(); } catch (e) {}
       mappingReader = null;
@@ -157,7 +183,7 @@ function createInputManager({ dispatch, logger }) {
     };
   }
 
-  return { start, stop, startMappingSession, stopMappingSession, learnTurntableAxis, startAxisPreview, endAxisPreview, listDevices, sideConfig: side => lastSettings && sideConfig(lastSettings, side) };
+  return { start, stop, startMappingSession, stopMappingSession, learnTurntableAxis, startTurntablePreview, endTurntablePreview, listDevices, sideConfig: side => lastSettings && sideConfig(lastSettings, side) };
 }
 
 module.exports = { createInputManager, sideConfig, activeSides };
