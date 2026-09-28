@@ -182,9 +182,16 @@ function parseGenericControllerData(buffer, mapping = {}, state = createGenericP
   return events;
 }
 
+// 버튼 매핑 턴테이블은 주작콘 LR2 모드와 같게 보고서 하나에 턴테이블 이벤트를 최대 하나만 만든다.
+// 위젯은 턴테이블 이벤트를 20ms에 하나만 받으므로, 한 보고서에서 '뗌(멈춤)'과 '누름(5칸)'을 함께 보내면 뒤의 것이 버려진다
+// (예: 주작콘 LR2 모드를 수동 매핑하면 방향을 바꿀 때 0x80 → 0x7F로 한쪽을 떼면서 다른 쪽을 누른다)
+// - 새로 누른 방향이 있으면 그 방향으로 5칸
+// - 뗀 것만 있고 눌린 턴테이블 버튼이 남지 않았으면 멈춤 (같은 값을 한 번 더 보내 스크래치 불을 끈다)
 function buttonEvents(previousButtons, buttons, mapping, state, timestamp) {
   const events = [];
   const changed = buttons ^ previousButtons;
+  let turntablePress = null;
+  let turntableRelease = null;
 
   for (let i = 0; i < MAX_BUTTON_BYTES * 8; i++) {
     const mask = 1n << BigInt(i);
@@ -198,15 +205,19 @@ function buttonEvents(previousButtons, buttons, mapping, state, timestamp) {
     if (/^[1-7]$/.test(logical)) {
       events.push({ type: 'button', button: `button ${logical}`, physicalButton, pressed, timestamp });
     } else if (logical === 'SCup' || logical === 'SCdown') {
-      if (pressed) {
-        const isUp = logical === 'SCup';
-        state.currentDiscRaw = (state.currentDiscRaw + (isUp ? GENERIC_TT_BUTTON_STEP : -GENERIC_TT_BUTTON_STEP) + 256) % 256;
-        events.push({ type: 'axis', axis: 'X', direction: isUp ? '+' : '-', discRaw: state.currentDiscRaw, physicalButton, timestamp });
-      } else {
-        // 떼면 값 변화 없이 한 번 더 보내 위젯의 스크래치 불을 끈다 (LR2 모드의 멈춤, 키보드와 같음)
-        events.push({ type: 'axis', axis: 'X', direction: 'neutral', discRaw: state.currentDiscRaw, physicalButton, timestamp });
-      }
+      if (pressed) turntablePress = { isUp: logical === 'SCup', physicalButton };
+      else turntableRelease = physicalButton;
     }
+  }
+
+  const isHeld = key => Number.isInteger(Number(mapping[key])) && Number(mapping[key]) >= 1
+    && !!(buttons & (1n << BigInt(Number(mapping[key]) - 1)));
+  if (turntablePress) {
+    const { isUp, physicalButton } = turntablePress;
+    state.currentDiscRaw = (state.currentDiscRaw + (isUp ? GENERIC_TT_BUTTON_STEP : -GENERIC_TT_BUTTON_STEP) + 256) % 256;
+    events.push({ type: 'axis', axis: 'X', direction: isUp ? '+' : '-', discRaw: state.currentDiscRaw, physicalButton, timestamp });
+  } else if (turntableRelease && !isHeld('SCup') && !isHeld('SCdown')) {
+    events.push({ type: 'axis', axis: 'X', direction: 'neutral', discRaw: state.currentDiscRaw, physicalButton: turntableRelease, timestamp });
   }
   return events;
 }

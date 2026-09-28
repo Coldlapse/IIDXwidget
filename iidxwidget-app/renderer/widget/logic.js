@@ -9,6 +9,41 @@
     return delta;
   }
 
+  // 턴테이블 값은 intervalMs에 한 번만 그린다. 그 사이에 온 값은 버리지 않고 마지막 값을 간격이 차는 순간 그린다.
+  // (예전에는 버려서, 주작콘 LR2 모드나 버튼 턴테이블처럼 '멈춤' 직후 20ms 안에 오는 방향 신호가 씹혔다)
+  // interval: 숫자 또는 지금 간격을 돌려주는 함수 (키보드는 5ms, 컨트롤러는 20ms)
+  // 같은 값이 연달아 오면 '멈춤'이다 (위젯은 차이 0으로 스크래치 불을 끈다). 멈춤이 움직임과 함께 묶이면
+  // 움직임을 그린 뒤 한 간격 뒤에 한 번 더 그려 불을 끈다 (20ms보다 짧게 누르고 뗀 버튼 턴테이블 등)
+  function createLatestThrottle(interval, apply, { now = () => Date.now(), schedule = setTimeout, cancel = clearTimeout } = {}) {
+    const intervalMs = typeof interval === 'function' ? interval : () => interval;
+    let lastAt = -Infinity;
+    let lastPushed;
+    let pending;
+    let stopAfter = false;
+    let timer = null;
+    const run = value => { lastAt = now(); apply(value); };
+    const fire = () => {
+      timer = null;
+      run(pending);
+      if (stopAfter) {
+        stopAfter = false;
+        timer = schedule(fire, intervalMs());
+      }
+    };
+    return {
+      push(value) {
+        const isStop = value === lastPushed;
+        lastPushed = value;
+        const wait = intervalMs() - (now() - lastAt);
+        if (wait <= 0 && !timer) return run(value);
+        if (isStop && timer) stopAfter = true;
+        pending = value;
+        if (!timer) timer = schedule(fire, wait);
+      },
+      cancel() { if (timer) cancel(timer); timer = null; stopAfter = false; }
+    };
+  }
+
   // 초 → 'H:MM:SS'
   function formatUptime(seconds) {
     const hrs = Math.floor(seconds / 3600);
@@ -44,7 +79,7 @@
     return widget?.autoPalette && widget?.discImagePath && valid ? palette : widget?.colors;
   }
 
-  const api = { discDelta, formatUptime, kpsGauge, KPS_GAUGE_PRESETS, KPS_GAUGE_SPLIT, widgetColors, COLOR_KEYS };
+  const api = { discDelta, createLatestThrottle, formatUptime, kpsGauge, KPS_GAUGE_PRESETS, KPS_GAUGE_SPLIT, widgetColors, COLOR_KEYS };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.widgetLogic = api;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -191,3 +191,67 @@ test('수동 매핑 축 턴테이블: 멈추고 30ms 동안 값이 안 바뀌면
   await new Promise(r => setTimeout(r, 50));
   assert.equal(sent.length, 1);
 });
+
+// 위젯 흉내: 실제 위젯의 턴테이블 그리기(createLatestThrottle)를 가짜 시계로 기록 시각대로 돌린다.
+// 차이 +면 위쪽 불, -면 아래쪽 불, 0이면 끔
+function widgetSim(interval = 20) {
+  const { createLatestThrottle, discDelta } = require('../renderer/widget/logic');
+  let clock = 0, last = null, lit = null, moves = 0;
+  const timers = [];
+  const throttle = createLatestThrottle(interval, value => {
+    if (last !== null) { const d = discDelta(last, value); lit = d > 0 ? 'up' : d < 0 ? 'down' : null; if (d) moves++; }
+    last = value;
+  }, { now: () => clock, schedule: (fn, ms) => { const timer = { at: clock + ms, fn }; timers.push(timer); return timer; }, cancel: timer => timers.splice(timers.indexOf(timer), 1) });
+  const advance = to => {
+    for (;;) {
+      timers.sort((a, b) => a.at - b.at);
+      if (!timers.length || timers[0].at > to) break;
+      const timer = timers.shift();
+      clock = timer.at;
+      timer.fn();
+    }
+    clock = to;
+  };
+  return { push: (value, at) => { advance(at); throttle.push(value); }, advance, state: () => ({ lit, moves, last }) };
+}
+
+test('수동 매핑 버튼 턴테이블: 주작콘 LR2 모드 실측(0x80 ↔ 0x7F 바로 전환, 멈춤 뒤 16ms 만에 다시 돌림)에서도 원판이 돌고 불이 맞게 켜지고 꺼진다', () => {
+  // SCup = 버튼 8(0x80), SCdown = 버튼 1(0x7F의 한 비트). 방향을 바꾸면 한쪽을 떼면서 다른 쪽을 누른다
+  const rec = require('./fixtures/phoenixwan-lr2-manual-mapping.json');
+  const { createGenericParserState: newState, parseGenericControllerData } = require('../controller/controllerReader');
+  const mapping = { 1: 17, 2: 18, 3: 19, 4: 20, 5: 21, 6: 22, 7: 23, SCup: 8, SCdown: 1 };
+  for (const step of ['ttMixed', 'ttCwFast']) {
+    const st = newState(null);
+    const widget = widgetSim();
+    widget.push(st.currentDiscRaw, -1000);
+    const changes = rec.recordings.find(r => r.step === step).changes;
+    for (const { t, data } of changes) {
+      const axis = parseGenericControllerData(toBuffer(data), mapping, st).filter(e => e.type === 'axis');
+      assert.ok(axis.length <= 1, '보고서 하나에 턴테이블 이벤트는 하나까지');
+      axis.forEach(e => widget.push(e.discRaw, t));
+      widget.advance(t + 19); // 다음 신호가 오기 전(가장 짧은 간격 16ms 이후), 위젯에 반영된 상태
+      const expected = data.startsWith('80') ? 'up' : data.startsWith('7f') ? 'down' : null;
+      if (t > 0) assert.equal(widget.state().lit, expected, `${step} ${t}ms ${data.slice(0, 2)} 뒤 불 상태`);
+    }
+    // 누른 횟수만큼 원판이 돈다 (씹히지 않음)
+    const presses = changes.filter(c => !c.data.startsWith('00')).length;
+    assert.equal(widget.state().moves, presses, step + ' 원판이 돈 횟수');
+  }
+});
+
+test('위젯 턴테이블: 20ms보다 짧게 누르고 뗀 버튼 턴테이블도 원판이 돌고 불이 꺼진다', () => {
+  const widget = widgetSim();
+  widget.push(128, 0);
+  widget.push(133, 30);  // 누름 (바로 그림)
+  widget.push(133, 35);  // 뗌 (같은 값 = 멈춤, 20ms 안이라 미뤄짐)
+  widget.advance(51);    // 누른 뒤 20ms가 차는 50ms에 멈춤을 그린다
+  assert.equal(widget.state().lit, null);
+  widget.push(138, 60);  // 누름
+  widget.push(143, 62);  // 20ms 안에 한 번 더 누름 → 미뤄졌다가 그려짐
+  widget.push(143, 64);  // 뗌
+  widget.advance(81);
+  assert.equal(widget.state().lit, 'up');
+  widget.advance(110);
+  assert.equal(widget.state().lit, null);   // 한 간격 뒤 한 번 더 그려서 끔
+  assert.equal(widget.state().last, 143);
+});

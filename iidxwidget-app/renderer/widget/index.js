@@ -1,4 +1,4 @@
-const { discDelta, formatUptime, kpsGauge } = window.widgetLogic;
+const { discDelta, createLatestThrottle, formatUptime, kpsGauge } = window.widgetLogic;
 
 // ─── 사이드 (SP는 1P 본체 하나, DP는 1P·2P 본체 두 개) ─────────────
 // 사이드마다 스크래치 회전·방향·점등, 건반 불빛, 건반 위 릴리즈 숫자를 따로 가진다.
@@ -19,7 +19,6 @@ function createSide(root, sideNumber) {
   const longNoteTimers = {};
   let lastDiscValue = null; // 첫 입력은 기준값으로만 쓴다
   let discRotation = 0;
-  let lastDiscUpdateTime = 0;
   let isLatestDiscDirectionUp = true;
 
   const side = {
@@ -75,20 +74,7 @@ function createSide(root, sideNumber) {
     },
 
     handleData(data) {
-      const now = Date.now();
-      if (data.type === 'axis' && data.axis === 'X' && data.discRaw !== undefined) {
-        if (now - lastDiscUpdateTime >= side.discUpdateInterval) {
-          const newValue = data.discRaw;
-          if (lastDiscValue !== null) {
-            const delta = discDelta(lastDiscValue, newValue);
-            side.rotateDisc(delta);
-            side.changeDiscImage(delta);
-            side.updateBorders(delta);
-          }
-          lastDiscValue = newValue;
-          lastDiscUpdateTime = now;
-        }
-      }
+      if (data.type === 'axis' && data.axis === 'X' && data.discRaw !== undefined) discThrottle.push(data.discRaw);
       if (data.type === 'button') side.updateButton(parseInt(data.button.split(' ')[1]), data.pressed);
     },
 
@@ -122,6 +108,16 @@ function createSide(root, sideNumber) {
       side.flipped = scratchRight;
     }
   };
+  // 턴테이블은 discUpdateInterval에 한 번 그린다. 그 사이에 온 값은 버리지 않고 마지막 값을 이어서 그린다
+  const discThrottle = createLatestThrottle(() => side.discUpdateInterval, newValue => {
+    if (lastDiscValue !== null) {
+      const delta = discDelta(lastDiscValue, newValue);
+      side.rotateDisc(delta);
+      side.changeDiscImage(delta);
+      side.updateBorders(delta);
+    }
+    lastDiscValue = newValue;
+  });
   return side;
 }
 
