@@ -1,0 +1,2 @@
+# 리눅스에서 쓰는 udev 규칙은 Windows에서 받아도 LF로 둔다
+linux/*.rules text eol=lf
