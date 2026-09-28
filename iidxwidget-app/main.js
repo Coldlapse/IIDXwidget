@@ -795,7 +795,7 @@ ipcMain.handle('probe-close', event => { if (fromProbe(event)) closeProbe(); });
 let probeSavedPath = null;
 ipcMain.handle('probe-save', async (event, result) => {
   if (!fromProbe(event) || !result || typeof result !== 'object') return null;
-  const side = s => s && { controllerProfile: s.controllerProfile, lr2ModeEnabled: s.lr2ModeEnabled, turntableReverse: s.turntableReverse, buttonTurntableLegacy: s.buttonTurntableLegacy,
+  const side = s => s && { controllerProfile: s.controllerProfile, lr2ModeEnabled: s.lr2ModeEnabled, turntableReverse: s.turntableReverse, buttonTurntableLegacy: s.buttonTurntableLegacy, turntableInput: s.turntableInput,
     genericMapping: s.keyMapping?.GENERIC, genericAxis: s.keyMapping?.GENERIC_AXIS };
   const full = { ...result, app: { version: appVersion, platform: `${process.platform} ${process.arch}`, buttonLayout: settings.widget?.buttonLayout,
     side1: side(settings), side2: settings.widget?.buttonLayout === 'DP' ? side(settings.player2) : undefined } };

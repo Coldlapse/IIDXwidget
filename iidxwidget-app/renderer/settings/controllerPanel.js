@@ -35,6 +35,17 @@
     const disc = { last: null, rotation: 0, frame: null, idleTimer: null };
 
     const profile = () => q('profile').value;
+    // 수동 매핑 턴테이블: 'button'(버튼 턴테이블) 또는 'analog'(학습한 축)
+    const turntableInput = () => (q('tt-mode').checked ? 'analog' : 'button');
+
+    function applyTurntableMode() {
+      const analog = turntableInput() === 'analog';
+      q('tt-button-section').hidden = analog;
+      q('tt-analog-section').hidden = !analog;
+      q('tt-mode-button').classList.toggle('active', !analog);
+      q('tt-mode-analog').classList.toggle('active', analog);
+      refreshPreview();
+    }
     const devicePath = () => q('device').value || null;
 
     function setStatus(message, { warning = false } = {}) {
@@ -80,7 +91,7 @@
       let options = null;
       if (!root.hidden && p !== 'KB') {
         if (p !== 'AUTO') options = { profile: p, devicePath: devicePath(), lr2ModeEnabled: q('lr2').checked };
-        else if (sessionSide === side && genericAxis !== null) options = { profile: p, byteIndex: genericAxis };
+        else if (sessionSide === side && genericAxis !== null && turntableInput() === 'analog') options = { profile: p, byteIndex: genericAxis };
       }
       const key = options && JSON.stringify(options);
       if (!force && key === previewKey) return;
@@ -141,7 +152,7 @@
       q('lr2-row').hidden = !(p === 'PHOENIXWAN' || p === 'FPS EMP Gen2' || p === 'PHOENIXWAN LMT Classic');
       q('reverse-row').hidden = p === 'KB';
       q('reverse-help').hidden = p === 'KB';
-      // 기타 컨트롤러는 반전이 축 학습에만 적용되므로 축 학습 줄 바로 밑에 둔다
+      // 기타 컨트롤러는 반전이 축(아날로그 턴테이블)에만 적용되므로 아날로그 턴테이블 구역의 축 학습 줄 밑에 둔다
       (p === 'AUTO' ? q('axis-help') : q('lr2-row')).after(q('reverse-row'), q('reverse-help'));
       renderReverseHelp();
     }
@@ -192,6 +203,7 @@
       }
     });
     q('clear-axis').addEventListener('click', () => setAxis(null));
+    q('tt-mode').addEventListener('change', applyTurntableMode);
 
     // 키보드 매핑: 칸에서 누른 키를 적는다
     root.querySelectorAll('.key-mapping-table input').forEach(input => {
@@ -222,6 +234,8 @@
         q('lr2').checked = !!config.lr2ModeEnabled;
         q('tt-reverse').checked = !!config.turntableReverse;
         q('tt-legacy').checked = !!config.buttonTurntableLegacy;
+        // 저장된 값이 없으면(3.0.1 이하 설정) 축을 학습해 둔 사용자는 아날로그, 아니면 버튼 턴테이블
+        q('tt-mode').checked = window.formLogic.resolveTurntableInput(config.turntableInput, config.keyMapping?.GENERIC_AXIS) === 'analog';
         savedDevice = config.controllerDevice || null;
         savedSerial = config.controllerDeviceSerial || null;
         previewKey = null; // 저장 뒤 다시 불러오면 미리보기를 새로 연다
@@ -230,6 +244,7 @@
         const generic = config.keyMapping?.GENERIC || {};
         root.querySelectorAll('.generic-mapping-table input').forEach(input => input.value = generic[input.dataset.key] ?? '');
         setAxis(config.keyMapping?.GENERIC_AXIS ?? null);
+        applyTurntableMode();
         if (window.i18n.ready) localize();
         applyProfileUI();
         if (!root.hidden) await onProfileChanged();
@@ -261,6 +276,7 @@
             lr2ModeEnabled: q('lr2').checked,
             turntableReverse: q('tt-reverse').checked,
             buttonTurntableLegacy: q('tt-legacy').checked,
+            turntableInput: turntableInput(),
             keyMapping: { KB: kb, GENERIC: generic.mapping, GENERIC_AXIS: genericAxis }
           },
           generic

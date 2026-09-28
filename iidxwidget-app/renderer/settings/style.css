@@ -123,6 +123,9 @@ body {
 }
 .mapping-help { color: #aaa; font-size: 12px; line-height: 1.5; margin: 4px 0; }
 .mapping-status { min-height: 20px; color: #00c853; font-size: 13px; }
+.generic-mapping-table { width: 100%; }
+/* 건반 표와 버튼 턴테이블 표의 입력칸 폭을 맞춘다 */
+.generic-mapping-table td:last-child { width: 40%; }
 .generic-mapping-table input { width: 100%; box-sizing: border-box; }
 .input-with-delete { display: flex; gap: 8px; }
 .input-with-delete button { flex: 1; background-color: #333; color: #fff; }
@@ -132,6 +135,17 @@ body {
 .axis-value { flex: 1; color: #fff; }
 /* 턴테이블 방향 반전 + 미니 원판 (위젯과 같은 방향으로 돈다) */
 .legacy-row { display: block; margin-top: 8px; }
+/* 버튼 턴테이블 ↔ 아날로그 턴테이블 스위치 */
+.tt-mode-row { display: flex; align-items: center; gap: 10px; margin: 14px 0 6px; font-size: 14px; }
+.tt-mode-name { color: #777; }
+.tt-mode-name.active { color: #fff; font-weight: bold; }
+.switch { position: relative; display: inline-block; width: 40px; height: 22px; flex: none; }
+.switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+.switch-track { position: absolute; inset: 0; background: #444; border-radius: 11px; cursor: pointer; transition: background 0.15s; }
+.switch-track::before { content: ''; position: absolute; left: 3px; top: 3px; width: 16px; height: 16px; background: #fff; border-radius: 50%; transition: transform 0.15s; }
+.switch input:checked + .switch-track { background: #2979ff; }
+.switch input:checked + .switch-track::before { transform: translateX(18px); }
+.switch input:focus-visible + .switch-track { outline: 2px solid #90caf9; outline-offset: 2px; }
 .reverse-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
 .tt-preview { position: relative; width: 40px; height: 40px; flex: none; border-radius: 50%; border: 2px solid #888; background: #222; }
 .tt-preview.idle { opacity: 0.35; }

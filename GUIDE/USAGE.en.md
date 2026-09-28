@@ -81,10 +81,9 @@ Choose a profile and a **device** for each side (one for SP, 1P and 2P for DP). 
   - If you use the arcin in **keyboard mode**, map it with the **Keyboard** profile.
 - **Other controller (manual mapping)** : For controllers that are not officially supported and DIY boards such as Arduino. You map each button by hand. Officially supported controllers (PHOENIXWAN, FPS, arcin-infinitas, …) can be mapped here too, though their own profile is usually easier.
   - Click a field in the mapping table, then press the controller button. Clear a field to unmap it.
-  - If your board reports the turntable as **buttons**, map them to 'Turntable clockwise / counterclockwise'.
-  - If your board reports the turntable as an **axis**, press **Learn** next to 'Turntable (axis)' and spin the turntable for 2 seconds. Once learned, the disc next to it follows the turntable. If it spins the opposite way when you turn clockwise, turn on **Reverse turntable direction**.
-  - Reversing applies only to a turntable read as an axis. If a turntable mapped to **buttons** is backwards, swap the numbers in the clockwise and counterclockwise fields.
-  - A turntable mapped to **buttons** works like PHOENIXWAN LR2 mode: each press turns the disc 5 steps, and the scratch light turns off on release. If your board taps a button briefly for every turntable step and the light flickers, turn on **Button Turntable legacy** (off by default). It goes back to the behavior up to 3.0.1 (2 steps per press, the light stays on after release).
+  - Pick one turntable input with the **Button turntable / Analog turntable** switch. The settings of the side you don't pick stay saved, so switching back brings them back as they were.
+  - **Button turntable** : if your board reports the turntable as buttons (PHOENIXWAN LR2 mode, etc.), map them to 'Turntable clockwise (↓) / counterclockwise (↑)'. Like PHOENIXWAN LR2 mode, each press turns the disc 5 steps and the scratch light turns off on release. If it spins backwards, swap the two numbers. If the turntable worked fine up to 3.0.1 but not since 3.0.2, turn on **Button Turntable legacy** (the old behavior: 2 steps per press, the light stays on after release).
+  - **Analog turntable** : if your board reports the turntable as an axis, press **Learn** and spin the turntable for 2 seconds. Once learned, the disc next to it follows the turntable. If it spins the opposite way when you turn clockwise, turn on **Reverse turntable direction**. **Unassign** removes the learned axis.
 - **Keyboard** : Click a field in the keyboard mapping table, then press the key you want.
 
 ### Controller support

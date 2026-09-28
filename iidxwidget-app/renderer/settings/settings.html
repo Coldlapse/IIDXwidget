@@ -238,19 +238,33 @@
           <tr><td></td><td><input type="number" min="1" max="64" data-key="5"></td></tr>
           <tr><td></td><td><input type="number" min="1" max="64" data-key="6"></td></tr>
           <tr><td></td><td><input type="number" min="1" max="64" data-key="7"></td></tr>
-          <tr><td></td><td><input type="number" min="1" max="64" data-key="SCup"></td></tr>
-          <tr><td></td><td><input type="number" min="1" max="64" data-key="SCdown"></td></tr>
         </tbody>
       </table>
-      <label class="legacy-row"><input type="checkbox" data-role="tt-legacy" /> <span data-i18n="settings.buttonTurntableLegacy">Button Turntable legacy</span></label>
-      <p class="mapping-help" data-role="legacy-help"></p>
-      <div class="axis-row">
-        <span data-i18n="settings.turntableAxis">턴테이블 (축)</span>
-        <span class="axis-value" data-role="axis-value"></span>
-        <button type="button" data-role="learn-axis" data-i18n="settings.learnAxis">학습</button>
-        <button type="button" data-role="clear-axis" data-i18n="settings.clearAxis">지우기</button>
+      <!-- 턴테이블: 버튼 턴테이블 ↔ 아날로그 턴테이블 중 하나만 쓴다. 쓰지 않는 쪽 값도 지우지 않고 그대로 저장한다 -->
+      <div class="tt-mode-row">
+        <span class="tt-mode-name" data-role="tt-mode-button" data-i18n="settings.buttonTurntable">버튼 턴테이블</span>
+        <label class="switch"><input type="checkbox" data-role="tt-mode" /><span class="switch-track"></span></label>
+        <span class="tt-mode-name" data-role="tt-mode-analog" data-i18n="settings.analogTurntable">아날로그 턴테이블</span>
       </div>
-      <p class="mapping-help" data-role="axis-help" data-i18n="settings.axisHelp">턴테이블이 축으로 동작하는 기판이라면 '학습'을 누르고 2초 동안 턴테이블을 돌리세요.</p>
+      <div data-role="tt-button-section">
+        <table class="generic-mapping-table">
+          <tbody>
+            <tr><td></td><td><input type="number" min="1" max="64" data-key="SCup"></td></tr>
+            <tr><td></td><td><input type="number" min="1" max="64" data-key="SCdown"></td></tr>
+          </tbody>
+        </table>
+        <label class="legacy-row"><input type="checkbox" data-role="tt-legacy" /> <span data-i18n="settings.buttonTurntableLegacy">Button Turntable legacy</span></label>
+        <p class="mapping-help" data-role="legacy-help"></p>
+      </div>
+      <div data-role="tt-analog-section" hidden>
+        <div class="axis-row">
+          <span data-i18n="settings.turntableAxis">턴테이블 (축)</span>
+          <span class="axis-value" data-role="axis-value"></span>
+          <button type="button" data-role="learn-axis" data-i18n="settings.learnAxis">학습</button>
+          <button type="button" data-role="clear-axis" data-i18n="settings.clearAxis">할당 해제</button>
+        </div>
+        <p class="mapping-help" data-role="axis-help" data-i18n="settings.axisHelp">턴테이블이 축으로 동작하는 기판이라면 '학습'을 누르고 2초 동안 턴테이블을 돌리세요.</p>
+      </div>
       <div class="mapping-status" data-role="mapping-status" aria-live="polite"></div>
     </div>
   </template>

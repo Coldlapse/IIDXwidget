@@ -28,6 +28,12 @@
     return { mapping, invalid, duplicates };
   }
 
+  // 수동 매핑 턴테이블 입력 방식. 저장된 값이 없으면(3.0.1 이하 설정) 축을 학습해 둔 경우 아날로그, 아니면 버튼
+  function resolveTurntableInput(saved, genericAxis) {
+    if (saved === 'button' || saved === 'analog') return saved;
+    return Number.isInteger(genericAxis) ? 'analog' : 'button';
+  }
+
   function validatePorts(serverPort, webSocketPort) {
     return inRange(serverPort, PORT_RANGE) && inRange(webSocketPort, PORT_RANGE) && serverPort !== webSocketPort;
   }
@@ -40,7 +46,7 @@
     return inRange(value, CN_THRESHOLD_RANGE);
   }
 
-  const api = { buildGenericMapping, validatePorts, validateMALength, validateCnThreshold, PORT_RANGE, MA_LENGTH_RANGE, CN_THRESHOLD_RANGE, MAX_PHYSICAL_BUTTON };
+  const api = { buildGenericMapping, resolveTurntableInput, validatePorts, validateMALength, validateCnThreshold, PORT_RANGE, MA_LENGTH_RANGE, CN_THRESHOLD_RANGE, MAX_PHYSICAL_BUTTON };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.formLogic = api;
 })(typeof window !== 'undefined' ? window : globalThis);

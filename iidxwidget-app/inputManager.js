@@ -4,6 +4,17 @@
 const { startControllerReader, startAutoControllerReader, listControllerDevices, findAxisByte } = require('./controller/controllerReader');
 const { startGlobalKeyboardReader } = require('./controller/keyboardReader');
 const { DEFAULT_SETTINGS } = require('./settingsStore');
+const { resolveTurntableInput } = require('./renderer/settings/formLogic');
+
+// 기타 컨트롤러: 고른 턴테이블 입력 방식에 맞게 매핑을 고른다. 버튼 턴테이블이면 축을 안 읽고, 아날로그면 SCup/SCdown을 안 읽는다
+// (둘을 함께 읽으면 서로 다른 기준의 턴테이블 값이 섞여 원판이 튄다. arcin처럼 축과 디지털 신호를 함께 보내는 기판 등)
+function genericTurntable(config) {
+  if (config.turntableInput === 'analog') {
+    const { SCup, SCdown, ...keys } = config.genericMapping;
+    return { genericMapping: keys, genericAxis: config.genericAxis };
+  }
+  return { genericMapping: config.genericMapping, genericAxis: null };
+}
 
 // 사이드별 설정. 1P는 기존 최상위 값, 2P는 settings.player2
 // 전용 파서가 있는 프로필 (설정 값)
@@ -21,7 +32,8 @@ function sideConfig(settings, side) {
       kbMapping: p2.keyMapping?.KB || {},
       genericMapping: p2.keyMapping?.GENERIC || {},
       genericAxis: p2.keyMapping?.GENERIC_AXIS ?? null,
-      buttonTurntableLegacy: !!p2.buttonTurntableLegacy
+      buttonTurntableLegacy: !!p2.buttonTurntableLegacy,
+      turntableInput: resolveTurntableInput(p2.turntableInput, p2.keyMapping?.GENERIC_AXIS)
     };
   }
   return {
@@ -33,7 +45,8 @@ function sideConfig(settings, side) {
     kbMapping: { ...DEFAULT_SETTINGS.keyMapping.KB, ...(settings.keyMapping?.KB || {}) },
     genericMapping: settings.keyMapping?.GENERIC || {},
     genericAxis: settings.keyMapping?.GENERIC_AXIS ?? null,
-    buttonTurntableLegacy: !!settings.buttonTurntableLegacy
+    buttonTurntableLegacy: !!settings.buttonTurntableLegacy,
+    turntableInput: resolveTurntableInput(settings.turntableInput, settings.keyMapping?.GENERIC_AXIS)
   };
 }
 
@@ -62,7 +75,7 @@ function createInputManager({ dispatch, logger }) {
     }
     const options = { devicePath: config.devicePath, deviceSerial: config.deviceSerial, excludePaths: usedPaths, turntableReverse: config.turntableReverse, logger };
     const reader = config.profile === 'AUTO'
-      ? startAutoControllerReader(send, { ...options, genericMapping: config.genericMapping, genericAxis: config.genericAxis, buttonTurntableLegacy: config.buttonTurntableLegacy })
+      ? startAutoControllerReader(send, { ...options, ...genericTurntable(config), buttonTurntableLegacy: config.buttonTurntableLegacy })
       : startControllerReader(DEDICATED_PROFILES.includes(config.profile) ? config.profile : 'PHOENIXWAN', send, { ...options, lr2ModeEnabled: config.lr2ModeEnabled });
     if (!reader) return;
     usedPaths.push(reader.path);
@@ -188,4 +201,4 @@ function createInputManager({ dispatch, logger }) {
   return { start, stop, startMappingSession, stopMappingSession, learnTurntableAxis, startTurntablePreview, endTurntablePreview, listDevices, sideConfig: side => lastSettings && sideConfig(lastSettings, side) };
 }
 
-module.exports = { createInputManager, sideConfig, activeSides };
+module.exports = { createInputManager, sideConfig, activeSides, genericTurntable };

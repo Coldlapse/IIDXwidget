@@ -255,3 +255,23 @@ test('위젯 턴테이블: 20ms보다 짧게 누르고 뗀 버튼 턴테이블�
   assert.equal(widget.state().lit, null);   // 한 간격 뒤 한 번 더 그려서 끔
   assert.equal(widget.state().last, 143);
 });
+
+test('수동 매핑 턴테이블 입력: 버튼 턴테이블과 아날로그 턴테이블 중 하나만 읽고, 쓰지 않는 쪽 값은 지우지 않는다', () => {
+  const { resolveTurntableInput } = require('../renderer/settings/formLogic');
+  const { genericTurntable, sideConfig } = require('../inputManager');
+  // 저장된 값이 없는 3.0.1 이하 설정: 축을 학습해 둔 사용자는 아날로그, 아니면 버튼
+  assert.equal(resolveTurntableInput(undefined, 3), 'analog');
+  assert.equal(resolveTurntableInput(null, null), 'button');
+  assert.equal(resolveTurntableInput('button', 3), 'button');
+  const mapping = { 1: 1, 2: 2, SCup: 13, SCdown: 14 };
+  // 아날로그: SCup/SCdown은 읽지 않는다 (arcin 디지털 신호와 축이 섞여 원판이 튀지 않도록)
+  assert.deepEqual(genericTurntable({ turntableInput: 'analog', genericMapping: mapping, genericAxis: 3 }), { genericMapping: { 1: 1, 2: 2 }, genericAxis: 3 });
+  // 버튼: 축은 읽지 않는다
+  assert.deepEqual(genericTurntable({ turntableInput: 'button', genericMapping: mapping, genericAxis: 3 }), { genericMapping: mapping, genericAxis: null });
+  // 설정에 저장된 값은 그대로 (입력 방식만 고른다)
+  const settings = { controllerProfile: 'AUTO', turntableInput: 'button', keyMapping: { GENERIC: mapping, GENERIC_AXIS: 3 } };
+  const config = sideConfig(settings, 1);
+  assert.equal(config.turntableInput, 'button');
+  assert.equal(config.genericAxis, 3);
+  assert.deepEqual(config.genericMapping, mapping);
+});
