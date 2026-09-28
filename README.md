@@ -87,7 +87,7 @@ English guides: [What's new in 3.0.0](./GUIDE/WHATSNEW.en.md) · [Connection](./
   - 프로필만 고르면 바로 인식됩니다.
   - 주작콘을 LR2 모드로 쓴다면 **LR2 모드 감지**를 켜주세요.
   - **피닉스완 LMT Classic 기판**은 **PHOENIXWAN+ LMT Classic** 프로필을 고르세요. LR2 모드로 쓴다면 주작콘처럼 **LR2 모드 감지**를 켜주세요.
-  - **arcin-infinitas** 펌웨어를 쓰는 arcin 기판은 **arcin** 프로필을 고르세요. 턴테이블 아날로그·디지털(LR2) 모드를 알아서 따라갑니다. ([arcin-infinitas](https://github.com/kinetic-flow/arcin-infinitas) 펌웨어에 한해 작동을 보장합니다)
+  - **arcin-infinitas** 펌웨어를 쓰는 arcin 기판은 **arcin-infinitas** 프로필을 고르세요. 턴테이블 아날로그·디지털(LR2) 모드를 알아서 따라갑니다. ([arcin-infinitas](https://github.com/kinetic-flow/arcin-infinitas) 펌웨어에 한해 작동을 보장합니다)
   - 턴테이블이 위젯에서 반대로 돌면 **턴테이블 방향 반전**을 켜세요. 옆의 작은 원판으로 방향을 바로 확인할 수 있습니다.
 - **키보드**
   - 키보드 매핑 표에서 칸을 클릭한 뒤, 쓰고 싶은 키를 누르면 됩니다.

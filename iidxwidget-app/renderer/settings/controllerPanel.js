@@ -224,6 +224,7 @@
       renderSessionStatus();
       renderReverseHelp();
       q('legacy-help').textContent = t('settings.buttonTurntableLegacyHelp');
+      q('lr2-row').title = t('settings.lr2Hint');
       if (profile() !== 'KB' && !q('device').options.length) refreshDevices();
     }
     document.addEventListener('i18n-changed', localize);
