@@ -7,11 +7,10 @@ const keyboard = { path: 'keyboard', usagePage: 1, usage: 6 };
 assert.equal(findAutoController([arduino]).device, arduino);
 assert.equal(findExactDedicatedDevice([arduino], 'PHOENIXWAN'), undefined);
 assert.equal(findExactDedicatedDevice([arduino], 'FPS EMP Gen2'), undefined);
-// 기타 컨트롤러: 공식 지원 컨트롤러(주작콘·FPS)는 고르지 않는다
-assert.equal(findAutoController([phoenix, arduino]).device, arduino);
-assert.equal(findAutoController([fps, arduino]).device, arduino);
-assert.equal(findAutoController([phoenix]), null);
-assert.equal(findAutoController([{ ...phoenix, interface: 0, usagePage: 1, usage: 4 }]), null); // 같은 장치의 다른 인터페이스도 제외
+// 기타 컨트롤러: 공식 지원 컨트롤러(주작콘·FPS)도 수동 매핑으로 고를 수 있다 (게임패드로 잡히는 인터페이스라면)
+assert.equal(findAutoController([{ ...phoenix, usage: 4 }]).device.path, "phoenix");
+assert.equal(findAutoController([{ ...phoenix, usage: 4 }]).parser, "GENERIC");
+assert.equal(findAutoController([phoenix, arduino]).device, arduino); // 게임패드가 아닌 인터페이스(usage 없음)는 여전히 후보가 아니다
 assert.equal(hasOfficiallySupportedController([keyboard, phoenix]), true);
 assert.equal(hasOfficiallySupportedController([keyboard, arduino]), false);
 assert.equal(findAutoController([keyboard]), null);

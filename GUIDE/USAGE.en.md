@@ -74,7 +74,7 @@ Choose a profile and a **device** for each side (one for SP, 1P and 2P for DP). 
 
 - **PHOENIXWAN+ / PHOENIXWAN+ LMT Classic / FPS EMP Gen2** : Works as soon as you select it. For the PHOENIXWAN LMT Classic board, pick the **PHOENIXWAN+ LMT Classic** profile. It works the same way as the PHOENIXWAN; for LR2 mode, turn on **Detect LR2 mode** just like on a PHOENIXWAN.
 - **arcin** : For arcin boards. Confirmed in INFINITAS mode; LR2 mode isn't confirmed yet, so LR2 mode detection isn't used. An arcin can also be used with Other controller (manual mapping).
-- **Other controller (manual mapping)** : For controllers that are not officially supported and DIY boards such as Arduino. You map each button by hand. A PHOENIXWAN or FPS is not picked up by this profile; choose its own profile instead.
+- **Other controller (manual mapping)** : For controllers that are not officially supported and DIY boards such as Arduino. You map each button by hand. Officially supported controllers (PHOENIXWAN, FPS, arcin, …) can be mapped here too, though their own profile is usually easier.
   - Click a field in the mapping table, then press the controller button. Clear a field to unmap it.
   - If your board reports the turntable as **buttons**, map them to 'Turntable clockwise / counterclockwise'.
   - If your board reports the turntable as an **axis**, press **Learn** next to 'Turntable (axis)' and spin the turntable for 2 seconds.

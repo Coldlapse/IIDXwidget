@@ -20,11 +20,11 @@ test('arcin 프로필: 이름이 arcin인 1CCF:8048 장치만, 주작콘·FPS �
   assert.deepEqual(listControllerDevices('FPS EMP Gen2', devices).map(d => d.path), ['fps']);
 });
 
-test('기타 컨트롤러(수동 매핑): arcin은 목록에 나오고, 주작콘·FPS는 지금처럼 빠진다', () => {
+test('기타 컨트롤러(수동 매핑): arcin을 포함해 공식 지원 컨트롤러도 목록에 나온다', () => {
   // 이슈: arcin이 같은 ID(1CCF:8048)라 기타 컨트롤러에서 "연결된 장치 없음"이 되던 문제
   assert.equal(findAutoController([ARCIN]).device.path, 'arcin-1p');
   assert.equal(chooseDevice('AUTO', {}, [ARCIN]).parser, 'GENERIC');
-  assert.equal(findAutoController([PHOENIX, FPS]), null);
+  assert.deepEqual(listControllerDevices('AUTO', [PHOENIX, FPS, ARCIN]).map(d => d.path), ['phoenix', 'fps', 'arcin-1p']);
   assert.equal(hasOfficiallySupportedController([ARCIN]), false);
   assert.equal(hasOfficiallySupportedController([PHOENIX]), true);
 });

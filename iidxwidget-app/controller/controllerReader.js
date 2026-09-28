@@ -14,8 +14,8 @@ const isFps = d => d.vendorId === 0x1CCF && d.productId === 0x8048 && d.interfac
 // PHOENIXWAN+ LMT Classic 기판. 범용 게임패드 칩(VID 0E8F)이라 제품 이름까지 본다 (펌웨어 표기가 'PHONENIXWAN').
 // 기타 컨트롤러(수동 매핑)에서도 그대로 고를 수 있다
 const isPhoenixLmt = d => d.vendorId === 0x0E8F && d.productId === 0x1228 && d.usagePage === 1 && d.usage === 4 && /NIXWAN/i.test(d.product || '');
-// 공식 지원 컨트롤러(주작콘·FPS EMP 2세대)가 쓰는 USB 장치. 인터페이스와 상관없이 기타 컨트롤러에서는 고르지 않는다.
-// arcin은 같은 ID를 쓰지만 기타 컨트롤러(수동 매핑)에서도 고를 수 있게 둔다 (예전에는 ID만 보고 빠져서 목록에 안 나왔다)
+// 공식 지원 컨트롤러(주작콘·FPS EMP 2세대)가 쓰는 USB 장치. 기타 컨트롤러에서 장치를 못 찾았을 때
+// "전용 프로필을 고르라"는 안내를 띄울지 판단하는 데만 쓴다 (기타 컨트롤러 목록에서 빼지는 않는다)
 const isOfficiallySupported = d => d.vendorId === 0x1CCF && d.productId === 0x8048 && !isArcin(d);
 
 // ─── 장치 찾기 ──────────────────────────────────────────────
@@ -31,11 +31,11 @@ function findExactDedicatedDevice(devices, profile) {
   });
 }
 
-// 기타 컨트롤러(수동 매핑, 설정값 'AUTO'): 공식 지원하지 않는 컨트롤러만 찾는다.
-// 주작콘·FPS는 전용 프로필이 있으므로 여기서는 고르지 않는다.
+// 기타 컨트롤러(수동 매핑, 설정값 'AUTO'): 연결된 게임패드를 모두 고를 수 있다. 공식 지원 컨트롤러도 수동 매핑으로 쓸 수 있다
+// (예전에는 1CCF:8048을 모두 빼서, 같은 ID를 쓰는 호환 기판(arcin 등)이 어느 프로필로도 제대로 안 잡히는 경우가 있었다)
 // 이름으로 알아볼 수 있는 IIDX 컨트롤러 → 아무 조이스틱/게임패드 순
 function autoCandidates(devices) {
-  const usable = devices.filter(d => d.path && !isOfficiallySupported(d));
+  const usable = devices.filter(d => d.path);
   const terms = /infinitas|inf&bms|iidx|beatmania|yuancon|gamo2/i;
   const isMouseOrKeyboard = d => d.usagePage === 1 && (d.usage === 2 || d.usage === 6);
   const isJoystickOrGamepad = d => d.usagePage === 1 && (d.usage === 4 || d.usage === 5);
