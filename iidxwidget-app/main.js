@@ -812,7 +812,21 @@ ipcMain.handle('open-external', (event, url) => {
 
 
 // 🟢 앱 시작
+// 앱은 하나만 실행한다. 이미 켜져 있을 때 다시 실행하면 새로 띄우지 않고 기존 창을 앞으로 가져온다
+// (두 개가 뜨면 포트가 겹쳐 오류가 나고 컨트롤러 입력도 둘이 함께 읽는다).
+// 두 번째 실행은 종료 절차(before-quit → 종료 창)를 거치지 않도록 app.exit로 바로 끝낸다
+const isPrimaryInstance = app.requestSingleInstanceLock();
+if (!isPrimaryInstance) app.exit(0);
+
+app.on('second-instance', () => {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.show();
+  mainWindow.focus();
+});
+
 app.whenReady().then(() => {
+  if (!isPrimaryInstance) return;
   console.log('🚀 현재 실행 중 앱 버전:', appVersion);
 
   const loaded = readSettingsFile(SETTINGS_FILE);
