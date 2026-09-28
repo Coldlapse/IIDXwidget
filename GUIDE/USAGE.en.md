@@ -67,10 +67,11 @@ Press **Save** to apply changes. Saved changes show up in the OBS widget right a
 
 Choose a profile and a **device** for each side (one for SP, 1P and 2P for DP). The keyboard and other-controller mapping tables appear right below the profile.
 
-- **Device** : Lists only connected controllers that match the profile; if there is just one, only one appears. Identical controllers (two boards for 1P and 2P, for example) get the last 4 digits of their serial number after the name, or #1, #2 if they have no serial. Press **Rescan** after plugging in a controller. The serial lets the app find the same device even on a different USB port; if the saved device is missing, another connected one is used.
+- **Device** : Lists only connected controllers that match the profile; if there is just one, only one appears. Identical controllers (two boards for 1P and 2P, for example) get the last 4 digits of their serial number after the name, or #1, #2 if they have no serial. Press **Rescan** to refresh the list. The serial lets the app find the same device even on a different USB port; if the saved device is missing, another connected one is used.
 - In DP, 1P and 2P can't use the same device.
+- If you unplug and replug a controller, or plug one in after starting the app, input comes back within about 2 seconds without saving or restarting.
 - **Detect LR2 mode (dedicated controller only)** : Shown only for the PHOENIXWAN, FPS and LMT Classic profiles. A PHOENIXWAN in LR2 sends turntable signals differently; with this on, the app detects LR2 mode and shows the turntable correctly.
-- **Reverse turntable direction** : Available for every profile except Keyboard. The small disc next to it follows your turntable input and spins the same way as the OBS widget. If it spins the opposite way when you turn the turntable clockwise, turn this on. Changing the checkbox shows the result on the disc before you save. (If you changed the profile, the disc moves after you save.)
+- **Reverse turntable direction** : Available for every profile except Keyboard. The small disc next to it follows your turntable input and spins the same way as the OBS widget. If it spins the opposite way when you turn the turntable clockwise, turn this on. Changing the checkbox, profile or device shows the result on the disc before you save. (For Other controller, the disc moves once an axis is learned in Analog turntable.)
 
 - **PHOENIXWAN+ / PHOENIXWAN+ LMT Classic / FPS EMP Gen2** : Works as soon as you select it. For the PHOENIXWAN LMT Classic board, pick the **PHOENIXWAN+ LMT Classic** profile. It works the same way as the PHOENIXWAN; for LR2 mode, turn on **Detect LR2 mode** just like on a PHOENIXWAN.
 - **arcin** : [arcin-infinitas](https://github.com/kinetic-flow/arcin-infinitas) — guaranteed to work only with arcin-infinitas, the INFINITAS firmware for arcin boards developed by kinetic-flow. Renaming the board (label) in the config tool is fine. Every turntable mode is followed automatically.
@@ -81,7 +82,7 @@ Choose a profile and a **device** for each side (one for SP, 1P and 2P for DP). 
   - If you use the arcin in **keyboard mode**, map it with the **Keyboard** profile.
 - **Other controller (manual mapping)** : For controllers that are not officially supported and DIY boards such as Arduino. You map each button by hand. Officially supported controllers (PHOENIXWAN, FPS, arcin-infinitas, …) can be mapped here too, though their own profile is usually easier.
   - Click a field in the mapping table, then press the controller button. Clear a field to unmap it.
-  - Pick one turntable input with the **Button turntable / Analog turntable** switch. The settings of the side you don't pick stay saved, so switching back brings them back as they were.
+  - Pick one turntable input with the **Button turntable / Analog turntable** switch. The settings of the side you don't pick stay saved, so switching back brings them back as they were. If you learned an axis in 3.0.1 or earlier, it starts as Analog turntable; otherwise as Button turntable.
   - **Button turntable** : if your board reports the turntable as buttons (PHOENIXWAN LR2 mode, etc.), map them to 'Turntable clockwise (↓) / counterclockwise (↑)'. Like PHOENIXWAN LR2 mode, each press turns the disc 5 steps and the scratch light turns off on release. If it spins backwards, swap the two numbers. If the turntable worked fine up to 3.0.1 but not since 3.0.2, turn on **Button Turntable legacy** (the old behavior: 2 steps per press, the light stays on after release).
   - **Analog turntable** : if your board reports the turntable as an axis, press **Learn** and spin the turntable for 2 seconds. Once learned, the disc next to it follows the turntable. If it spins the opposite way when you turn clockwise, turn on **Reverse turntable direction**. **Unassign** removes the learned axis.
 - **Keyboard** : Click a field in the keyboard mapping table, then press the key you want.
@@ -178,5 +179,6 @@ KPS speedometer presets:
 ## 💡 Good to know
 
 - If you quit and restart the app, the OBS widget reconnects by itself. While the app is off, OBS shows "Lost connection to IIDXwidget".
+- Only one copy of the app runs. Launching it again brings the open window to the front.
 - Right after updating the app, press **Refresh cache of current page** once in the OBS browser source properties.
 - Questions and bugs go to [Issues](https://github.com/Coldlapse/IIDXwidget/issues).

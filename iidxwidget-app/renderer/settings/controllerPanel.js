@@ -67,7 +67,7 @@
       sessionSide = side;
       mappingSession = await api.startMappingSession(side, devicePath());
       renderSessionStatus();
-      refreshPreview();
+      refreshPreview({ force: true }); // 학습 리더를 새로 열면 거기에 붙은 미리보기도 다시 연다
     }
 
     function stopSession() {

@@ -22,7 +22,7 @@ For what's supported now, see [Usage and Settings → Controller support](USAGE.
 1. Connect the controller and open Menu → **Controller probe** in the app.
 2. Pick the controller under **Device**. If the **Live signal** changes when you press a button, you picked the right one.
    - If it doesn't, try another device. One controller can show up as several entries.
-   - Two identical boards (1P and 2P) plugged in together are told apart by the serial number (S/N) next to the name. Record them one at a time.
+   - Two identical boards (1P and 2P) plugged in together are told apart by the serial number (S/N) next to the name. Record them one at a time. (Boards without a serial show up as one entry, so plug in only one while recording.)
    - If it isn't listed at all, press **Refresh**. Controllers connected in keyboard mode aren't listed — switch to gamepad mode.
 3. Fill in the product name, current mode and notes. Leave anything you don't know empty.
 4. For each step, press **Record** → do what it says → **Stop**. **Skip** buttons you don't have.

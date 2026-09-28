@@ -23,7 +23,7 @@
 
 2.x에서 업데이트하셨다면 👉 [3.0.0 업데이트 안내](./GUIDE/WHATSNEW.md) (바뀐 점, OBS 새로고침 방법). 업데이트 후 앱을 처음 켤 때도 자동으로 열립니다.
 
-English guides: [What's new in 3.0.0](./GUIDE/WHATSNEW.en.md) · [Connection](./GUIDE/CONNECTION.en.md) · [Usage](./GUIDE/USAGE.en.md) · [Release](./GUIDE/RELEASE.en.md) · [Chatter](./GUIDE/CHATTER.en.md)
+English guides: [What's new in 3.0.0](./GUIDE/WHATSNEW.en.md) · [Connection](./GUIDE/CONNECTION.en.md) · [Usage](./GUIDE/USAGE.en.md) · [Release](./GUIDE/RELEASE.en.md) · [Chatter](./GUIDE/CHATTER.en.md) · [Controller support request](./GUIDE/CONTROLLER.en.md)
 
 ---
 
@@ -135,6 +135,7 @@ English guides: [What's new in 3.0.0](./GUIDE/WHATSNEW.en.md) · [Connection](./
   - 업데이트 직후 한 번만, OBS 브라우저 소스 속성에서 **현재 페이지의 캐시를 새로고침**을 눌러주세요. 그 뒤로는 설정 변경과 앱 재시작이 자동으로 반영됩니다.
 - **컨트롤러가 인식되지 않아요**
   - 메뉴 → **로그**에서 원인을 확인할 수 있습니다. (예: "장치를 찾을 수 없습니다")
+  - 케이블을 뺐다 다시 꽂으면 2초쯤 안에 재시작 없이 다시 연결됩니다. 앱을 켠 뒤에 꽂은 컨트롤러도 알아서 잡습니다.
   - 설정의 컨트롤러 프로필이 맞는지 확인하고, 목록에 없는 컨트롤러라면 **기타 컨트롤러 (수동 매핑)** 프로필을 써보세요.
 - **투컴 방송에서 연결이 안 돼요**
   - 방송 PC의 주소에 리듬 게임 PC의 IP를 넣었는지, 리듬 게임 PC의 Windows 방화벽에서 IIDXwidget이 허용되어 있는지 확인해 주세요.
@@ -157,6 +158,7 @@ English guides: [What's new in 3.0.0](./GUIDE/WHATSNEW.en.md) · [Connection](./
 - 2.1.0 : beatmania.app 서열표 사이트 일일 타건 기록 연동 추가, Uptime 기능 버그 수정 ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v2.1.0))
 - 3.0.0 : 백신 오탐 해결, 위젯 디자인 개편(계기판), KPS 스피드미터, DP 지원, 한국어/영어 지원, 기타 컨트롤러 수동 매핑, 스크래치 이미지 2장 모드, 위젯 배경 투명, 설정 즉시 반영 및 자동 재연결, 앱 창·OBS 위젯 숫자 통일, 세션 기록 페이지와 종료 시 자동 전송, beatmania.app 계정 연결 방식 변경(토큰 암호화 저장·계정 표시), 릴리즈·채터링 계산을 Rag 님 위젯과 동일하게 변경, 채터링 감지 방식 선택, 롱노트 색 표시, 가이드 추가 등 (기여자 : MellDa1024, Ryochobi) ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v3.0.0))
 - 3.0.1 : arcin 기판 공식 지원, 기타 컨트롤러(수동 매핑)에서 공식 지원 컨트롤러도 고를 수 있게 변경 ([#4](https://github.com/Coldlapse/IIDXwidget/issues/4)) ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v3.0.1))
+- 3.0.2 : arcin-infinitas 지원 보완(디지털 턴테이블), 턴테이블 방향 반전, 수동 매핑 버튼/아날로그 턴테이블 스위치, 컨트롤러 자동 재연결, 같은 컨트롤러 두 대 구분, 세션 숫자 갱신 지연 수정, 중복 실행 방지, 설정 화면 정리 ([#4](https://github.com/Coldlapse/IIDXwidget/issues/4)) ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v3.0.2))
 
 ---
 
