@@ -5,6 +5,7 @@
     "author": "Sadang",
     "license": "MIT",
     "main": "main.js",
+    "desktopName": "iidxwidget.desktop",
     "scripts": {
         "start": "electron .",
         "build": "electron-builder",
@@ -87,7 +88,8 @@
             "files": [
                 "!node_modules/uiohook-napi/prebuilds/{darwin,win32}-*/**",
                 "!node_modules/uiohook-napi/prebuilds/linux-{arm64,loong64}/**"
-            ]
+            ],
+            "syncDesktopName": true
         }
     },
     "dependencies": {
