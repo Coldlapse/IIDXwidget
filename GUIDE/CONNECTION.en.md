@@ -69,6 +69,7 @@ Do this on the **game PC**.
   2. Go to **Firewall & network protection** → **Allow an app through firewall**.
   3. Click **Change settings**, find **IIDXwidget** in the list and tick **Private**.
 - If your network type is **Public**, the connection may be blocked. Change it to **Private** in **Settings → Network & internet → (your network) Properties**.
+- If the game PC runs Linux, see [Usage and settings → Linux](USAGE.en.md#-linux-experimental).
 
 ### ③ Put the address in OBS
 Do this on the **stream PC**.

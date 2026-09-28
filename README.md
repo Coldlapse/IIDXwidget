@@ -5,7 +5,7 @@
 **OBS 브라우저 소스**로 쉽게 불러올 수 있도록 개발한 **투덱 방송용 위젯 프로젝트**입니다.  
 **투컴 방송** 환경에서도 사용할 수 있도록 설계되었습니다.
 
-- **다운로드** : [Releases](https://github.com/Coldlapse/IIDXwidget/releases/latest)
+- **다운로드** : [Releases](https://github.com/Coldlapse/IIDXwidget/releases/latest) (Windows 설치 파일 / 리눅스 AppImage)
 - **라이센스** : MIT License
 - **후원** : [Buy Me a Coffee](https://buymeacoffee.com/sadang)
 
@@ -71,7 +71,7 @@ English guides: [What's new in 3.0.0](./GUIDE/WHATSNEW.en.md) · [Connection](./
    을 OBS의 **브라우저 소스**로 추가합니다. 
    - 이 때, 포트는 설정에서 커스터마이징이 가능합니다. 기본값은 8080입니다.
    - 너비와 높이는 800*600 입력을 권장합니다. **DP**라면 1320*600을 권장합니다.
-   - 투컴 방송이라면, 앱을 처음 실행할 때 뜨는 Windows 방화벽 창에서 **허용**을 눌러주세요.
+   - 투컴 방송이라면, 앱을 처음 실행할 때 뜨는 Windows 방화벽 창에서 **허용**을 눌러주세요. 리눅스에서 방화벽(ufw)을 쓴다면 [리눅스 안내](./GUIDE/USAGE.md#-리눅스-실험적-지원)를 보세요.
    - IP가 뭔지, 어떻게 찾는지 모르겠다면 [연결 가이드](./GUIDE/CONNECTION.md)를 보세요. 앱을 처음 실행하면 이 가이드가 자동으로 열립니다.
 
 3. ⚙️ 컨트롤러 설정
@@ -138,8 +138,9 @@ English guides: [What's new in 3.0.0](./GUIDE/WHATSNEW.en.md) · [Connection](./
   - 메뉴 → **로그**에서 원인을 확인할 수 있습니다. (예: "장치를 찾을 수 없습니다")
   - 케이블을 뺐다 다시 꽂으면 2초쯤 안에 재시작 없이 다시 연결됩니다. 앱을 켠 뒤에 꽂은 컨트롤러도 알아서 잡습니다.
   - 설정의 컨트롤러 프로필이 맞는지 확인하고, 목록에 없는 컨트롤러라면 **기타 컨트롤러 (수동 매핑)** 프로필을 써보세요.
+  - 리눅스라면 컨트롤러 권한 규칙(udev)을 설치했는지 확인해 주세요. ([리눅스 안내](./GUIDE/USAGE.md#-리눅스-실험적-지원))
 - **투컴 방송에서 연결이 안 돼요**
-  - 방송 PC의 주소에 리듬 게임 PC의 IP를 넣었는지, 리듬 게임 PC의 Windows 방화벽에서 IIDXwidget이 허용되어 있는지 확인해 주세요.
+  - 방송 PC의 주소에 리듬 게임 PC의 IP를 넣었는지, 리듬 게임 PC의 Windows 방화벽에서 IIDXwidget이 허용되어 있는지 확인해 주세요. (리눅스는 ufw 등 방화벽에서 8080·5678 포트 허용)
 
 ---
 
@@ -160,7 +161,7 @@ English guides: [What's new in 3.0.0](./GUIDE/WHATSNEW.en.md) · [Connection](./
 - 3.0.0 : 백신 오탐 해결, 위젯 디자인 개편(계기판), KPS 스피드미터, DP 지원, 한국어/영어 지원, 기타 컨트롤러 수동 매핑, 스크래치 이미지 2장 모드, 위젯 배경 투명, 설정 즉시 반영 및 자동 재연결, 앱 창·OBS 위젯 숫자 통일, 세션 기록 페이지와 종료 시 자동 전송, beatmania.app 계정 연결 방식 변경(토큰 암호화 저장·계정 표시), 릴리즈·채터링 계산을 Rag 님 위젯과 동일하게 변경, 채터링 감지 방식 선택, 롱노트 색 표시, 가이드 추가 등 (기여자 : MellDa1024, Ryochobi) ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v3.0.0))
 - 3.0.1 : arcin 기판 공식 지원, 기타 컨트롤러(수동 매핑)에서 공식 지원 컨트롤러도 고를 수 있게 변경 ([#4](https://github.com/Coldlapse/IIDXwidget/issues/4)) ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v3.0.1))
 - 3.0.2 : arcin-infinitas 지원 보완(디지털 턴테이블), 턴테이블 방향 반전, 수동 매핑 버튼/아날로그 턴테이블 스위치, 컨트롤러 자동 재연결, 같은 컨트롤러 두 대 구분, 세션 숫자 갱신 지연 수정, 중복 실행 방지, 설정 화면 정리 ([#4](https://github.com/Coldlapse/IIDXwidget/issues/4)) ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v3.0.2))
-- 3.0.3 : 리눅스 AppImage 실험적 지원, 영어 설정 화면에서 일부 문구가 한국어로 나오던 문제 수정 ([#5](https://github.com/Coldlapse/IIDXwidget/issues/5)) ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v3.0.3))
+- 3.0.3 : 리눅스 AppImage 실험적 지원, 영어 설정 화면에서 일부 문구가 한국어로 나오던 문제 수정, 채터링 감지 방식 이름 변경(Sadang → Coldlapse) ([#5](https://github.com/Coldlapse/IIDXwidget/issues/5)) ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v3.0.3))
 
 ---
 

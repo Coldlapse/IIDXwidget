@@ -394,38 +394,41 @@ async function uploadRemaining({ timeoutMs } = {}) {
 
 
 // 📋 메뉴
+// 메뉴 이름의 &는 Windows에서 단축키 표시로 쓰여 사라지므로 글자 그대로 보이게 한다 (예: 'Developer & Contributors')
+const menuText = (key, values) => t(key, values).replace(/&/g, '&&');
+
 function createStatusMenu() {
   const language = normalizeLanguage(settings.language);
   const menu = Menu.buildFromTemplate([
     {
-      label: t('menu.main'),
+      label: menuText('menu.main'),
       submenu: [
-        { label: t('menu.settings'), click: createSettingsWindow },
-        { label: t('menu.logs'), click: createLogsWindow },
+        { label: menuText('menu.settings'), click: createSettingsWindow },
+        { label: menuText('menu.logs'), click: createLogsWindow },
         { type: 'separator' },
-        { label: t('menu.records'), click: createRecordsWindow },
-        { label: t('menu.chatter'), click: () => createChatterWindow() },
-        { label: t('menu.probe'), click: createProbeWindow },
+        { label: menuText('menu.records'), click: createRecordsWindow },
+        { label: menuText('menu.chatter'), click: () => createChatterWindow() },
+        { label: menuText('menu.probe'), click: createProbeWindow },
         { type: 'separator' },
-        { label: t('menu.about'), click: createAboutWindow },
+        { label: menuText('menu.about'), click: createAboutWindow },
         { type: 'separator' },
-        { label: t('menu.checkUpdates'), click: () => updater.checkManually() },
-        { label: t('menu.restart'), click: restartApp },
-        { label: t('menu.quit'), click: requestQuit }
+        { label: menuText('menu.checkUpdates'), click: () => updater.checkManually() },
+        { label: menuText('menu.restart'), click: restartApp },
+        { label: menuText('menu.quit'), click: requestQuit }
       ]
     },
     {
-      label: t('menu.language'), submenu: [
+      label: menuText('menu.language'), submenu: [
         { label: '한국어', type: 'radio', checked: language === 'ko', click: () => setLanguage('ko') },
         { label: 'English', type: 'radio', checked: language === 'en', click: () => setLanguage('en') }
       ]
     },
     {
-      label: t('guide.menu'),
+      label: menuText('guide.menu'),
       submenu: [
-        ...GUIDE_IDS.filter(id => id !== 'WHATSNEW').map(id => ({ label: t(`guide.title.${id}`), click: () => openGuide(id) })),
+        ...GUIDE_IDS.filter(id => id !== 'WHATSNEW').map(id => ({ label: menuText(`guide.title.${id}`), click: () => openGuide(id) })),
         { type: 'separator' },
-        { label: t('guide.title.WHATSNEW'), click: () => openGuide('WHATSNEW') }
+        { label: menuText('guide.title.WHATSNEW'), click: () => openGuide('WHATSNEW') }
       ]
     }
   ]);
