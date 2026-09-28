@@ -44,6 +44,7 @@
       q('tt-analog-section').hidden = !analog;
       q('tt-mode-button').classList.toggle('active', !analog);
       q('tt-mode-analog').classList.toggle('active', analog);
+      renderSessionStatus();
       refreshPreview();
     }
     const devicePath = () => q('device').value || null;
@@ -58,7 +59,8 @@
       if (!mappingSession || !window.i18n.ready) return;
       if (mappingSession.status === 'none') setStatus(t('settings.mappingNoDevice'), { warning: true });
       else if (mappingSession.status === 'officialOnly') setStatus(t('settings.mappingOfficialOnly'), { warning: true });
-      else setStatus(t('settings.mappingReady', { device: mappingSession.device }));
+      // '매핑할 컨트롤러' 표시는 아날로그 턴테이블(축 학습)에서만. 버튼 턴테이블에서는 비워 둔다 (장치 문제 경고는 그대로)
+      else setStatus(turntableInput() === 'analog' ? t('settings.mappingReady', { device: mappingSession.device }) : '');
     }
 
     async function startSession() {
