@@ -151,6 +151,7 @@ English guides: [What's new in 3.0.0](./GUIDE/WHATSNEW.en.md) · [Connection](./
 - 2.0.1 : 버그 수정 ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v2.0.1))
 - 2.1.0 : beatmania.app 서열표 사이트 일일 타건 기록 연동 추가, Uptime 기능 버그 수정 ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v2.1.0))
 - 3.0.0 : 백신 오탐 해결, 위젯 디자인 개편(계기판), KPS 스피드미터, DP 지원, 한국어/영어 지원, 기타 컨트롤러 수동 매핑, 스크래치 이미지 2장 모드, 위젯 배경 투명, 설정 즉시 반영 및 자동 재연결, 앱 창·OBS 위젯 숫자 통일, 세션 기록 페이지와 종료 시 자동 전송, beatmania.app 계정 연결 방식 변경(토큰 암호화 저장·계정 표시), 릴리즈·채터링 계산을 Rag 님 위젯과 동일하게 변경, 채터링 감지 방식 선택, 롱노트 색 표시, 가이드 추가 등 (기여자 : MellDa1024, Ryochobi) ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v3.0.0))
+- 3.0.1 : arcin 기판 공식 지원, 기타 컨트롤러(수동 매핑)에서 공식 지원 컨트롤러도 고를 수 있게 변경 ([#4](https://github.com/Coldlapse/IIDXwidget/issues/4)) ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v3.0.1))
 
 ---
 
