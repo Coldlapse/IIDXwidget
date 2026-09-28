@@ -216,6 +216,10 @@
     });
 
     function localize() {
+      // 이 구역은 번역을 적용한 뒤에 템플릿으로 만들어지므로, 구역 안의 data-i18n 문구는 여기서 직접 번역한다
+      // (안 하면 영어에서도 HTML에 적힌 한국어 기본 문구가 그대로 남는다)
+      root.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+      root.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.dataset.i18nTitle); });
       root.querySelectorAll('.generic-mapping-table tr').forEach(row => {
         row.cells[0].textContent = mappingLabel(row.querySelector('input').dataset.key);
       });

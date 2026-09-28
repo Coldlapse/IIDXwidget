@@ -32,16 +32,16 @@ function setupUpdater({ t, store, logger, beforeInstall = () => {} }) {
     checking = false;
   };
 
-  autoUpdater.on('checking-for-update', () => console.log('🔍 업데이트 확인 중...'));
+  autoUpdater.on('checking-for-update', () => console.log(t('log.updateChecking')));
 
   autoUpdater.on('update-available', (info) => {
     const isManual = manualCheck;
     finishCheck();
-    console.log('📦 업데이트 발견됨:', info.version);
+    console.log(t('log.updateFound', { version: info.version }));
 
     // 자동 확인에서는 사용자가 건너뛴 버전을 다시 묻지 않는다
     if (!isManual && info.version === store.get('skippedVersion')) {
-      console.log(`🚫 스킵된 버전 ${info.version} – 알림 건너뜀`);
+      console.log(t('log.updateSkippedVersion', { version: info.version }));
       return;
     }
 
@@ -60,14 +60,14 @@ function setupUpdater({ t, store, logger, beforeInstall = () => {} }) {
       autoUpdater.downloadUpdate();
     } else if (result === 2) {
       store.set('skippedVersion', info.version);
-      console.log(`⚠️ ${info.version} 을(를) 스킵 목록에 추가`);
+      console.log(t('log.updateSkipAdded', { version: info.version }));
     }
   });
 
   autoUpdater.on('update-not-available', () => {
     const isManual = manualCheck;
     finishCheck();
-    console.log('✅ 현재 최신 버전입니다.');
+    console.log(t('log.updateLatest'));
     if (isManual) {
       dialog.showMessageBox({ type: 'info', title: t('menu.checkUpdates'), message: t('update.current') });
     }
@@ -76,7 +76,7 @@ function setupUpdater({ t, store, logger, beforeInstall = () => {} }) {
   autoUpdater.on('error', (err) => {
     const isManual = manualCheck;
     finishCheck();
-    console.error('❌ 업데이트 오류:', err);
+    console.error(t('log.updateError'), err);
     if (isManual) {
       dialog.showMessageBox({ type: 'error', title: t('update.errorTitle'), message: t('update.error', { message: err.message }) });
     }
@@ -99,7 +99,7 @@ function setupUpdater({ t, store, logger, beforeInstall = () => {} }) {
 
   function check(isManual) {
     if (!app.isPackaged) {
-      console.log('ℹ️ 개발 실행에서는 업데이트를 확인하지 않습니다.');
+      console.log(t('log.updateDevSkip'));
       if (isManual) dialog.showMessageBox({ type: 'info', title: t('menu.checkUpdates'), message: t('update.current') });
       return;
     }

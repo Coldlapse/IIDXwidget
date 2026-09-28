@@ -7,7 +7,9 @@ let uploading = false;
 
 const formatDuration = ms => formatUptime(Math.floor((ms || 0) / 1000));
 const formatRelease = value => value === null || value === undefined ? '-' : `${value} ms`;
-const formatTime = iso => new Date(iso).toLocaleTimeString();
+// 날짜·시각은 Windows 언어가 아니라 앱 언어 형식으로 쓴다
+const locale = () => (window.i18n.language === 'en' ? 'en-US' : 'ko-KR');
+const formatTime = iso => new Date(iso).toLocaleTimeString(locale());
 
 function renderNumbers() {
   const s = data.session;
@@ -43,7 +45,7 @@ function renderAccount() {
 function render() {
   if (!data || !window.i18n.ready) return;
   const s = data.session;
-  $('started-at').textContent = window.i18n.t('records.startedAt', { time: new Date(s.startedAt).toLocaleString() });
+  $('started-at').textContent = window.i18n.t('records.startedAt', { time: new Date(s.startedAt).toLocaleString(locale()) });
   renderNumbers();
   renderAccount();
   $('auto-upload-state').textContent = window.i18n.t(data.autoUploadOnQuit ? 'records.autoUploadOn' : 'records.autoUploadOff');

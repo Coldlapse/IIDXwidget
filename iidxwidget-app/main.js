@@ -332,7 +332,7 @@ function migrateLegacyToken() {
   delete settings.apiToken;
   if (legacy && safeStorage.isEncryptionAvailable()) {
     settings.apiTokenEnc = safeStorage.encryptString(legacy).toString('base64');
-    console.log('🔑 저장된 토큰을 암호화해서 옮겼습니다.');
+    console.log(t('log.tokenMigrated'));
   }
   persistSettings();
 }
@@ -343,7 +343,7 @@ async function refreshAccount() {
   if (!token) return;
   const result = await whoami({ token });
   if (result.kind === 'unauthorized') {
-    console.warn('⚠️ 저장된 beatmania.app 토큰을 서버가 받아 주지 않습니다. 설정에서 토큰을 다시 넣어 주세요.');
+    console.warn(t('log.tokenRejected'));
     markTokenInvalid();
   } else if (result.kind === 'ok') {
     tokenInvalid = false;
@@ -377,10 +377,10 @@ async function uploadRemaining({ timeoutMs } = {}) {
     });
     if (!result.ok) {
       if (result.reason === 'unauthorized') markTokenInvalid();
-      console.error(`❌ 타건 기록 전송 실패 (${result.reason}): ${result.message}`);
+      console.error(t('log.uploadFailed', { reason: result.reason, message: result.message }));
       return { ok: false, reason: result.reason, count: result.sent };
     }
-    console.log(`📤 타건 기록 ${result.sent}회 전송 완료 (서버 오늘 합계: ${result.dailyTotal})`);
+    console.log(t('log.uploadDone', { sent: result.sent, dailyTotal: result.dailyTotal }));
     return { ok: true, count: result.sent, dailyTotal: result.dailyTotal };
   } finally {
     uploadInProgress = false;
@@ -455,7 +455,7 @@ function applyAutoLaunch(enabled) {
   const exePath = app.getPath('exe');
   if (app.getLoginItemSettings({ path: exePath }).openAtLogin === enabled) return;
   app.setLoginItemSettings({ openAtLogin: enabled, path: exePath });
-  console.log(`[AutoLaunch] ${enabled ? '✅ 등록됨' : '❎ 해제됨'} → ${exePath}`);
+  console.log(t(enabled ? 'log.autoLaunchOn' : 'log.autoLaunchOff', { path: exePath }));
 }
 
 function handleServerError(error, port) {
@@ -673,7 +673,7 @@ ipcMain.handle('pick-user-image', async () => {
     fs.copyFileSync(source, path.join(USER_IMAGE_DIR, fileName));
     return `/userImages/${fileName}`;
   } catch (err) {
-    console.error('❌ 이미지 저장 실패:', err);
+    console.error(t('log.imageSaveFailed'), err);
     return null;
   }
 });
@@ -759,12 +759,12 @@ ipcMain.handle('set-api-token', async (event, raw) => {
   if (result.kind === 'unauthorized') return { ok: false, error: 'unauthorized' };
   if (result.kind === 'network') return { ok: false, error: 'network', detail: result.error };
   storeApiToken(token, result.username);
-  console.log(`🔑 beatmania.app 토큰을 저장했습니다 (${result.username})`);
+  console.log(t('log.tokenSaved', { username: result.username }));
   return { ok: true, username: result.username };
 });
 ipcMain.handle('clear-api-token', () => {
   storeApiToken(null);
-  console.log('🔑 beatmania.app 토큰을 지웠습니다.');
+  console.log(t('log.tokenCleared'));
 });
 
 // 가이드
@@ -834,11 +834,10 @@ app.on('second-instance', () => {
 
 app.whenReady().then(() => {
   if (!isPrimaryInstance) return;
-  console.log('🚀 현재 실행 중 앱 버전:', appVersion);
-
   const loaded = readSettingsFile(SETTINGS_FILE);
-  if (loaded.error) console.warn('⚠️ settings.json을 읽지 못해 기본값을 씁니다:', loaded.error.message);
   settings = loaded.settings;
+  console.log(t('log.appVersion', { version: appVersion }));
+  if (loaded.error) console.warn(t('log.settingsReadFailed'), loaded.error.message);
   // 기본값을 합치고 이전 버전 형식을 바꾼 결과를 저장해 둔다
   persistSettings();
   migrateLegacyToken();

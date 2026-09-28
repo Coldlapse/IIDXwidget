@@ -84,6 +84,26 @@ const translations = {
         playLike: { title: '실제 플레이처럼', hint: '10초 정도 건반과 스크래치를 섞어서 평소처럼 칩니다.' }
       }
     },
+    log: {
+      appVersion: '🚀 현재 실행 중 앱 버전: {version}',
+      settingsReadFailed: '⚠️ settings.json을 읽지 못해 기본값을 씁니다:',
+      tokenMigrated: '🔑 저장된 토큰을 암호화해서 옮겼습니다.',
+      tokenRejected: '⚠️ 저장된 beatmania.app 토큰을 서버가 받아 주지 않습니다. 설정에서 토큰을 다시 넣어 주세요.',
+      tokenSaved: '🔑 beatmania.app 토큰을 저장했습니다 ({username})',
+      tokenCleared: '🔑 beatmania.app 토큰을 지웠습니다.',
+      uploadFailed: '❌ 타건 기록 전송 실패 ({reason}): {message}',
+      uploadDone: '📤 타건 기록 {sent}회 전송 완료 (서버 오늘 합계: {dailyTotal})',
+      autoLaunchOn: '[AutoLaunch] ✅ 등록됨 → {path}',
+      autoLaunchOff: '[AutoLaunch] ❎ 해제됨 → {path}',
+      imageSaveFailed: '❌ 이미지 저장 실패:',
+      updateChecking: '🔍 업데이트 확인 중...',
+      updateFound: '📦 업데이트 발견됨: {version}',
+      updateSkippedVersion: '🚫 건너뛰기로 한 버전 {version} – 알림 안 함',
+      updateSkipAdded: '⚠️ {version}을(를) 건너뛸 버전으로 저장',
+      updateLatest: '✅ 현재 최신 버전입니다.',
+      updateError: '❌ 업데이트 오류:',
+      updateDevSkip: 'ℹ️ 개발 실행에서는 업데이트를 확인하지 않습니다.'
+    },
     records: {
       title: '세션 기록',
       session: '이번 세션',
@@ -410,6 +430,26 @@ const translations = {
         chord: { title: 'Chords', hint: 'Press several keys at once a few times (1+3+5, 2+4+6, all seven…).' },
         playLike: { title: 'Like real play', hint: 'Play normally for about 10 seconds, keys and turntable mixed.' }
       }
+    },
+    log: {
+      appVersion: '🚀 Running app version: {version}',
+      settingsReadFailed: '⚠️ Could not read settings.json; using defaults:',
+      tokenMigrated: '🔑 Encrypted and moved the saved token.',
+      tokenRejected: '⚠️ The server does not accept the saved beatmania.app token. Enter the token again in Settings.',
+      tokenSaved: '🔑 Saved the beatmania.app token ({username})',
+      tokenCleared: '🔑 Removed the beatmania.app token.',
+      uploadFailed: '❌ Play count upload failed ({reason}): {message}',
+      uploadDone: '📤 Uploaded {sent} presses (server total today: {dailyTotal})',
+      autoLaunchOn: '[AutoLaunch] ✅ Enabled → {path}',
+      autoLaunchOff: '[AutoLaunch] ❎ Disabled → {path}',
+      imageSaveFailed: '❌ Failed to save the image:',
+      updateChecking: '🔍 Checking for updates...',
+      updateFound: '📦 Update found: {version}',
+      updateSkippedVersion: '🚫 Skipped version {version} – not notifying',
+      updateSkipAdded: '⚠️ Will skip version {version}',
+      updateLatest: '✅ You have the latest version.',
+      updateError: '❌ Update error:',
+      updateDevSkip: 'ℹ️ Updates are not checked in development runs.'
     },
     records: {
       title: 'Session',
