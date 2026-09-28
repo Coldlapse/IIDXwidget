@@ -176,6 +176,34 @@ KPS 스피드미터 프리셋:
 
 ---
 
+## 🐧 리눅스 (실험적 지원)
+
+리눅스용 AppImage를 함께 배포합니다. 앱 화면과 OBS 위젯은 확인했지만, 컨트롤러 입력은 아직 리눅스 실제 기기로 확인하지 못해 **실험적 지원**입니다. 써 보신 결과를 [Issues](https://github.com/Coldlapse/IIDXwidget/issues)로 알려주세요.
+
+1. [Releases](https://github.com/Coldlapse/IIDXwidget/releases/latest)에서 `IIDXwidget-x.x.x-x86_64.AppImage`와 `70-iidxwidget.rules`를 받습니다.
+2. AppImage에 실행 권한을 줍니다. 파일 속성에서 "실행 허용"을 켜거나 터미널에서 `chmod +x IIDXwidget-*.AppImage`
+3. 실행합니다. FUSE 2가 없다는 오류가 나면 설치해 주세요.
+   - 아치 계열(CachyOS 등): `sudo pacman -S fuse2`
+   - 우분투·데비안 계열: `sudo apt install libfuse2`
+4. **컨트롤러 권한 (처음 한 번):** 리눅스는 일반 사용자가 컨트롤러 장치를 바로 읽지 못합니다. 받은 규칙 파일을 넣고 컨트롤러를 뺐다 다시 꽂아 주세요.
+   ```
+   sudo cp 70-iidxwidget.rules /etc/udev/rules.d/
+   sudo udevadm control --reload && sudo udevadm trigger
+   ```
+   - 공식 지원 컨트롤러는 이 파일만으로 됩니다. 기타 컨트롤러(수동 매핑)는 파일 안의 예시처럼 그 기기의 VID:PID 한 줄을 추가하세요. VID:PID는 메뉴 → **컨트롤러 정보 수집**이나 `lsusb`로 확인할 수 있습니다.
+   - 장치 목록에는 보이는데 입력이 안 들어오면 대부분 이 단계가 빠진 경우입니다. 메뉴 → **로그**에도 안내가 나옵니다.
+
+알아둘 점
+- **키보드 모드**는 X11 세션에서만 동작합니다. KDE Plasma·GNOME의 기본인 Wayland 세션에서는 키보드 입력을 읽지 못할 수 있습니다.
+- **자동 업데이트**를 지원합니다. AppImage 파일이 있는 폴더에 쓰기 권한이 있어야 합니다(홈 폴더 권장).
+- **로그인할 때 자동 실행**을 켜면 `~/.config/autostart`에 실행 파일이 등록됩니다. AppImage를 다른 곳으로 옮겼다면 설정을 한 번 껐다 켜 주세요.
+- beatmania.app 토큰은 KWallet이나 GNOME 키링으로 암호화해서 저장합니다. 키링이 없으면 약한 방식으로 저장됩니다.
+- 앱이 켜지지 않으면 터미널에서 실행해 오류를 확인해 주세요. 일부 배포판(우분투 24.04 이상 등)에서는 `--no-sandbox` 옵션을 붙여야 켜질 수 있습니다.
+- 투컴 방송에서 방화벽(ufw)을 쓴다면 포트를 열어 주세요: `sudo ufw allow 8080,5678/tcp`
+- 설정 파일은 `~/.config/iidxwidget/`에 있습니다.
+
+---
+
 ## 💡 알아두면 좋은 것
 
 - 앱을 껐다 켜도 OBS 위젯은 알아서 다시 연결됩니다. 앱이 꺼져 있는 동안에는 OBS 화면에 "위젯 프로그램과 연결이 끊겼습니다"가 뜹니다.

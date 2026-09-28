@@ -113,7 +113,7 @@ body {
 /* 설정 섹션 사이 구분선 */
 .section-divider { border: none; border-top: 1px solid #3a3a3a; margin: 28px 0 0; }
 .has-tooltip { cursor: help; }
-.warning-text { color: #ffb74d; }
+.mapping-help.warning-text { color: #ffb74d; }
 .tooltip-mark { color: #888; font-size: 12px; }
 .section-label {
   display: block;

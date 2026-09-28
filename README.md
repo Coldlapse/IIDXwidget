@@ -60,6 +60,7 @@ English guides: [What's new in 3.0.0](./GUIDE/WHATSNEW.en.md) · [Connection](./
 ![설치 화면](./images/1.png)
    - [Releases](https://github.com/Coldlapse/IIDXwidget/releases/latest)에 업로드된 설치 파일(`IIDXwidget-Setup-x.x.x.exe`)을 다운로드하여 설치한 뒤 실행합니다.
    - 백신이나 Windows 경고가 뜬다면(Windows 11의 **스마트 앱 컨트롤** 포함) 아래 [백신 경고가 뜰 때](#-백신-경고가-뜰-때)를 참고하세요.
+   - 🐧 **리눅스**는 AppImage(`IIDXwidget-x.x.x-x86_64.AppImage`)를 받아 실행합니다. 컨트롤러 권한 설정이 한 번 필요하고, 아직 **실험적 지원**입니다. [사용법 가이드 → 리눅스](./GUIDE/USAGE.md#-리눅스-실험적-지원)를 봐 주세요.
 
 2. 🌐 OBS에 브라우저 소스 추가
 ![실행 화면](./images/2.png)
@@ -159,6 +160,7 @@ English guides: [What's new in 3.0.0](./GUIDE/WHATSNEW.en.md) · [Connection](./
 - 3.0.0 : 백신 오탐 해결, 위젯 디자인 개편(계기판), KPS 스피드미터, DP 지원, 한국어/영어 지원, 기타 컨트롤러 수동 매핑, 스크래치 이미지 2장 모드, 위젯 배경 투명, 설정 즉시 반영 및 자동 재연결, 앱 창·OBS 위젯 숫자 통일, 세션 기록 페이지와 종료 시 자동 전송, beatmania.app 계정 연결 방식 변경(토큰 암호화 저장·계정 표시), 릴리즈·채터링 계산을 Rag 님 위젯과 동일하게 변경, 채터링 감지 방식 선택, 롱노트 색 표시, 가이드 추가 등 (기여자 : MellDa1024, Ryochobi) ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v3.0.0))
 - 3.0.1 : arcin 기판 공식 지원, 기타 컨트롤러(수동 매핑)에서 공식 지원 컨트롤러도 고를 수 있게 변경 ([#4](https://github.com/Coldlapse/IIDXwidget/issues/4)) ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v3.0.1))
 - 3.0.2 : arcin-infinitas 지원 보완(디지털 턴테이블), 턴테이블 방향 반전, 수동 매핑 버튼/아날로그 턴테이블 스위치, 컨트롤러 자동 재연결, 같은 컨트롤러 두 대 구분, 세션 숫자 갱신 지연 수정, 중복 실행 방지, 설정 화면 정리 ([#4](https://github.com/Coldlapse/IIDXwidget/issues/4)) ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v3.0.2))
+- 3.0.3 : 리눅스 AppImage 실험적 지원, 영어 설정 화면에서 일부 문구가 한국어로 나오던 문제 수정 ([#5](https://github.com/Coldlapse/IIDXwidget/issues/5)) ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v3.0.3))
 
 ---
 

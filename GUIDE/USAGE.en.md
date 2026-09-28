@@ -176,6 +176,34 @@ KPS speedometer presets:
 
 ---
 
+## 🐧 Linux (experimental)
+
+An AppImage for Linux ships alongside the Windows installer. The app screens and the OBS widget are checked, but controller input hasn't been confirmed on real Linux hardware yet, so this is **experimental**. Please tell us how it went in [Issues](https://github.com/Coldlapse/IIDXwidget/issues).
+
+1. From [Releases](https://github.com/Coldlapse/IIDXwidget/releases/latest), download `IIDXwidget-x.x.x-x86_64.AppImage` and `70-iidxwidget.rules`.
+2. Make the AppImage executable: turn on "Allow executing" in the file properties, or run `chmod +x IIDXwidget-*.AppImage`.
+3. Run it. If it complains about FUSE 2, install it:
+   - Arch-based (CachyOS, etc.): `sudo pacman -S fuse2`
+   - Ubuntu/Debian-based: `sudo apt install libfuse2`
+4. **Controller permission (once):** on Linux a normal user can't read controller devices directly. Install the rule file, then unplug and replug the controller.
+   ```
+   sudo cp 70-iidxwidget.rules /etc/udev/rules.d/
+   sudo udevadm control --reload && sudo udevadm trigger
+   ```
+   - Officially supported controllers work with this file as is. For Other controller (manual mapping), add one line with your device's VID:PID like the example in the file. You can find the VID:PID in Menu → **Controller probe** or with `lsusb`.
+   - If the device shows up in the list but no input comes in, this step is usually missing. Menu → **Logs** shows a hint too.
+
+Good to know
+- **Keyboard mode** works only in an X11 session. In a Wayland session (the default on KDE Plasma and GNOME) keyboard input may not be read.
+- **Auto-update** is supported. The folder with the AppImage must be writable (your home folder is best).
+- **Launch automatically when you log in** registers the AppImage in `~/.config/autostart`. If you move the AppImage, turn the setting off and on once.
+- The beatmania.app token is encrypted with KWallet or GNOME Keyring. Without a keyring it is stored with weak protection.
+- If the app doesn't start, run it from a terminal to see the error. Some distributions (Ubuntu 24.04 and later, etc.) need the `--no-sandbox` option.
+- For two-PC streaming with a firewall (ufw), open the ports: `sudo ufw allow 8080,5678/tcp`
+- Settings live in `~/.config/iidxwidget/`.
+
+---
+
 ## 💡 Good to know
 
 - If you quit and restart the app, the OBS widget reconnects by itself. While the app is off, OBS shows "Lost connection to IIDXwidget".
