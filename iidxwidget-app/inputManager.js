@@ -20,7 +20,8 @@ function sideConfig(settings, side) {
       turntableReverse: !!p2.turntableReverse,
       kbMapping: p2.keyMapping?.KB || {},
       genericMapping: p2.keyMapping?.GENERIC || {},
-      genericAxis: p2.keyMapping?.GENERIC_AXIS ?? null
+      genericAxis: p2.keyMapping?.GENERIC_AXIS ?? null,
+      buttonTurntableLegacy: !!p2.buttonTurntableLegacy
     };
   }
   return {
@@ -31,7 +32,8 @@ function sideConfig(settings, side) {
     turntableReverse: !!settings.turntableReverse,
     kbMapping: { ...DEFAULT_SETTINGS.keyMapping.KB, ...(settings.keyMapping?.KB || {}) },
     genericMapping: settings.keyMapping?.GENERIC || {},
-    genericAxis: settings.keyMapping?.GENERIC_AXIS ?? null
+    genericAxis: settings.keyMapping?.GENERIC_AXIS ?? null,
+    buttonTurntableLegacy: !!settings.buttonTurntableLegacy
   };
 }
 
@@ -60,7 +62,7 @@ function createInputManager({ dispatch, logger }) {
     }
     const options = { devicePath: config.devicePath, deviceSerial: config.deviceSerial, excludePaths: usedPaths, turntableReverse: config.turntableReverse, logger };
     const reader = config.profile === 'AUTO'
-      ? startAutoControllerReader(send, { ...options, genericMapping: config.genericMapping, genericAxis: config.genericAxis })
+      ? startAutoControllerReader(send, { ...options, genericMapping: config.genericMapping, genericAxis: config.genericAxis, buttonTurntableLegacy: config.buttonTurntableLegacy })
       : startControllerReader(DEDICATED_PROFILES.includes(config.profile) ? config.profile : 'PHOENIXWAN', send, { ...options, lr2ModeEnabled: config.lr2ModeEnabled });
     if (!reader) return;
     usedPaths.push(reader.path);

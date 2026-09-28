@@ -130,3 +130,23 @@ console.log('controllerReader report-id tests passed');
   assert.equal(chooseDevice('AUTO', {}, devices).parser, 'GENERIC');
   console.log('device selection tests passed');
 }
+
+// Button Turntable legacy (수동 매핑 전용, 기본 꺼짐): 3.0.1까지 방식. 누를 때 2칸, 떼도 멈춤을 보내지 않는다
+{
+  const { createGenericParserState } = require('../controller/controllerReader');
+  const press = Buffer.from([0x80, 0, 0]), release = Buffer.from([0, 0, 0]); // 첫 바이트 비트 7 = 버튼 8
+  const legacy = createGenericParserState(null, { buttonTurntableLegacy: true });
+  parseGenericControllerData(release, { SCup: 8 }, legacy);
+  let ev = parseGenericControllerData(press, { SCup: 8 }, legacy).filter(e => e.type === 'axis');
+  assert.deepEqual(ev.map(e => [e.discRaw, e.direction]), [[130, '+']]);
+  ev = parseGenericControllerData(release, { SCup: 8 }, legacy).filter(e => e.type === 'axis');
+  assert.deepEqual(ev, []);
+  // 기본(꺼짐)은 LR2 모드처럼 5칸, 떼면 멈춤
+  const normal = createGenericParserState(null);
+  assert.equal(normal.buttonTurntableLegacy, false);
+  parseGenericControllerData(release, { SCup: 8 }, normal);
+  ev = parseGenericControllerData(press, { SCup: 8 }, normal).filter(e => e.type === 'axis');
+  assert.deepEqual(ev.map(e => [e.discRaw, e.direction]), [[133, '+']]);
+  ev = parseGenericControllerData(release, { SCup: 8 }, normal).filter(e => e.type === 'axis');
+  assert.deepEqual(ev.map(e => [e.discRaw, e.direction]), [[133, 'neutral']]);
+}

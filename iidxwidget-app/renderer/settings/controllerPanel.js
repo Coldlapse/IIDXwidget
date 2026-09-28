@@ -209,6 +209,7 @@
       setAxis(genericAxis);
       renderSessionStatus();
       renderReverseHelp();
+      q('legacy-help').textContent = t('settings.buttonTurntableLegacyHelp');
       if (profile() !== 'KB' && !q('device').options.length) refreshDevices();
     }
     document.addEventListener('i18n-changed', localize);
@@ -220,6 +221,7 @@
         q('profile').value = config.controllerProfile;
         q('lr2').checked = !!config.lr2ModeEnabled;
         q('tt-reverse').checked = !!config.turntableReverse;
+        q('tt-legacy').checked = !!config.buttonTurntableLegacy;
         savedDevice = config.controllerDevice || null;
         savedSerial = config.controllerDeviceSerial || null;
         previewKey = null; // 저장 뒤 다시 불러오면 미리보기를 새로 연다
@@ -258,6 +260,7 @@
             controllerDeviceSerial: profile() === 'KB' ? null : (q('device').selectedOptions[0]?.dataset.serial || null),
             lr2ModeEnabled: q('lr2').checked,
             turntableReverse: q('tt-reverse').checked,
+            buttonTurntableLegacy: q('tt-legacy').checked,
             keyMapping: { KB: kb, GENERIC: generic.mapping, GENERIC_AXIS: genericAxis }
           },
           generic

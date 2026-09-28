@@ -85,6 +85,7 @@ Choose a profile and a **device** for each side (one for SP, 1P and 2P for DP). 
   - If your board reports the turntable as **buttons**, map them to 'Turntable clockwise / counterclockwise'.
   - If your board reports the turntable as an **axis**, press **Learn** next to 'Turntable (axis)' and spin the turntable for 2 seconds. Once learned, the disc next to it follows the turntable. If it spins the opposite way when you turn clockwise, turn on **Reverse turntable direction**.
   - Reversing applies only to a turntable read as an axis. If a turntable mapped to **buttons** is backwards, swap the numbers in the clockwise and counterclockwise fields.
+  - A turntable mapped to **buttons** works like PHOENIXWAN LR2 mode: each press turns the disc 5 steps, and the scratch light turns off on release. If your board taps a button briefly for every turntable step and the light flickers, turn on **Button Turntable legacy** (off by default). It goes back to the behavior up to 3.0.1 (2 steps per press, the light stays on after release).
 - **Keyboard** : Click a field in the keyboard mapping table, then press the key you want.
 
 ### Controller support

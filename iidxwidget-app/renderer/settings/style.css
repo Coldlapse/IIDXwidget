@@ -127,6 +127,7 @@ body {
 .axis-row button { padding: 6px 10px; font-size: 13px; background-color: #333; color: #fff; }
 .axis-value { flex: 1; color: #fff; }
 /* 턴테이블 방향 반전 + 미니 원판 (위젯과 같은 방향으로 돈다) */
+.legacy-row { display: block; margin-top: 8px; }
 .reverse-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
 .tt-preview { position: relative; width: 40px; height: 40px; flex: none; border-radius: 50%; border: 2px solid #888; background: #222; }
 .tt-preview.idle { opacity: 0.35; }

@@ -16,6 +16,7 @@ const DEFAULT_SETTINGS = {
   controllerDeviceSerial: null, // 고른 장치의 시리얼. 다른 USB 포트에 꽂아 경로가 바뀌어도 같은 장치를 찾는다
   lr2ModeEnabled: false,
   turntableReverse: false, // 턴테이블 방향 반전 (축으로 읽는 턴테이블만. 기타 컨트롤러의 버튼 매핑 턴테이블은 제외)
+  buttonTurntableLegacy: false, // 기타 컨트롤러의 버튼 매핑 턴테이블을 3.0.1까지 방식으로 (누를 때 2칸, 떼도 불을 끄지 않음)
   autoLaunch: false,
   seenUpdateGuide: null,   // 마지막으로 보여 준 업데이트 안내 버전 (guides.js의 UPDATE_GUIDE_VERSION)
   autoUploadOnQuit: false, // 종료할 때 남은 타건 기록을 beatmania.app으로 전송 (토큰이 필요해서 기본은 꺼짐)
@@ -41,6 +42,7 @@ const DEFAULT_SETTINGS = {
     controllerDeviceSerial: null,
     lr2ModeEnabled: false,
     turntableReverse: false,
+    buttonTurntableLegacy: false,
     keyMapping: {
       KB: {},                // 2P 키보드 매핑 (기본은 비어 있음, 사용자가 채운다)
       GENERIC: { '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, SCup: 8, SCdown: 9 },

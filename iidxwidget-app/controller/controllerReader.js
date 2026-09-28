@@ -14,6 +14,9 @@ const DIGITAL_TT_STILL_REPORTS = 250;
 // - 축: 값이 바뀔 때만 보내는 기기가 많아서, 이 시간 동안 안 바뀌면 같은 값을 한 번 더 보내 불을 끈다
 //   (위젯이 턴테이블 값을 받는 최소 간격 20ms보다 길게. 주작콘은 멈추고 20~40ms 뒤에 꺼진다)
 const GENERIC_TT_BUTTON_STEP = 5;
+// 'Button Turntable legacy'(수동 매핑 전용, 기본 꺼짐): 한 칸마다 버튼을 짧게 눌렀다 떼는 기판용으로 3.0.1까지의 방식.
+// 누를 때 2칸만 돌리고, 떼도 멈춤을 보내지 않는다 (천천히 돌릴 때 스크래치 불이 깜빡이지 않도록)
+const GENERIC_TT_LEGACY_STEP = 2;
 const GENERIC_TT_SETTLE_MS = 30;
 
 // arcin(zyp) 기판. INFINITAS 호환이라 주작콘과 같은 1CCF:8048을 쓰므로 이름으로 가린다.
@@ -120,9 +123,9 @@ function describeDevice(device) {
 
 const MAX_BUTTON_BYTES = 8;
 
-function createGenericParserState(axisByte = null) {
+function createGenericParserState(axisByte = null, { buttonTurntableLegacy = false } = {}) {
   // hasReportId: 보고서 첫 바이트가 report ID인지 (null = 아직 모름)
-  return { previousButtons: 0n, currentDiscRaw: 128, hasReportId: axisByte === 0 ? false : null, axisByte, lastAxisValue: null };
+  return { previousButtons: 0n, currentDiscRaw: 128, hasReportId: axisByte === 0 ? false : null, axisByte, lastAxisValue: null, buttonTurntableLegacy };
 }
 
 // 첫 바이트가 report ID인지 판단한다.
@@ -212,11 +215,13 @@ function buttonEvents(previousButtons, buttons, mapping, state, timestamp) {
 
   const isHeld = key => Number.isInteger(Number(mapping[key])) && Number(mapping[key]) >= 1
     && !!(buttons & (1n << BigInt(Number(mapping[key]) - 1)));
+  const legacy = !!state.buttonTurntableLegacy;
   if (turntablePress) {
     const { isUp, physicalButton } = turntablePress;
-    state.currentDiscRaw = (state.currentDiscRaw + (isUp ? GENERIC_TT_BUTTON_STEP : -GENERIC_TT_BUTTON_STEP) + 256) % 256;
+    const step = legacy ? GENERIC_TT_LEGACY_STEP : GENERIC_TT_BUTTON_STEP;
+    state.currentDiscRaw = (state.currentDiscRaw + (isUp ? step : -step) + 256) % 256;
     events.push({ type: 'axis', axis: 'X', direction: isUp ? '+' : '-', discRaw: state.currentDiscRaw, physicalButton, timestamp });
-  } else if (turntableRelease && !isHeld('SCup') && !isHeld('SCdown')) {
+  } else if (!legacy && turntableRelease && !isHeld('SCup') && !isHeld('SCdown')) {
     events.push({ type: 'axis', axis: 'X', direction: 'neutral', discRaw: state.currentDiscRaw, physicalButton: turntableRelease, timestamp });
   }
   return events;
@@ -430,7 +435,8 @@ function openReader(selection, callback, options) {
   const dedicatedState = createDedicatedParserState(DEDICATED_LAYOUTS[selection.parser] || DEDICATED_LAYOUTS.PHOENIXWAN);
   // 주작콘식 LR2 모드가 없는 기판(arcin)은 설정과 관계없이 감지하지 않는다 (arcin 디지털 턴테이블은 따로 자동으로 처리)
   dedicatedState.lr2DetectEnabled = selection.parser !== 'GENERIC' && !!options.lr2ModeEnabled && !!dedicatedState.layout.lr2;
-  const genericState = createGenericParserState(Number.isInteger(options.genericAxis) ? options.genericAxis : null);
+  const genericState = createGenericParserState(Number.isInteger(options.genericAxis) ? options.genericAxis : null,
+    { buttonTurntableLegacy: !!options.buttonTurntableLegacy });
   const settle = selection.parser === 'GENERIC' ? createTurntableSettle(callback) : null;
   const rawListeners = new Set();
 

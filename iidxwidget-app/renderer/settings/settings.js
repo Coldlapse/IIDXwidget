@@ -56,6 +56,7 @@ $('save-button').addEventListener('click', async () => {
     controllerDeviceSerial: side1.controllerDeviceSerial,
     lr2ModeEnabled: side1.lr2ModeEnabled,
     turntableReverse: side1.turntableReverse,
+    buttonTurntableLegacy: side1.buttonTurntableLegacy,
     player2: side2,
     autoLaunch: $('autoLaunch').checked,
     autoUploadOnQuit: $('autoUploadOnQuit').checked,
@@ -184,6 +185,7 @@ for (const slotName of Object.keys(discSlots)) {
     controllerDeviceSerial: settings.controllerDeviceSerial,
     lr2ModeEnabled: settings.lr2ModeEnabled,
     turntableReverse: settings.turntableReverse,
+    buttonTurntableLegacy: settings.buttonTurntableLegacy,
     keyMapping: settings.keyMapping
   });
   await panels[1].load(settings.player2);
