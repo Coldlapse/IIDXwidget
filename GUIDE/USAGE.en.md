@@ -51,7 +51,6 @@ Press **Save** to apply changes. Saved changes show up in the OBS widget right a
 | Setting | Meaning |
 |---|---|
 | **Launch automatically with Windows** | Starts IIDXwidget when you turn on your PC. |
-| **Show widget promotion box** | Shows the IIDXwidget repository address as a small strip on the side opposite the session dashboard. Thanks if you turn it on 🙏 |
 
 ### Controllers: button layout and DP
 
@@ -131,7 +130,7 @@ If you'd like a dedicated profile for your controller, record its signals with M
 - To upload by hand, go to Menu → **Session** → **Upload now**. Only what hasn't been sent is uploaded, so pressing it more than once never double-counts.
 - Daily records are on your beatmania.app My Page. The server files each upload under the date it arrived (Korea time).
 
-### Connection
+### Server ports
 
 | Setting | Meaning |
 |---|---|
@@ -139,12 +138,6 @@ If you'd like a dedicated profile for your controller, record its signals with M
 | **WebSocket port** | The number the widget uses for live input. Default 5678. The widget connects by itself, so you don't enter it in OBS. |
 
 Only change these if another program already uses the port. The [connection guide](CONNECTION.en.md) explains what a port is.
-
-### Widget display
-
-| Setting | Meaning |
-|---|---|
-| **Session information position** | Attach the session dashboard below or above the widget body, or hide it. The promotion strip goes on the opposite side. |
 
 ### Release sampling rules
 
@@ -173,6 +166,8 @@ KPS speedometer presets:
 |---|---|
 | **Transparent container background** | Makes the background behind the widget transparent so only the widget shows on stream. |
 | **Show each button's release value above it** | Shows or hides the release number above each key. On by default. |
+| **Session information position** | Attach the session dashboard below or above the widget body, or hide it. The promotion strip goes on the opposite side. |
+| **Show widget promotion box** | Shows the IIDXwidget repository address as a small strip on the side opposite the session dashboard. Thanks if you turn it on 🙏 |
 | **Show KPS speedometer gauge** | Shows KPS as a speedometer. On by default; turn it off to show just the number. The preset sets the red zone and the end of the gauge (table above). |
 | **Turntable image mode** | **Single image** : one image spins with the turntable. **Two images** : a different image for each spin direction. |
 | **Custom turntable image** | The image used for the disc (PNG, JPG, WEBP, BMP, and **animated images like GIFs**). **Delete** goes back to the default disc. |
