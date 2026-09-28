@@ -1,7 +1,8 @@
 // 컨트롤러 프로필에 맞는 입력 리더(HID/키보드)를 켜고 끈다.
 // SP는 한 사이드(1), DP(버튼 레이아웃 'DP')는 1P·2P 두 사이드를 읽는다.
 // 2P에서 나온 입력에는 side: 2를 붙인다 (1P는 side: 1). 위젯·세션 통계는 이 값으로 사이드를 나눈다.
-const { startControllerReader, startAutoControllerReader, listControllerDevices, findAxisByte } = require('./controller/controllerReader');
+const controllerReader = require('./controller/controllerReader');
+const { listControllerDevices, findAxisByte } = controllerReader;
 const { startGlobalKeyboardReader } = require('./controller/keyboardReader');
 const { DEFAULT_SETTINGS } = require('./settingsStore');
 const { resolveTurntableInput } = require('./renderer/settings/formLogic');
@@ -53,28 +54,71 @@ function sideConfig(settings, side) {
 const activeSides = settings => settings.widget?.buttonLayout === 'DP' ? [1, 2] : [1];
 const tagSide = (side, events) => events.map(event => ({ ...event, side }));
 
-function createInputManager({ dispatch, logger }) {
+// 다시 연결을 시도하는 간격. 장치가 빠져 있는 동안만 돈다
+const RECONNECT_INTERVAL_MS = 2000;
+// 다시 연결을 시도할 때는 '장치를 찾을 수 없음' 로그를 남기지 않는다 (2초마다 쌓이지 않게)
+const QUIET_CODES = new Set(['notFound', 'otherNotFound', 'otherOnlyOfficial']);
+
+// hid: 테스트에서 가짜 리더를 넣을 수 있게 한다
+function createInputManager({ dispatch, logger, hid = controllerReader, reconnectIntervalMs = RECONNECT_INTERVAL_MS }) {
+  const { startControllerReader, startAutoControllerReader } = hid;
   let readers = [];          // [{ side, kind: 'hid' | 'keyboard', reader }]
+  let wanted = [];           // 지금 설정에서 켜야 하는 사이드 [{ side, config }] (다시 연결할 때 씀)
+  let reconnectTimer = null;
   let mappingReader = null;  // 설정 창 매핑 학습용으로 따로 연 리더 { side, reader }
   const previews = new Map(); // 설정 창 턴테이블 미리보기, 사이드별 { kind: 'axis' | 'dedicated', stop }
   let lastSettings = null;
 
   function stop() {
+    clearInterval(reconnectTimer);
+    reconnectTimer = null;
+    wanted = [];
     for (const { kind, reader } of readers) {
       try { kind === 'hid' ? reader.close() : reader.stop(); } catch (e) {}
     }
     readers = [];
   }
 
-  function startSide(side, config, usedPaths) {
+  // 컨트롤러가 끊기면 그 사이드의 리더를 치우고 다시 연결을 시도한다
+  function onDisconnect(side, reader) {
+    readers = readers.filter(r => r.reader !== reader);
+    try { reader.close(); } catch (e) {}
+    ensureReconnect();
+  }
+
+  const missingSides = () => wanted.filter(({ side, config }) => config.profile !== 'KB' && !readers.some(r => r.side === side));
+
+  function ensureReconnect() {
+    if (reconnectTimer || !missingSides().length) return;
+    reconnectTimer = setInterval(reconnectMissing, reconnectIntervalMs);
+  }
+
+  // 빠진 사이드의 장치를 다시 찾는다. 앱을 켤 때 없던 컨트롤러를 나중에 꽂은 경우도 여기서 잡힌다
+  function reconnectMissing() {
+    for (const { side, config } of missingSides()) {
+      const usedPaths = readers.filter(r => r.kind === 'hid').map(r => r.reader.path);
+      startSide(side, config, usedPaths, { quiet: true });
+    }
+    if (!missingSides().length) {
+      clearInterval(reconnectTimer);
+      reconnectTimer = null;
+    }
+  }
+
+  function startSide(side, config, usedPaths, { quiet = false } = {}) {
     const send = events => dispatch(tagSide(side, events));
     if (config.profile === 'KB') {
       const reader = startGlobalKeyboardReader(config.kbMapping, data => send([data]));
       readers.push({ side, kind: 'keyboard', reader });
       return;
     }
-    const options = { devicePath: config.devicePath, deviceSerial: config.deviceSerial, excludePaths: usedPaths, turntableReverse: config.turntableReverse, logger };
-    const reader = config.profile === 'AUTO'
+    let reader = null;
+    const options = {
+      devicePath: config.devicePath, deviceSerial: config.deviceSerial, excludePaths: usedPaths, turntableReverse: config.turntableReverse,
+      logger: quiet ? (level, code, details) => { if (!QUIET_CODES.has(code)) logger(level, code, details); } : logger,
+      onDisconnect: () => onDisconnect(side, reader)
+    };
+    reader = config.profile === 'AUTO'
       ? startAutoControllerReader(send, { ...options, ...genericTurntable(config), buttonTurntableLegacy: config.buttonTurntableLegacy })
       : startControllerReader(DEDICATED_PROFILES.includes(config.profile) ? config.profile : 'PHOENIXWAN', send, { ...options, lr2ModeEnabled: config.lr2ModeEnabled });
     if (!reader) return;
@@ -89,8 +133,10 @@ function createInputManager({ dispatch, logger }) {
     for (const side of activeSides(settings)) {
       const config = sideConfig(settings, side);
       console.log(`🎮 Starting controller reader: side ${side}, profile ${config.profile}`);
+      wanted.push({ side, config });
       startSide(side, config, usedPaths);
     }
+    ensureReconnect(); // 지금 연결되지 않은 컨트롤러는 꽂으면 알아서 잡는다
   }
 
   const hidReaderOf = side => readers.find(r => r.side === side && r.kind === 'hid')?.reader || null;

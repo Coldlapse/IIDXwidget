@@ -302,6 +302,17 @@ function parseControllerData(buffer, state) {
   return events;
 }
 
+// 연결이 끊겼을 때 누르고 있던 건반을 뗀 것으로 만든다
+function releaseDedicatedButtons(state) {
+  const events = [];
+  const timestamp = Date.now();
+  for (let i = 0; i < 7; i++) {
+    if (state.lastButtonByte & (1 << i)) events.push({ type: 'button', button: `button ${i + 1}`, pressed: false, timestamp });
+  }
+  state.lastButtonByte = 0;
+  return events;
+}
+
 function detectLR2Mode(buffer, state, logger) {
   const { turntableByte, lr2 } = state.layout || DEDICATED_LAYOUTS.PHOENIXWAN;
   const isStatic = [lr2.plus, lr2.minus, lr2.rest].includes(buffer[turntableByte]);
@@ -457,7 +468,27 @@ function openReader(selection, callback, options) {
     }
   });
 
-  device.on('error', error => logger('error', 'deviceError', { error }));
+  // USB를 뽑는 등 장치가 끊기면 node-hid가 'error'를 한 번 보내고 더는 읽지 않는다.
+  // 누르고 있던 건반은 뗀 것으로 보내고(위젯에 켜진 채 남지 않게), 장치를 닫고, 다시 연결하도록 알린다 (options.onDisconnect)
+  let disconnected = false;
+  device.on('error', error => {
+    if (disconnected) return;
+    disconnected = true;
+    logger('error', 'deviceDisconnected', { device: deviceName, error });
+    try {
+      const releases = selection.parser === 'GENERIC'
+        ? buttonEvents(genericState.previousButtons, 0n, options.genericMapping || {}, genericState, Date.now())
+        : releaseDedicatedButtons(dedicatedState);
+      if (releases.length) callback(releases);
+    } catch (e) {}
+    rawListeners.clear();
+    settle?.cancel();
+    try {
+      device.removeAllListeners('data');
+      device.close();
+    } catch (e) {}
+    options.onDisconnect?.();
+  });
 
   return {
     parser: selection.parser,
@@ -522,6 +553,7 @@ module.exports = {
   parseControllerData,
   createDedicatedParserState,
   handleDedicatedData,
+  releaseDedicatedButtons,
   reverseTurntableEvents,
   createTurntableSettle,
   DEDICATED_LAYOUTS
