@@ -61,7 +61,7 @@ const store = new Store();
 
 const log = require('electron-log');
 log.transports.file.level = 'debug';
-log.info('🧪 실행 중 버전:', appVersion);
+log.info('Running version:', appVersion); // 로그 파일 전용 (설정을 읽기 전이라 언어와 상관없이 영어)
 
 const updater = setupUpdater({ t, store, logger: log, beforeInstall: finishImmediately });
 
