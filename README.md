@@ -1,175 +1,49 @@
 # IIDXwidget
 
-🎵 **IIDXwidget**은  
-[Rag](https://rag-oji.com/dakendisplay/) 님이 만든 방송용 투덱 위젯을 참고하여,  
-**OBS 브라우저 소스**로 쉽게 불러올 수 있도록 개발한 **투덱 방송용 위젯 프로젝트**입니다.  
-**투컴 방송** 환경에서도 사용할 수 있도록 설계되었습니다.
+[![최신 버전](https://img.shields.io/github/v/release/Coldlapse/IIDXwidget?label=%EC%B5%9C%EC%8B%A0&color=ffb020)](https://github.com/Coldlapse/IIDXwidget/releases/latest) [![다운로드](https://img.shields.io/github/downloads/Coldlapse/IIDXwidget/total?label=%EB%8B%A4%EC%9A%B4%EB%A1%9C%EB%93%9C&color=ff4d2e)](https://github.com/Coldlapse/IIDXwidget/releases) [![Windows](https://img.shields.io/badge/Windows-0078D6?logo=windows&logoColor=white)](https://github.com/Coldlapse/IIDXwidget/releases/latest) [![Linux (실험적)](https://img.shields.io/badge/Linux-%EC%8B%A4%ED%97%98%EC%A0%81-555?logo=linux&logoColor=white)](./GUIDE/USAGE.md#-리눅스-실험적-지원) [![MIT License](https://img.shields.io/github/license/Coldlapse/IIDXwidget?color=4fe0ff)](./LICENSE) [![소개 사이트](https://img.shields.io/badge/iidxwidget.coldlapse.dev-12141a?logo=googlechrome&logoColor=white)](https://iidxwidget.coldlapse.dev) [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-ffdd00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/sadang)
 
-- **다운로드** : [Releases](https://github.com/Coldlapse/IIDXwidget/releases/latest) (Windows 설치 파일 / 리눅스 AppImage)
-- **라이센스** : MIT License
-- **후원** : [Buy Me a Coffee](https://buymeacoffee.com/sadang)
+IIDX·BMS 컨트롤러 입력을 **OBS 브라우저 소스**로 띄우는 투덱 방송용 위젯입니다. 스크래치와 건반, 릴리즈, KPS를 실시간으로 보여주고, 원컴·투컴 방송 모두 지원합니다. [Rag](https://rag-oji.com/dakendisplay/) 님의 방송용 위젯을 참고해 만들었습니다.
 
----
-
-## 📖 가이드
-
-앱 안에서도 상단 메뉴 → **가이드**에서 볼 수 있습니다.
-
-- 🔌 [연결 가이드](./GUIDE/CONNECTION.md) : OBS에 위젯을 띄우는 방법. 원컴/투컴, IP 찾는 법까지 처음부터 설명합니다. **처음이라면 여기부터!**
-- 📘 [사용법과 설정](./GUIDE/USAGE.md) : 화면 구성, 메뉴, 각 설정이 무엇을 뜻하는지
-- ⏱ [RELEASE 수치](./GUIDE/RELEASE.md) : 건반 위 숫자와 평균 릴리즈가 뜻하는 것, 계산 방식 (Rag 님 위젯과 동일)
-- 🔍 [채터링 감지](./GUIDE/CHATTER.md) : 채터링(이중 인식)을 어떻게 세는지, 감지 방식(Rag / Coldlapse), 게임별 입력 처리, 숫자가 높을 때 할 일
-- 🎮 [컨트롤러 지원 요청](./GUIDE/CONTROLLER.md) : 공식 지원하지 않는 컨트롤러의 신호를 기록해서 전용 프로필을 요청하는 방법
-
-2.x에서 업데이트하셨다면 👉 [3.0.0 업데이트 안내](./GUIDE/WHATSNEW.md) (바뀐 점, OBS 새로고침 방법). 업데이트 후 앱을 처음 켤 때도 자동으로 열립니다.
-
-English guides: [What's new in 3.0.0](./GUIDE/WHATSNEW.en.md) · [Connection](./GUIDE/CONNECTION.en.md) · [Usage](./GUIDE/USAGE.en.md) · [Release](./GUIDE/RELEASE.en.md) · [Chatter](./GUIDE/CHATTER.en.md) · [Controller support request](./GUIDE/CONTROLLER.en.md)
-
----
-
-## 기능
 ![미리 보기](./images/3.gif)
-- 스크래치의 입력 방향과 버튼 입력을 실시간으로 시각화하여 보여줍니다.
-- 버튼이 눌렸다가 떼지는 데에 소요된 시간(릴리즈)을 ms 단위로 측정하여 평균을 내줍니다. 계산 방식은 [Rag](https://rag-oji.com/dakendisplay/) 님 위젯과 동일하게 설정했습니다.
-  - 전체 평균은 최근 2000개, 건반별 평균은 최근 300개 입력 기준입니다. (설정에서 조정 가능)
-  - 롱노트(CN)로 누른 입력(기본 200ms 이상)과 255ms 이상은 평균에서 뺍니다. 롱노트로 누르고 있는 건반은 다른 색으로 표시됩니다.
-- 세션 정보(타건 수, 업타임, 평균 릴리즈, KPS)를 위젯 본체 아래나 위에 붙은 **계기판**으로 표시합니다. KPS는 자동차 속도계 같은 **스피드미터 게이지**로 보여주며, 빨간 영역에 들어가면 점점 달아오릅니다. (끌 수 있고, IIDX / BMS \~★★ / BMS ★★\~ 프리셋 선택 가능) 모든 숫자는 앱을 켤 때 0부터 시작하는 **세션** 기준이고, 앱 창과 OBS 위젯은 항상 같은 숫자를 보여줍니다.
-- 피닉스완(주작콘), 피닉스완 LMT Classic 기판, FPS EMP 2세대, arcin-infinitas, 키보드 입력을 **공식 지원**합니다. LR2 모드도 지원합니다.
-- **DP**를 지원합니다. 1P·2P에 컨트롤러를 각각 고를 수 있고(종류가 달라도 됨, 한쪽은 키보드도 가능), 위젯은 1P·2P 본체가 가운데 여백(위젯 배경색)으로 이어진 모양으로 나옵니다. 같은 컨트롤러가 여러 대 연결되어 있으면 설정에서 장치를 골라 쓸 수 있습니다.
-- 공식 지원하지 않는 컨트롤러나 자작 기판은 **기타 컨트롤러 (수동 매핑)** 프로필로 연결한 뒤, 버튼을 눌러 직접 매핑할 수 있습니다. 이 경우 동작을 보장하지는 않습니다. ([지원 범위](./GUIDE/USAGE.md#컨트롤러-지원-범위))
-- 채터링(이중 인식) 감지를 지원합니다. 뗀 뒤 같은 건반을 다시 누르기까지의 간격으로 판단하며, 메뉴 → **채터링 감지**에서 건반별로 확인할 수 있습니다. 1·3·5·7번과 2·4·6번을 묶어서 보여주고, 묶음 안에서 유독 튀는 건반을 강조합니다. 창을 닫아 두어도 계속 집계합니다.
-  - 감지 방식은 두 가지입니다. **Rag** (기본, 30ms 미만 전부) / **Coldlapse** (10ms 초과 30ms 미만만, 게임이 걸러 내는 짧은 떨림은 제외). 기준은 채터링 감지 창의 ⚙ 설정에서 바꿀 수 있습니다. 자세한 내용은 [채터링 감지 가이드](./GUIDE/CHATTER.md)를 참고하세요.
-- 위젯 커스터마이징
-  - 각 요소의 색상 (롱노트로 누르고 있는 건반 색 포함), 위젯 배경 투명하게 하기, 건반 위 릴리즈 수치 표시/숨기기
-  - 스크래치 커스텀 이미지: 1장, 또는 회전 방향에 따라 바뀌는 2장 (GIF 등 움직이는 이미지도 지원)
-  - 이미지에 어울리는 추천 색상: 켜면 스크래치 이미지에서 색을 뽑아 위젯 색을 맞춥니다. 직접 고른 색은 그대로 남아 있어서 끄면 돌아옵니다.
-  - 1P / 2P / **DP** 버튼 배치, 세션 정보 위치(상단 / 하단 / 숨김)
-- 설정을 바꾸면 OBS 위젯에 바로 반영됩니다. 앱을 껐다 켜도 OBS 위젯이 알아서 다시 연결되며, 이때 숫자는 새 세션으로 0부터 시작합니다.
-- 한국어 / English 를 지원합니다. (메뉴 → Language)
-- [beatmania.app](https://beatmania.app) 서열표 사이트로 타건 기록을 전송할 수 있습니다. (메뉴 → **세션 기록** → 지금 전송)
-  - 이번 세션에서 아직 보내지 않은 양만 보내므로 여러 번 눌러도 중복되지 않습니다.
-  - 설정에서 **종료할 때 남은 타건 기록 자동 전송**을 켜면, 앱을 끌 때 남은 양을 자동으로 보냅니다. (기본값은 꺼짐) 켜지 않았다면 앱을 끌 때 보내지 않은 양은 사라집니다.
-  - 날짜별 기록은 beatmania.app 마이페이지에서 볼 수 있습니다. 서버는 전송을 받은 시각(한국 시간) 기준으로 날짜를 나눕니다.
-- 새 버전이 나오면 앱에서 자동으로 알려줍니다.
 
----
+## 시작하기
 
-## 사용 방법
+1. [Releases](https://github.com/Coldlapse/IIDXwidget/releases/latest)에서 **Windows** 설치 파일(`IIDXwidget-Setup-x.x.x.exe`)을 받아 설치합니다. **리눅스**는 AppImage를 받습니다([리눅스 안내](./GUIDE/USAGE.md#-리눅스-실험적-지원)).
+2. OBS에 **브라우저 소스**를 추가하고 `http://127.0.0.1:8080/widget/`을 넣습니다. 크기는 800 × 600 (DP는 1320 × 600). 투컴 방송이라면 [연결 가이드](./GUIDE/CONNECTION.md)를 보세요.
+3. 앱의 메뉴 → **설정**에서 컨트롤러를 고르고 저장합니다.
 
-1. 📦 설치 파일 실행  
-![설치 화면](./images/1.png)
-   - [Releases](https://github.com/Coldlapse/IIDXwidget/releases/latest)에 업로드된 설치 파일(`IIDXwidget-Setup-x.x.x.exe`)을 다운로드하여 설치한 뒤 실행합니다.
-   - 백신이나 Windows 경고가 뜬다면(Windows 11의 **스마트 앱 컨트롤** 포함) 아래 [백신 경고가 뜰 때](#-백신-경고가-뜰-때)를 참고하세요.
-   - 🐧 **리눅스**는 AppImage(`IIDXwidget-x.x.x-x86_64.AppImage`)를 받아 실행합니다. 컨트롤러 권한 설정이 한 번 필요하고, 아직 **실험적 지원**입니다. [사용법 가이드 → 리눅스](./GUIDE/USAGE.md#-리눅스-실험적-지원)를 봐 주세요.
+## 가이드
 
-2. 🌐 OBS에 브라우저 소스 추가
-![실행 화면](./images/2.png)
-   - **원컴 방송**이라면:  
-     `http://127.0.0.1:8080/widget/`
-   - **투컴 방송**이라면:  
-     `http://[리듬 게임 실행 컴퓨터의 IP]:8080/widget/`
-   을 OBS의 **브라우저 소스**로 추가합니다. 
-   - 이 때, 포트는 설정에서 커스터마이징이 가능합니다. 기본값은 8080입니다.
-   - 너비와 높이는 800*600 입력을 권장합니다. **DP**라면 1320*600을 권장합니다.
-   - 투컴 방송이라면, 앱을 처음 실행할 때 뜨는 Windows 방화벽 창에서 **허용**을 눌러주세요. 리눅스에서 방화벽(ufw)을 쓴다면 [리눅스 안내](./GUIDE/USAGE.md#-리눅스-실험적-지원)를 보세요.
-   - IP가 뭔지, 어떻게 찾는지 모르겠다면 [연결 가이드](./GUIDE/CONNECTION.md)를 보세요. 앱을 처음 실행하면 이 가이드가 자동으로 열립니다.
+앱 안에서도 메뉴 → **가이드**로 볼 수 있습니다.
 
-3. ⚙️ 컨트롤러 설정
-   - 메뉴 → **설정**에서 사용하는 컨트롤러 프로필을 고르고 저장합니다. 자세한 내용은 아래 [컨트롤러 설정](#-컨트롤러-설정)을 참고하세요.
+| 가이드 | 내용 |
+|---|---|
+| 🔌 [연결 가이드](./GUIDE/CONNECTION.md) | OBS에 띄우는 법, 원컴/투컴, 설치 경고, 안 될 때. **처음이라면 여기부터** |
+| 📘 [사용법과 설정](./GUIDE/USAGE.md) | 화면과 메뉴, 모든 설정, 컨트롤러, 리눅스 |
+| ⏱ [RELEASE 수치](./GUIDE/RELEASE.md) | 건반 위 숫자와 평균 릴리즈의 뜻과 계산 방식 |
+| 🔍 [채터링 감지](./GUIDE/CHATTER.md) | 채터링을 세는 방식과 숫자가 높을 때 할 일 |
+| 🎮 [컨트롤러 지원 요청](./GUIDE/CONTROLLER.md) | 공식 지원하지 않는 컨트롤러의 신호를 기록해 요청하는 법 |
+| ✨ [3.0.0 업데이트 안내](./GUIDE/WHATSNEW.md) | 2.x에서 바뀐 점 |
 
-4. 🎮 방송 시작
-   - 즐겜하세요! 성과 많이 뽑으세요 😊
+English: [Connection](./GUIDE/CONNECTION.en.md) · [Usage](./GUIDE/USAGE.en.md) · [Release](./GUIDE/RELEASE.en.md) · [Chatter](./GUIDE/CHATTER.en.md) · [Controller support request](./GUIDE/CONTROLLER.en.md) · [What's new in 3.0.0](./GUIDE/WHATSNEW.en.md)
 
----
+## 지원 컨트롤러
 
-## 🎛 컨트롤러 설정
-
-- **피닉스완(주작콘) / FPS EMP 2세대**
-  - 프로필만 고르면 바로 인식됩니다.
-  - 주작콘을 LR2 모드로 쓴다면 **LR2 모드 감지**를 켜주세요.
-  - **피닉스완 LMT Classic 기판**은 **PHOENIXWAN+ LMT Classic** 프로필을 고르세요. LR2 모드로 쓴다면 주작콘처럼 **LR2 모드 감지**를 켜주세요.
-  - **arcin-infinitas** 펌웨어를 쓰는 arcin 기판은 **arcin-infinitas** 프로필을 고르세요. 턴테이블 아날로그·디지털(LR2) 모드를 알아서 따라갑니다. ([arcin-infinitas](https://github.com/kinetic-flow/arcin-infinitas) 펌웨어에 한해 작동을 보장합니다)
-  - 턴테이블이 위젯에서 반대로 돌면 **턴테이블 방향 반전**을 켜세요. 옆의 작은 원판으로 방향을 바로 확인할 수 있습니다.
-- **키보드**
-  - 키보드 매핑 표에서 칸을 클릭한 뒤, 쓰고 싶은 키를 누르면 됩니다.
-- **기타 컨트롤러 (수동 매핑)** (아두이노 등 자작 기판, 공식 지원하지 않는 컨트롤러)
-  - **기타 컨트롤러 (수동 매핑)** 프로필을 고르면 연결된 컨트롤러를 찾습니다. 공식 지원 컨트롤러도 이 프로필에서 직접 매핑해 쓸 수 있지만, 보통은 전용 프로필이 더 편합니다.
-  - 매핑 표에서 칸을 클릭한 뒤 컨트롤러 버튼을 누르면 매핑됩니다. 칸을 비우면 매핑이 해제됩니다.
-  - 턴테이블은 **버튼 턴테이블 / 아날로그 턴테이블** 스위치로 하나를 고릅니다. 버튼으로 동작하는 기판은 '턴테이블 시계 방향 (↓) / 반시계 방향 (↑)' 칸에 매핑하고, 축으로 동작하는 기판은 **학습**을 누르고 2초 동안 턴테이블을 돌려주세요. 반대로 돌면 아날로그는 **턴테이블 방향 반전**을 켜고, 버튼은 두 칸의 번호를 서로 바꿔 주세요.
-  - 다 끝나면 **저장**을 누릅니다.
-
-> ⚠️ **시중의 모든 컨트롤러를 지원하지는 않습니다.** 공식 지원은 주작콘(LMT Classic 기판 포함)·FPS EMP 2세대·arcin-infinitas·키보드뿐이고, 기타 컨트롤러는 동작할 수 있지만 보장하지 않습니다.
-> 게임패드(HID) 모드로 연결되는 아케이드식 컨트롤러와 자작 기판은 대부분 동작할 것으로 예상하지만, Xbox(XInput) 모드 컨트롤러나 일반 게임패드는 안 될 수 있습니다.
-> 자세한 내용과 확인 방법은 [사용법과 설정 → 컨트롤러 지원 범위](./GUIDE/USAGE.md#컨트롤러-지원-범위)를 보세요. 써 보신 결과를 [Issues](https://github.com/Coldlapse/IIDXwidget/issues)로 알려주시면 확인된 컨트롤러 목록에 반영합니다.
-> 전용 프로필이 필요하면 앱의 메뉴 → **컨트롤러 정보 수집**에서 기록한 파일을 [컨트롤러 지원 요청](https://github.com/Coldlapse/IIDXwidget/issues/new?template=controller-support.yml) 이슈에 첨부해 주세요. ([방법](./GUIDE/CONTROLLER.md))
-
----
+**공식 지원**: PHOENIXWAN+ (주작콘), PHOENIXWAN+ LMT Classic 기판, FPS EMP 2세대, arcin-infinitas, 키보드. 그 밖의 컨트롤러는 **기타 컨트롤러 (수동 매핑)** 으로 직접 매핑할 수 있지만 동작을 보장하지는 않습니다. ([지원 범위](./GUIDE/USAGE.md#컨트롤러-지원-범위) · [지원 요청](./GUIDE/CONTROLLER.md))
 
 ## 🛡 백신 경고가 뜰 때
 
-- **2.1.0 이하 버전을 Windows Defender가 바이러스로 막는 경우**
-  - 설치 파일이 `Trojan:Win32/Vigorf.A`, 설치된 파일 중 하나가 `Trojan:Win32/KeyLogger!AMTB`로 진단되는 경우가 있습니다. **오탐입니다.**
-  - 키보드 모드에서 키 입력을 읽기 위해 쓰던 외부 부품이 키로거처럼 보여서 생긴 문제로, 3.0.0부터는 이 부품을 쓰지 않습니다. **최신 버전을 설치해 주세요.**
-- **"Windows의 PC 보호" 창이 뜨는 경우**
-  - 코드 서명이 없는 프로그램이라 뜨는 Windows 기본 경고입니다. **추가 정보 → 실행**을 누르면 설치됩니다.
-- **스마트 앱 컨트롤이 설치를 막는 경우 (Windows 11)**
-  - 스마트 앱 컨트롤은 코드 서명이 없고 쓰는 사람이 많지 않은 프로그램을 막는 Windows 11 기능입니다. 이때는 **실행** 버튼이 없어서 그대로는 설치할 수 없습니다.
-  - 끄는 법: **Windows 보안 → 앱 및 브라우저 컨트롤 → 스마트 앱 컨트롤 설정 → 끄기**
-  - 설치가 끝나면 같은 곳에서 다시 **켜기**를 권장합니다. 개발자 PC에서는 다시 켠 뒤에도 앱 실행과 자동 업데이트가 됐지만, 모든 환경에서 된다고 장담할 수는 없습니다. 다시 켠 뒤 앱이나 업데이트가 막히면 다시 끄고 [Issues](https://github.com/Coldlapse/IIDXwidget/issues)로 알려주세요. (예전 Windows 11은 한 번 끄면 Windows를 초기화해야 다시 켤 수 있었지만, 최신 업데이트에서는 바로 다시 켤 수 있습니다)
-  - 코드 서명이 없는 이유: 코드 서명 인증서는 비용이 꽤 들어서, 개인이 무료로 만드는 이 프로그램에는 아직 적용하지 못했습니다. 개발자로서는 안전하다고 말씀드리는 것 말고는 달리 증명할 방법이 없습니다. 소스 코드가 모두 공개되어 있으니 위험한지는 직접 확인하고 판단해 주세요.
-- **키 입력은 어떻게 쓰이나요?**
-  - 키보드 모드에서만 키 입력을 읽고, 설정에서 매핑한 키만 위젯 표시에 사용합니다.
-  - 키 입력은 인터넷으로 전송되지 않습니다. 인터넷으로 나가는 것은 **세션 기록** 페이지에서 전송을 누르거나, 직접 켠 **종료할 때 자동 전송**이 동작할 때의 타건 수 하나뿐입니다.
-  - 소스 코드가 모두 공개되어 있어 직접 확인할 수 있습니다.
-- 최신 버전인데도 막힌다면 [Issues](https://github.com/Coldlapse/IIDXwidget/issues)로 알려주세요.
-
----
+코드 서명이 없는 프로그램이라 Windows 경고나 스마트 앱 컨트롤이 설치를 막을 수 있습니다. 대처 방법은 [연결 가이드 → 설치할 때 경고가 뜨면](./GUIDE/CONNECTION.md#-설치할-때-경고가-뜨면)을 보세요.
 
 ## ❓ 문제 해결
 
-- **OBS에 위젯이 안 보여요**
-  - IIDXwidget 앱이 켜져 있는지, 브라우저 소스 주소와 포트가 맞는지 확인해 주세요.
-  - 다른 프로그램이 같은 포트를 쓰고 있으면 앱이 알려줍니다. 그 프로그램을 끄거나 설정에서 포트를 바꿔주세요. 포트를 바꿨다면 OBS 브라우저 소스 주소도 같이 바꿔야 합니다.
-- **OBS 화면에 "위젯 프로그램과 연결이 끊겼습니다"가 떠요**
-  - IIDXwidget 앱이 꺼져 있거나 다시 켜지는 중일 때 나오는 안내입니다. 앱을 켜면 자동으로 다시 연결되고 안내도 사라집니다.
-- **업데이트한 뒤 위젯이 예전 모습이에요**
-  - 업데이트 직후 한 번만, OBS 브라우저 소스 속성에서 **현재 페이지의 캐시를 새로고침**을 눌러주세요. 그 뒤로는 설정 변경과 앱 재시작이 자동으로 반영됩니다.
-- **컨트롤러가 인식되지 않아요**
-  - 메뉴 → **로그**에서 원인을 확인할 수 있습니다. (예: "장치를 찾을 수 없습니다")
-  - 케이블을 뺐다 다시 꽂으면 2초쯤 안에 재시작 없이 다시 연결됩니다. 앱을 켠 뒤에 꽂은 컨트롤러도 알아서 잡습니다.
-  - 설정의 컨트롤러 프로필이 맞는지 확인하고, 목록에 없는 컨트롤러라면 **기타 컨트롤러 (수동 매핑)** 프로필을 써보세요.
-  - 리눅스라면 컨트롤러 권한 규칙(udev)을 설치했는지 확인해 주세요. ([리눅스 안내](./GUIDE/USAGE.md#-리눅스-실험적-지원))
-- **투컴 방송에서 연결이 안 돼요**
-  - 방송 PC의 주소에 리듬 게임 PC의 IP를 넣었는지, 리듬 게임 PC의 Windows 방화벽에서 IIDXwidget이 허용되어 있는지 확인해 주세요. (리눅스는 ufw 등 방화벽에서 8080·5678 포트 허용)
-
----
-
-## 업데이트 이력
-
-- 0.1.0 : 최초 릴리즈 ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v0.1.0))
-- 1.0.0 : 정식 출시 (심각한 버그로 인해 v1.0.1을 바로 게시했습니다.) ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v1.0.0))
-- 1.0.1 : 설정값이 저장 안되던 문제 해결 ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v1.0.1))
-- 1.0.2 : KB만 설정값이 저장 안되던 문제 해결 ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v1.0.2))
-- 1.0.3 : KB 모드 특수키 입력 매핑 추가 (기여자 : rhombus9) ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v1.0.3))
-- 1.1.0 : 자동 업데이트 구현을 위한 중간 버전 ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v1.1.0))
-- 1.1.1 : 자동 업데이트 구현을 위한 중간 버전 ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v1.1.1))
-- 1.2.0 : 자동 업데이터 구현 및 LR2 인식 추가 등등 ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v1.2.0))
-- 1.2.1 : 10만번 이상 두들겨도 줄 바꿈 일어나지 않게 수정 ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v1.2.1))
-- 2.0.0 : 위젯 커스터마이징 추가, 이동평균 수치 조정 추가, 채터링 감지 기능 추가 ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v2.0.0))
-- 2.0.1 : 버그 수정 ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v2.0.1))
-- 2.1.0 : beatmania.app 서열표 사이트 일일 타건 기록 연동 추가, Uptime 기능 버그 수정 ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v2.1.0))
-- 3.0.0 : 백신 오탐 해결, 위젯 디자인 개편(계기판), KPS 스피드미터, DP 지원, 한국어/영어 지원, 기타 컨트롤러 수동 매핑, 스크래치 이미지 2장 모드, 위젯 배경 투명, 설정 즉시 반영 및 자동 재연결, 앱 창·OBS 위젯 숫자 통일, 세션 기록 페이지와 종료 시 자동 전송, beatmania.app 계정 연결 방식 변경(토큰 암호화 저장·계정 표시), 릴리즈·채터링 계산을 Rag 님 위젯과 동일하게 변경, 채터링 감지 방식 선택, 롱노트 색 표시, 가이드 추가 등 (기여자 : MellDa1024, Ryochobi) ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v3.0.0))
-- 3.0.1 : arcin 기판 공식 지원, 기타 컨트롤러(수동 매핑)에서 공식 지원 컨트롤러도 고를 수 있게 변경 ([#4](https://github.com/Coldlapse/IIDXwidget/issues/4)) ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v3.0.1))
-- 3.0.2 : arcin-infinitas 지원 보완(디지털 턴테이블), 턴테이블 방향 반전, 수동 매핑 버튼/아날로그 턴테이블 스위치, 컨트롤러 자동 재연결, 같은 컨트롤러 두 대 구분, 세션 숫자 갱신 지연 수정, 중복 실행 방지, 설정 화면 정리 ([#4](https://github.com/Coldlapse/IIDXwidget/issues/4)) ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v3.0.2))
-- 3.0.3 : 리눅스 AppImage 실험적 지원, 영어 설정 화면에서 일부 문구가 한국어로 나오던 문제 수정 ([#5](https://github.com/Coldlapse/IIDXwidget/issues/5)) ([패치 내역](https://github.com/Coldlapse/IIDXwidget/releases/tag/v3.0.3))
-
----
+[연결 가이드 → 안 될 때](./GUIDE/CONNECTION.md#-안-될-때)를 먼저 보시고, 그래도 안 되면 메뉴 → **로그**를 캡처해서 [Issues](https://github.com/Coldlapse/IIDXwidget/issues)로 알려주세요. 버전별 변경 내용은 [Releases](https://github.com/Coldlapse/IIDXwidget/releases)에 있습니다.
 
 ## 기여자
+
 - rhombus9 : KB 모드 특수키 입력 매핑
 - 멘탈바사삭 : FPS EMP 2세대 컨트롤러 지원
 - MellDa1024 : 스크래치 회전 방향별 이미지
 - Ryochobi : 한국어/영어 지원, 기타 컨트롤러 지원, 위젯 배경 설정
 
 위젯 글꼴로 [나눔고딕](https://hangeul.naver.com/font)과 [Chakra Petch](https://github.com/m4rc1e/Chakra-Petch)(둘 다 SIL Open Font License 1.1)를 사용합니다.
-
