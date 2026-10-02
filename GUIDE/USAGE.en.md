@@ -73,7 +73,8 @@ Choose a profile and a **device** for each side (one for SP, 1P and 2P for DP). 
 - **Detect LR2 mode (dedicated controller only)** : Shown only for the PHOENIXWAN, FPS and LMT Classic profiles. A PHOENIXWAN in LR2 sends turntable signals differently; with this on, the app detects LR2 mode and shows the turntable correctly. If you never use LR2 mode, you can leave it off.
 - **Reverse turntable direction** : Available for every profile except Keyboard. The small disc next to it follows your turntable input and spins the same way as the OBS widget. If it spins the opposite way when you turn the turntable clockwise, turn this on. Changing the checkbox, profile or device shows the result on the disc before you save, and once you save the widget spins the way you see here. (For Other controller, the disc moves once an axis is learned in Analog turntable.)
 
-- **PHOENIXWAN+ / PHOENIXWAN+ LMT Classic / FPS EMP Gen2** : Works as soon as you select it. For the PHOENIXWAN LMT Classic board, pick the **PHOENIXWAN+ LMT Classic** profile. It works the same way as the PHOENIXWAN; for LR2 mode, turn on **Detect LR2 mode** just like on a PHOENIXWAN.
+- **PHOENIXWAN+ / PHOENIXWAN+ LMT Classic / FPS EMP Gen2** : Works as soon as you select it. For the PHOENIXWAN LMT Classic board, pick the **PHOENIXWAN+ LMT Classic** profile. Both INFINITAS mode (EAC2dx/HID) and LR2 mode work with this profile; for LR2 mode, turn on **Detect LR2 mode** just like on a PHOENIXWAN.
+- **RED-LMS** : a double controller whose 1P and 2P halves connect separately. In DP each side picks up its own half automatically, and SP 2P picks the 2P half. It's set up for the stock settings (turntable on the X axis, not reversed); if you reversed the turntable in the controller's own software, turn on **Reverse turntable direction** in the app too.
 - **arcin-infinitas** : [arcin-infinitas](https://github.com/kinetic-flow/arcin-infinitas) — guaranteed to work only with arcin-infinitas, the INFINITAS firmware for arcin boards developed by kinetic-flow. Renaming the board (label) in the config tool is fine. Every turntable mode is followed automatically.
   - **Analog** (recommended for INFINITAS and beatoraja) : the turntable position is read as is.
   - **Digital** (recommended for LR2) : only the direction comes in, so the disc turns a little each time the direction changes, like PHOENIXWAN LR2 mode. There's no option to turn on.
@@ -91,7 +92,7 @@ Choose a profile and a **device** for each side (one for SP, 1P and 2P for DP). 
 
 | Level | Controllers | Notes |
 |---|---|---|
-| ✅ **Officially supported** | PHOENIXWAN+, PHOENIXWAN+ LMT Classic board, FPS EMP Gen2, arcin-infinitas | Dedicated profiles. Works as soon as you select it. |
+| ✅ **Officially supported** | PHOENIXWAN+, PHOENIXWAN+ LMT Classic board, RED-LMS, FPS EMP Gen2, arcin-infinitas | Dedicated profiles. Works as soon as you select it. |
 | ✅ **Officially supported** | Keyboard | Map keys in the Keyboard profile. |
 | 🔧 **Manual mapping** (may work) | Other IIDX controllers, DIY boards | Map buttons by hand in the **Other controller (manual mapping)** profile. **Not guaranteed to work.** |
 

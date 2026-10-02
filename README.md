@@ -29,7 +29,7 @@ English: [Connection](./GUIDE/CONNECTION.en.md) · [Usage](./GUIDE/USAGE.en.md) 
 
 ## 지원 컨트롤러
 
-**공식 지원**: PHOENIXWAN+ (주작콘), PHOENIXWAN+ LMT Classic 기판, FPS EMP 2세대, arcin-infinitas, 키보드. 그 밖의 컨트롤러는 **기타 컨트롤러 (수동 매핑)** 으로 직접 매핑할 수 있지만 동작을 보장하지는 않습니다. ([지원 범위](./GUIDE/USAGE.md#컨트롤러-지원-범위) · [지원 요청](./GUIDE/CONTROLLER.md))
+**공식 지원**: PHOENIXWAN+ (주작콘), PHOENIXWAN+ LMT Classic 기판, RED-LMS, FPS EMP 2세대, arcin-infinitas, 키보드. 그 밖의 컨트롤러는 **기타 컨트롤러 (수동 매핑)** 으로 직접 매핑할 수 있지만 동작을 보장하지는 않습니다. ([지원 범위](./GUIDE/USAGE.md#컨트롤러-지원-범위) · [지원 요청](./GUIDE/CONTROLLER.md))
 
 ## 🛡 백신 경고가 뜰 때
 
