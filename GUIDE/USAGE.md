@@ -183,7 +183,7 @@ KPS 스피드미터 프리셋:
 
 ## 🐧 리눅스 (실험적 지원)
 
-리눅스용 AppImage를 함께 배포합니다. 앱 화면과 OBS 위젯은 확인했지만, 컨트롤러 입력은 아직 리눅스 실제 기기로 확인하지 못해 **실험적 지원**입니다. 써 보신 결과를 [Issues](https://github.com/Coldlapse/IIDXwidget/issues)로 알려주세요.
+리눅스용 AppImage를 함께 배포합니다. 앱 화면과 OBS 위젯은 확인했지만, 키보드 모드는 사용자가 실제로 써서 확인했지만, 컨트롤러 입력은 아직 리눅스 실제 기기로 확인하지 못해 **실험적 지원**입니다. 써 보신 결과를 [Issues](https://github.com/Coldlapse/IIDXwidget/issues)로 알려주세요.
 
 1. [Releases](https://github.com/Coldlapse/IIDXwidget/releases/latest)에서 `IIDXwidget-x.x.x-x86_64.AppImage`와 `70-iidxwidget.rules`를 받습니다.
 2. AppImage에 실행 권한을 줍니다. 파일 속성에서 "실행 허용"을 켜거나 터미널에서 `chmod +x IIDXwidget-*.AppImage`

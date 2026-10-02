@@ -183,7 +183,7 @@ KPS speedometer presets:
 
 ## 🐧 Linux (experimental)
 
-An AppImage for Linux ships alongside the Windows installer. The app screens and the OBS widget are checked, but controller input hasn't been confirmed on real Linux hardware yet, so this is **experimental**. Please tell us how it went in [Issues](https://github.com/Coldlapse/IIDXwidget/issues).
+An AppImage for Linux ships alongside the Windows installer. The app screens and the OBS widget are checked, and keyboard mode has been confirmed by a user, but controller input hasn't been confirmed on real Linux hardware yet, so this is **experimental**. Please tell us how it went in [Issues](https://github.com/Coldlapse/IIDXwidget/issues).
 
 1. From [Releases](https://github.com/Coldlapse/IIDXwidget/releases/latest), download `IIDXwidget-x.x.x-x86_64.AppImage` and `70-iidxwidget.rules`.
 2. Make the AppImage executable: turn on "Allow executing" in the file properties, or run `chmod +x IIDXwidget-*.AppImage`.

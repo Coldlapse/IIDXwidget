@@ -75,7 +75,14 @@ test('가이드 안의 #링크와 다른 가이드 링크가 실제로 있는 �
     for (const [, href] of text.matchAll(/\]\(([^)\s]+)\)/g)) {
       const link = classifyLink(href, LOCAL_BASE, isGuideFile);
       if (link.kind === 'anchor') assert.ok(headings.includes(anchorKey(link.hash)), `${file}: ${href}`);
-      if (link.kind === 'guide') assert.ok(fs.existsSync(path.join(GUIDE_DIR, link.file)), `${file}: ${href}`);
+      if (link.kind === 'guide') {
+        assert.ok(fs.existsSync(path.join(GUIDE_DIR, link.file)), `${file}: ${href}`);
+        // 다른 가이드의 제목으로 가는 링크는 그 문서에 그 제목이 있어야 한다
+        if (link.hash) {
+          const target = fs.readFileSync(path.join(GUIDE_DIR, link.file), 'utf8');
+          assert.ok([...target.matchAll(/^#{1,4} (.+)$/gm)].some(m => anchorKey(m[1]) === anchorKey(link.hash)), `${file}: ${href}`);
+        }
+      }
     }
   }
 });
