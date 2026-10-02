@@ -7,6 +7,12 @@
   const t = (key, values) => window.i18n.t(key, values);
   let activeLearning = null; // 지금 버튼을 기다리는 { panel, input }
   let sessionSide = null;    // 매핑 학습 중인 사이드
+  const TURNTABLE_KEYS = ['SCup', 'SCdown'];
+  // 버튼 학습 중 아날로그 축 감지: 축 값이 바뀌면 한 바이트의 여러 비트가 짧은 시간에 잇달아 켜졌다 꺼진다.
+  // AXIS_WINDOW_MS 안에 같은 바이트에서 서로 다른 비트 AXIS_MIN_BITS개 이상, 변화 AXIS_MIN_EVENTS번 이상이면 축으로 본다
+  const AXIS_WINDOW_MS = 400;
+  const AXIS_MIN_BITS = 3;
+  const AXIS_MIN_EVENTS = 6;
 
   function mappingLabel(key) {
     if (key === 'SCup') return t('settings.turntableClockwise');
@@ -31,6 +37,8 @@
     let mappingSession = null;
     let previewOn = false;
     let previewKey = null; // 지금 미리보기 중인 { 프로필, 장치, 축, LR2 } (같으면 다시 열지 않음)
+    let recentBits = [];   // 최근 물리 버튼 변화 { byte, bit, time } (축 감지용)
+    let lastLearned = null; // 방금 학습으로 채운 칸 { input, previous, byte, time } (축이면 되돌림)
     // 미니 원판: 위젯과 같은 방향으로 돈다 (값이 줄면 시계 방향)
     const disc = { last: null, rotation: 0, frame: null, idleTimer: null };
 
@@ -48,6 +56,7 @@
       refreshPreview();
     }
     const devicePath = () => q('device').value || null;
+    const mappingEntries = () => [...root.querySelectorAll('.generic-mapping-table input')].map(input => ({ key: input.dataset.key, value: input.value }));
 
     function setStatus(message, { warning = false } = {}) {
       const status = q('mapping-status');
@@ -274,9 +283,7 @@
           const value = input.value.trim();
           if (value) kb[input.dataset.key] = value;
         });
-        const generic = window.formLogic.buildGenericMapping(
-          [...root.querySelectorAll('.generic-mapping-table input')].map(input => ({ key: input.dataset.key, value: input.value }))
-        );
+        const generic = window.formLogic.buildGenericMapping(mappingEntries());
         return {
           config: {
             controllerProfile: profile(),
@@ -294,7 +301,9 @@
       // 기타 컨트롤러 매핑 오류 문구 (없으면 null)
       validate() {
         if (root.hidden || profile() !== 'AUTO') return null;
-        const { generic } = panel.collect();
+        // 아날로그 턴테이블이면 숨어 있는 버튼 턴테이블 칸(쓰지 않음, 값은 남겨 둠)은 검사하지 않는다
+        const analog = turntableInput() === 'analog';
+        const generic = window.formLogic.buildGenericMapping(mappingEntries().filter(e => !(analog && TURNTABLE_KEYS.includes(e.key))));
         if (!generic.invalid.length && !generic.duplicates.length) return null;
         const keys = generic.invalid.length ? generic.invalid : generic.duplicates[0];
         return t('settings.invalidGenericMapping', { keys: keys.map(mappingLabel).join(', ') });
@@ -304,13 +313,31 @@
         if (from !== side || !previewOn) return;
         spinDisc(value, q('tt-reverse').checked);
       },
-      // 매핑 학습 중 누른 물리 버튼 (이 사이드에서 온 것만)
-      handlePhysical(event) {
-        if (activeLearning?.panel !== panel || (event.side || 1) !== side) return;
-        const input = activeLearning.input;
-        input.value = event.physicalButton;
-        setStatus(t('settings.mapped', { key: mappingLabel(input.dataset.key), button: event.physicalButton }));
-        input.blur();
+      // 물리 버튼 변화 (이 사이드에서 온 것만). 학습 중이면 처음 누른 버튼을 칸에 적는다.
+      // 적은 버튼이 아날로그 축의 비트로 보이면 칸을 되돌리고 아날로그 턴테이블을 쓰라고 알린다
+      handlePhysical(events) {
+        const mine = events.filter(e => (e.side || 1) === side);
+        if (!mine.length) return;
+        const now = Date.now();
+        for (const e of mine) recentBits.push({ byte: Math.floor((e.physicalButton - 1) / 8), bit: (e.physicalButton - 1) % 8, time: e.timestamp || now });
+        recentBits = recentBits.filter(r => now - r.time <= AXIS_WINDOW_MS);
+
+        const pressed = mine.find(e => e.pressed);
+        if (pressed && activeLearning?.panel === panel) {
+          const input = activeLearning.input;
+          lastLearned = { input, previous: input.value, byte: Math.floor((pressed.physicalButton - 1) / 8), time: now };
+          input.value = pressed.physicalButton;
+          setStatus(t('settings.mapped', { key: mappingLabel(input.dataset.key), button: pressed.physicalButton }));
+          input.blur();
+        }
+        if (lastLearned && now - lastLearned.time <= AXIS_WINDOW_MS) {
+          const sameByte = recentBits.filter(r => r.byte === lastLearned.byte);
+          if (sameByte.length >= AXIS_MIN_EVENTS && new Set(sameByte.map(r => r.bit)).size >= AXIS_MIN_BITS) {
+            lastLearned.input.value = lastLearned.previous;
+            lastLearned = null;
+            setStatus(t('settings.axisLikeButton'), { warning: true });
+          }
+        }
       },
       stopSession
     };

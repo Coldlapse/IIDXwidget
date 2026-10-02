@@ -123,8 +123,8 @@ $('buttonLayout').addEventListener('change', applyLayout);
 
 // 기타 컨트롤러 매핑 학습 중 누른 물리 버튼
 window.electronAPI.onControllerData(events => {
-  const event = events.find(item => item.type === 'physical-button' && item.pressed);
-  if (event) panels.forEach(panel => panel.handlePhysical(event));
+  const physical = events.filter(item => item.type === 'physical-button');
+  if (physical.length) panels.forEach(panel => panel.handlePhysical(physical));
 });
 // 미니 원판 미리보기 (고른 프로필·장치의 턴테이블 값)
 window.electronAPI.onTurntablePreview(data => panels.forEach(panel => panel.handleTurntablePreview(data)));
