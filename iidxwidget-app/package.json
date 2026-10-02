@@ -62,7 +62,8 @@
                 "!node_modules/uiohook-napi/prebuilds/win32-arm64/**",
                 "!node_modules/node-hid/{hidapi,src}/**",
                 "!node_modules/node-hid/prebuilds/{HID-darwin,HID-linux,HID_hidraw-linux}-*/**",
-                "!node_modules/node-hid/prebuilds/HID-win32-{arm64,ia32}/**"
+                "!node_modules/node-hid/prebuilds/HID-win32-{arm64,ia32}/**",
+                "!test/**"
             ]
         },
         "nsis": {
@@ -93,7 +94,8 @@
                 "!node_modules/uiohook-napi/prebuilds/linux-{arm64,loong64}/**",
                 "!node_modules/node-hid/{hidapi,src}/**",
                 "!node_modules/node-hid/prebuilds/{HID-darwin,HID-win32}-*/**",
-                "!node_modules/node-hid/prebuilds/{HID,HID_hidraw}-linux-{arm,arm64,x64-musl}/**"
+                "!node_modules/node-hid/prebuilds/{HID,HID_hidraw}-linux-{arm,arm64,x64-musl}/**",
+                "!test/**"
             ],
             "syncDesktopName": true
         }
