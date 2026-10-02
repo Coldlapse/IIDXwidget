@@ -59,7 +59,10 @@
             "icon": "build/icon.ico",
             "files": [
                 "!node_modules/uiohook-napi/prebuilds/{darwin,linux}-*/**",
-                "!node_modules/uiohook-napi/prebuilds/win32-arm64/**"
+                "!node_modules/uiohook-napi/prebuilds/win32-arm64/**",
+                "!node_modules/node-hid/{hidapi,src}/**",
+                "!node_modules/node-hid/prebuilds/{HID-darwin,HID-linux,HID_hidraw-linux}-*/**",
+                "!node_modules/node-hid/prebuilds/HID-win32-{arm64,ia32}/**"
             ]
         },
         "nsis": {
@@ -87,7 +90,10 @@
             "artifactName": "${productName}-${version}-x86_64.${ext}",
             "files": [
                 "!node_modules/uiohook-napi/prebuilds/{darwin,win32}-*/**",
-                "!node_modules/uiohook-napi/prebuilds/linux-{arm64,loong64}/**"
+                "!node_modules/uiohook-napi/prebuilds/linux-{arm64,loong64}/**",
+                "!node_modules/node-hid/{hidapi,src}/**",
+                "!node_modules/node-hid/prebuilds/{HID-darwin,HID-win32}-*/**",
+                "!node_modules/node-hid/prebuilds/{HID,HID_hidraw}-linux-{arm,arm64,x64-musl}/**"
             ],
             "syncDesktopName": true
         }
@@ -99,7 +105,7 @@
         "electron-updater": "^6.6.2",
         "express": "^4.18.4",
         "marked": "^18.0.14",
-        "node-hid": "^2.1.2",
+        "node-hid": "^3.4.0",
         "uiohook-napi": "^1.5.5",
         "ws": "^8.18.1"
     },
