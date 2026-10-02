@@ -38,7 +38,7 @@
     let previewOn = false;
     let previewKey = null; // 지금 미리보기 중인 { 프로필, 장치, 축, LR2 } (같으면 다시 열지 않음)
     let recentBits = [];   // 최근 물리 버튼 변화 { byte, bit, time } (축 감지용)
-    let lastLearned = null; // 방금 학습으로 채운 칸 { input, previous, byte, time } (축이면 되돌림)
+    let lastLearned = null; // 방금 학습으로 채운 칸 { byte, time } (축으로 보이면 아날로그 턴테이블을 권한다)
     // 미니 원판: 위젯과 같은 방향으로 돈다 (값이 줄면 시계 방향)
     const disc = { last: null, rotation: 0, frame: null, idleTimer: null };
 
@@ -314,7 +314,7 @@
         spinDisc(value, q('tt-reverse').checked);
       },
       // 물리 버튼 변화 (이 사이드에서 온 것만). 학습 중이면 처음 누른 버튼을 칸에 적는다.
-      // 적은 버튼이 아날로그 축의 비트로 보이면 칸을 되돌리고 아날로그 턴테이블을 쓰라고 알린다
+      // 적은 버튼이 아날로그 축의 비트로 보이면 매핑은 그대로 두고 아날로그 턴테이블 모드를 권한다
       handlePhysical(events) {
         const mine = events.filter(e => (e.side || 1) === side);
         if (!mine.length) return;
@@ -325,7 +325,7 @@
         const pressed = mine.find(e => e.pressed);
         if (pressed && activeLearning?.panel === panel) {
           const input = activeLearning.input;
-          lastLearned = { input, previous: input.value, byte: Math.floor((pressed.physicalButton - 1) / 8), time: now };
+          lastLearned = { byte: Math.floor((pressed.physicalButton - 1) / 8), time: now };
           input.value = pressed.physicalButton;
           setStatus(t('settings.mapped', { key: mappingLabel(input.dataset.key), button: pressed.physicalButton }));
           input.blur();
@@ -333,7 +333,6 @@
         if (lastLearned && now - lastLearned.time <= AXIS_WINDOW_MS) {
           const sameByte = recentBits.filter(r => r.byte === lastLearned.byte);
           if (sameByte.length >= AXIS_MIN_EVENTS && new Set(sameByte.map(r => r.bit)).size >= AXIS_MIN_BITS) {
-            lastLearned.input.value = lastLearned.previous;
             lastLearned = null;
             setStatus(t('settings.axisLikeButton'), { warning: true });
           }
