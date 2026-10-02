@@ -134,7 +134,10 @@
 
     function renderReverseHelp() {
       if (!window.i18n.ready) return;
-      q('reverse-help').textContent = t(profile() === 'AUTO' ? 'settings.turntableReverseHelpGeneric' : 'settings.turntableReverseHelp');
+      const help = t(profile() === 'AUTO' ? 'settings.turntableReverseHelpGeneric' : 'settings.turntableReverseHelp');
+      // 따오 기판은 순정(IIDXOLLER 반전 꺼짐) 기준으로 읽는다
+      const dao = profile() === 'PHOENIXWAN LMT Classic' || profile() === 'RED-LMS';
+      q('reverse-help').textContent = dao ? `${help} ${t('settings.turntableReverseHelpDao')}` : help;
     }
 
     // 장치 드롭다운: 연결된 장치만 보여준다 (1개면 1개만). 없으면 '연결된 장치 없음'

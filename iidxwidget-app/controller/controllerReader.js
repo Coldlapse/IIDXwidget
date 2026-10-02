@@ -26,11 +26,26 @@ const GENERIC_TT_SETTLE_MS = 30;
 const isArcinBoard = d => d.vendorId === 0x1CCF && d.productId === 0x8048
   && (/arcin/i.test(d.product || '') || /^zyp$/i.test((d.manufacturer || '').trim()));
 const isArcin = d => isArcinBoard(d) && d.usagePage === 1 && (d.usage === 4 || d.usage === 5);
-const isPhoenix = d => d.vendorId === 0x1CCF && d.productId === 0x8048 && d.interface === 1 && !isArcinBoard(d);
-const isFps = d => d.vendorId === 0x1CCF && d.productId === 0x8048 && d.interface === 0 && d.usagePage === 1 && !isArcinBoard(d);
-// PHOENIXWAN+ LMT Classic 기판. 범용 게임패드 칩(VID 0E8F)이라 제품 이름까지 본다 (펌웨어 표기가 'PHONENIXWAN').
+// 따오(IIDXOLLER) 신기판: PHOENIXWAN+ LMT Classic(펌웨어 표기가 'PHONENIXWAN'), RED-LMS 더블콘.
+// 모드에 따라 주작콘과 같은 1CCF:8048을 쓰므로 제품 이름으로 가린다
+const isDaoName = d => /PHONENIXWAN|RED-LMS/i.test(d.product || '');
+const isGamepad = d => d.usagePage === 1 && (d.usage === 4 || d.usage === 5);
+const is8048 = d => d.vendorId === 0x1CCF && d.productId === 0x8048;
+// 따오 기판의 EAC2dx/HID 모드는 interface 1을 게임패드가 아닌 채로 내보내고 아무것도 보내지 않는다. 주작콘·FPS 후보에서 뺀다
+const isDaoSilent = d => is8048(d) && isDaoName(d) && !isGamepad(d);
+const isPhoenix = d => is8048(d) && d.interface === 1 && !isArcinBoard(d) && !isDaoSilent(d);
+const isFps = d => is8048(d) && d.interface === 0 && d.usagePage === 1 && !isArcinBoard(d) && !isDaoName(d);
+// PHOENIXWAN+ LMT Classic 기판. IIDXOLLER 모드에 따라 USB 모양이 다르다 (2026-10 실측):
+// - LR2 레이아웃 모드: 범용 게임패드 칩(VID 0E8F:1228)
+// - PS2 및 BLE 모드(공장 기본): 1CCF:8048 interface 1, 5바이트 (주작콘과 같은 배치). 이름 'PHONENIXWAN PS2 and BLE mode'
+// - EAC2dx 및 HID 모드: 1CCF:8048 interface 0, 10바이트. interface 1은 조용하다
 // 기타 컨트롤러(수동 매핑)에서도 그대로 고를 수 있다
-const isPhoenixLmt = d => d.vendorId === 0x0E8F && d.productId === 0x1228 && d.usagePage === 1 && d.usage === 4 && /NIXWAN/i.test(d.product || '');
+const isLmtLr2 = d => d.vendorId === 0x0E8F && d.productId === 0x1228 && d.usagePage === 1 && d.usage === 4 && /NIXWAN/i.test(d.product || '');
+const isLmtPs2 = d => is8048(d) && /PHONENIXWAN/i.test(d.product || '') && d.interface === 1 && isGamepad(d);
+const isLmtHid = d => is8048(d) && /PHONENIXWAN/i.test(d.product || '') && d.interface === 0 && isGamepad(d);
+const isPhoenixLmt = d => isLmtLr2(d) || isLmtPs2(d) || isLmtHid(d);
+// RED-LMS 더블콘: 1P·2P가 따로인 장치('RED-LMS 1P' / 'RED-LMS 2P'), LMT의 EAC2dx/HID 모드와 같은 10바이트 배치
+const isRedLms = d => is8048(d) && /RED-LMS/i.test(d.product || '') && d.interface === 0 && isGamepad(d);
 // 공식 지원 컨트롤러(주작콘·FPS EMP 2세대)가 쓰는 USB 장치. 기타 컨트롤러에서 장치를 못 찾았을 때
 // "전용 프로필을 고르라"는 안내를 띄울지 판단하는 데만 쓴다 (기타 컨트롤러 목록에서 빼지는 않는다)
 const isOfficiallySupported = d => d.vendorId === 0x1CCF && d.productId === 0x8048 && !isArcinBoard(d);
@@ -44,6 +59,7 @@ function findExactDedicatedDevice(devices, profile) {
     if (profile === 'FPS EMP Gen2') return isFps(d);
     if (profile === 'PHOENIXWAN LMT Classic') return isPhoenixLmt(d);
     if (profile === 'ARCIN') return isArcin(d);
+    if (profile === 'RED-LMS') return isRedLms(d);
     return false;
   });
 }
@@ -68,7 +84,16 @@ function findAutoController(devices) {
 
 // ─── 장치 목록과 선택 (1P·2P에 각각 장치를 고를 수 있도록) ───────
 
-const PARSER_BY_PROFILE = { PHOENIXWAN: 'PHOENIXWAN', 'FPS EMP Gen2': 'FPS_EMP', 'PHOENIXWAN LMT Classic': 'PHOENIXWAN_LMT', ARCIN: 'ARCIN', AUTO: 'GENERIC' };
+const PARSER_BY_PROFILE = { PHOENIXWAN: 'PHOENIXWAN', 'FPS EMP Gen2': 'FPS_EMP', 'PHOENIXWAN LMT Classic': 'PHOENIXWAN_LMT', ARCIN: 'ARCIN', 'RED-LMS': 'DAO_HID', AUTO: 'GENERIC' };
+
+// 프로필 안에서도 장치 모양에 따라 배치가 다른 경우 (LMT Classic의 IIDXOLLER 모드)
+function parserFor(profile, device) {
+  if (profile === 'PHOENIXWAN LMT Classic') {
+    if (isLmtPs2(device)) return 'DAO_PS2';
+    if (isLmtHid(device)) return 'DAO_HID';
+  }
+  return PARSER_BY_PROFILE[profile];
+}
 
 // 프로필에 맞는 연결된 장치들 (찾는 순서대로)
 function profileCandidates(profile, devices) {
@@ -76,6 +101,7 @@ function profileCandidates(profile, devices) {
   if (profile === 'FPS EMP Gen2') return devices.filter(d => d.path && isFps(d));
   if (profile === 'PHOENIXWAN LMT Classic') return devices.filter(d => d.path && isPhoenixLmt(d));
   if (profile === 'ARCIN') return devices.filter(d => d.path && isArcin(d));
+  if (profile === 'RED-LMS') return devices.filter(d => d.path && isRedLms(d));
   if (profile === 'AUTO') return autoCandidates(devices);
   return [];
 }
@@ -104,7 +130,7 @@ function chooseDevice(profile, { devicePath = null, deviceSerial = null, exclude
   const device = available.find(d => d.path === devicePath)
     || (deviceSerial && available.find(d => serialOf(d) === deviceSerial))
     || available[0];
-  return device ? { device, parser: PARSER_BY_PROFILE[profile] } : null;
+  return device ? { device, parser: parserFor(profile, device) } : null;
 }
 
 function describeDevice(device) {
@@ -257,11 +283,19 @@ function findAxisByte(reports, minDistinct = 8) {
 //   (2026-09-28 실측 1P·2P, 1000Hz). 주작콘식 LR2 모드는 없고, 펌웨어 설정으로 디지털 턴테이블을 켜면
 //   buffer[2]의 0x10(시계 방향) / 0x20(반시계 방향)이 켜진다 (멈춘 뒤 200ms 유지). 디지털만 쓰면 축은 127로 고정된다.
 //   아날로그 축이 살아 있으면 축을 읽고, 축이 127에 멈춰 있을 때만 디지털 신호로 방향을 만든다 (digitalTT)
+// - 따오 신기판 (LMT Classic의 PS2/BLE·EAC2dx/HID 모드, RED-LMS): 2026-10-02 실측 3건(LMT 2P 순정, LMT 2P 반전, RED-LMS 1P 반전·2P 순정)
+//   PS2/BLE: 건반 buffer[2], 턴테이블 buffer[0] (주작콘과 같음). 처음 돌리기 전에는 0이고, 돌기 시작하면 0을 건너뛴다(ff → 01)
+//     → 0은 위치가 아닌 값으로 보고 버린다 (zeroIsNoPosition)
+//   EAC2dx/HID·RED-LMS: buffer[0]이 report ID(01), 건반 buffer[2], 턴테이블 buffer[6]
+//   IIDXOLLER의 턴테이블 '반전'이 꺼져 있으면(순정) 시계 방향에 값이 늘어서 위젯과 반대다. 순정 기준으로 뒤집어 읽고(reversed),
+//   IIDXOLLER에서 반전을 켠 사람은 앱의 '턴테이블 방향 반전'도 켠다. 이 모드들의 LR2 신호는 실측이 없어서 감지하지 않는다
 const DEDICATED_LAYOUTS = {
   PHOENIXWAN: { keyByte: 2, turntableByte: 0, lr2: { plus: 0x80, minus: 0x7F, rest: 0x00 } },
   FPS_EMP: { keyByte: 2, turntableByte: 0, lr2: { plus: 0x80, minus: 0x7F, rest: 0x00 } },
   PHOENIXWAN_LMT: { keyByte: 2, turntableByte: 7, lr2: { plus: 0xFF, minus: 0x00, rest: 0x80 } },
-  ARCIN: { keyByte: 1, turntableByte: 3, lr2: null, digitalTT: { byte: 2, clockwise: 0x10, counterclockwise: 0x20, axisRest: 127 } }
+  ARCIN: { keyByte: 1, turntableByte: 3, lr2: null, digitalTT: { byte: 2, clockwise: 0x10, counterclockwise: 0x20, axisRest: 127 } },
+  DAO_PS2: { keyByte: 2, turntableByte: 0, lr2: null, reversed: true, zeroIsNoPosition: true },
+  DAO_HID: { keyByte: 2, turntableByte: 6, lr2: null, reversed: true }
 };
 
 function createDedicatedParserState(layout = DEDICATED_LAYOUTS.PHOENIXWAN) {
@@ -297,6 +331,7 @@ function parseControllerData(buffer, state) {
   state.lastButtonByte = buttonByte;
 
   const xRaw = buffer[turntableByte];
+  if (xRaw === 0 && state.layout?.zeroIsNoPosition) return events;
   const direction = xRaw < 100 ? '-' : xRaw > 150 ? '+' : 'neutral';
   events.push({ type: 'axis', axis: 'X', direction, discRaw: xRaw, timestamp });
 
@@ -444,8 +479,9 @@ function openReader(selection, callback, options) {
     return null;
   }
 
-  if (options.turntableReverse) callback = reverseTurntable(callback);
   const dedicatedState = createDedicatedParserState(DEDICATED_LAYOUTS[selection.parser] || DEDICATED_LAYOUTS.PHOENIXWAN);
+  // 순정 기준으로 뒤집어 읽는 기판(따오)은 앱의 '턴테이블 방향 반전'을 켜면 다시 콘이 보내는 그대로가 된다
+  if (!!options.turntableReverse !== !!(selection.parser !== 'GENERIC' && dedicatedState.layout.reversed)) callback = reverseTurntable(callback);
   // 주작콘식 LR2 모드가 없는 기판(arcin)은 설정과 관계없이 감지하지 않는다 (arcin 디지털 턴테이블은 따로 자동으로 처리)
   dedicatedState.lr2DetectEnabled = selection.parser !== 'GENERIC' && !!options.lr2ModeEnabled && !!dedicatedState.layout.lr2;
   const genericState = createGenericParserState(Number.isInteger(options.genericAxis) ? options.genericAxis : null,
