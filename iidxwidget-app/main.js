@@ -71,6 +71,10 @@ const updater = setupUpdater({ t, store, logger: log, beforeInstall: finishImmed
 
 const inputs = createInputManager({ dispatch: dispatchControllerData, logger: controllerLogger });
 
+// Windows가 앱 창을 다른 창에 가려졌다고 보면 Chromium이 그 창을 그리지 않는다. 전체 화면 게임 뒤에서
+// 가려지지 않았는데도 그렇게 판단해 앱 창 위젯이 멈춘 채로 남는 경우가 있어서 끈다 (OBS 위젯은 영향 없음)
+app.commandLine.appendSwitch('disable-features', 'CalculateNativeWinOcclusion');
+
 const sendTo = (win, channel, data) => {
   if (win && !win.isDestroyed()) win.webContents.send(channel, data);
 };
@@ -91,7 +95,8 @@ function createMainWindow() {
     width: 1000,
     height: 800,
     resizable: false,
-    webPreferences: { preload: preloadPath, contextIsolation: true, nodeIntegration: false }
+    // 뒤에 있거나 최소화돼도 위젯 갱신(타이머·애니메이션)을 늦추지 않는다
+    webPreferences: { preload: preloadPath, contextIsolation: true, nodeIntegration: false, backgroundThrottling: false }
   });
   mainWindow.loadFile(path.join(__dirname, 'renderer/widget/index.html'));
   // 창을 닫으면 바로 꺼지지 않고 종료 절차(자동 전송, 정리)를 거친다
@@ -558,8 +563,9 @@ function cleanupUserImages() {
 // 🎮 입력
 function dispatchControllerData(data) {
   const widgetData = data.filter(event => event.type !== 'physical-button');
-  // 물리 버튼 이벤트는 설정 창의 매핑 학습에만 쓴다
-  sendTo(settingsWindow, 'controller-data', data);
+  // 물리 버튼 이벤트는 설정 창의 매핑 학습에만 쓴다 (설정 창에는 그것만 보낸다. 턴테이블 축은 1000Hz라 열어 둔 채 플레이하면 부담)
+  const physical = data.filter(event => event.type === 'physical-button');
+  if (physical.length) sendTo(settingsWindow, 'controller-data', physical);
   if (!widgetData.length) return;
   session?.handleEvents(widgetData);
   sendTo(mainWindow, 'controller-data', widgetData);
