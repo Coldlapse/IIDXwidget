@@ -54,24 +54,38 @@ function sideConfig(settings, side) {
 const activeSides = settings => settings.widget?.buttonLayout === 'DP' ? [1, 2] : [1];
 const tagSide = (side, events) => events.map(event => ({ ...event, side }));
 
-// 다시 연결을 시도하는 간격. 장치가 빠져 있는 동안만 돈다
+// 다시 연결을 시도하는 간격. 장치가 빠져 있는 동안만 돈다 (장치 조회가 끝난 뒤부터 잰다)
 const RECONNECT_INTERVAL_MS = 2000;
 // 다시 연결을 시도할 때는 '장치를 찾을 수 없음' 로그를 남기지 않는다 (2초마다 쌓이지 않게)
 const QUIET_CODES = new Set(['notFound', 'otherNotFound', 'otherOnlyOfficial']);
 
-// hid: 테스트에서 가짜 리더를 넣을 수 있게 한다
+// hid: 테스트에서 가짜 리더를 넣을 수 있게 한다.
+// 장치 조회(scanDevices)는 비동기다. 기다리는 동안 설정이 바뀌거나 멈추면(세대 번호·요청 번호가 바뀌면) 결과를 버리고 장치를 열지 않는다.
+// 장치 열기는 짧아서(수 ms) 그대로 동기로 한다
 function createInputManager({ dispatch, logger, hid = controllerReader, reconnectIntervalMs = RECONNECT_INTERVAL_MS }) {
-  const { startControllerReader, startAutoControllerReader } = hid;
+  const { startControllerReader, startAutoControllerReader, scanDevices = controllerReader.scanDevices } = hid;
   let readers = [];          // [{ side, kind: 'hid' | 'keyboard', reader }]
   let wanted = [];           // 지금 설정에서 켜야 하는 사이드 [{ side, config }] (다시 연결할 때 씀)
+  let generation = 0;        // start·stop마다 올린다
   let reconnectTimer = null;
+  let reconnecting = false;  // 다시 연결하려고 장치를 조회하는 중 (겹쳐 돌지 않게)
+  const reconnectLogged = new Set(); // 다시 연결하며 이미 남긴 오류 로그 '사이드:코드' (권한 오류 등이 2초마다 쌓이지 않게)
   let mappingReader = null;  // 설정 창 매핑 학습용으로 따로 연 리더 { side, reader }
+  let mappingRequest = 0;
   const previews = new Map(); // 설정 창 턴테이블 미리보기, 사이드별 { kind: 'axis' | 'dedicated', stop }
+  const previewRequests = { 1: 0, 2: 0 };
   let lastSettings = null;
 
+  const scan = options => scanDevices(options).catch(error => {
+    logger('error', 'scanFailed', { error });
+    return [];
+  });
+
   function stop() {
-    clearInterval(reconnectTimer);
+    generation++;
+    clearTimeout(reconnectTimer);
     reconnectTimer = null;
+    reconnectLogged.clear();
     wanted = [];
     for (const { kind, reader } of readers) {
       try { kind === 'hid' ? reader.close() : reader.stop(); } catch (e) {}
@@ -89,23 +103,36 @@ function createInputManager({ dispatch, logger, hid = controllerReader, reconnec
   const missingSides = () => wanted.filter(({ side, config }) => config.profile !== 'KB' && !readers.some(r => r.side === side));
 
   function ensureReconnect() {
-    if (reconnectTimer || !missingSides().length) return;
-    reconnectTimer = setInterval(reconnectMissing, reconnectIntervalMs);
+    if (reconnectTimer || reconnecting || !missingSides().length) return;
+    reconnectTimer = setTimeout(reconnectMissing, reconnectIntervalMs);
   }
 
   // 빠진 사이드의 장치를 다시 찾는다. 앱을 켤 때 없던 컨트롤러를 나중에 꽂은 경우도 여기서 잡힌다
-  function reconnectMissing() {
-    for (const { side, config } of missingSides()) {
+  async function reconnectMissing() {
+    reconnectTimer = null;
+    const gen = generation;
+    reconnecting = true;
+    const devices = await scan({ background: true });
+    reconnecting = false;
+    if (gen !== generation) return; // 그사이 설정이 바뀌어 다시 시작했다 (새 start가 이어서 맡는다)
+    openSides(missingSides(), devices, { quiet: true });
+    ensureReconnect();
+  }
+
+  // 조회한 장치 목록으로 사이드를 차례로 연다. 앞 사이드가 연 장치는 뒤 사이드가 쓰지 않는다
+  function openSides(list, devices, { quiet = false } = {}) {
+    for (const { side, config } of list) {
+      if (readers.some(r => r.side === side)) continue;
       const usedPaths = readers.filter(r => r.kind === 'hid').map(r => r.reader.path);
-      startSide(side, config, usedPaths, { quiet: true });
-    }
-    if (!missingSides().length) {
-      clearInterval(reconnectTimer);
-      reconnectTimer = null;
+      // 다른 사이드가 매핑 학습용으로 연 장치도 가져가지 않는다
+      if (mappingReader && mappingReader.side !== side) usedPaths.push(mappingReader.reader.path);
+      const reserve = wanted.filter(w => w.side !== side && w.config.profile !== 'KB')
+        .map(({ config: c }) => ({ profile: c.profile, devicePath: c.devicePath, deviceSerial: c.deviceSerial }));
+      startSide(side, config, { devices, usedPaths, reserve, quiet });
     }
   }
 
-  function startSide(side, config, usedPaths, { quiet = false } = {}) {
+  function startSide(side, config, { devices = [], usedPaths = [], reserve = [], quiet = false } = {}) {
     const send = events => dispatch(tagSide(side, events));
     if (config.profile === 'KB') {
       try {
@@ -118,28 +145,40 @@ function createInputManager({ dispatch, logger, hid = controllerReader, reconnec
       return;
     }
     let reader = null;
+    // 다시 연결할 때: '찾을 수 없음'은 남기지 않고, 다른 오류(열기 실패·리눅스 권한 등)는 다시 연결될 때까지 한 번만 남긴다
+    const quietLogger = (level, code, details) => {
+      if (QUIET_CODES.has(code)) return;
+      if (level === 'error') {
+        if (reconnectLogged.has(`${side}:${code}`)) return;
+        reconnectLogged.add(`${side}:${code}`);
+      }
+      logger(level, code, details);
+    };
     const options = {
-      devicePath: config.devicePath, deviceSerial: config.deviceSerial, excludePaths: usedPaths, turntableReverse: config.turntableReverse,
-      logger: quiet ? (level, code, details) => { if (!QUIET_CODES.has(code)) logger(level, code, details); } : logger,
+      devices, devicePath: config.devicePath, deviceSerial: config.deviceSerial, excludePaths: usedPaths, reserve, turntableReverse: config.turntableReverse,
+      logger: quiet ? quietLogger : logger,
       onDisconnect: () => onDisconnect(side, reader)
     };
     reader = config.profile === 'AUTO'
       ? startAutoControllerReader(send, { ...options, ...genericTurntable(config), buttonTurntableLegacy: config.buttonTurntableLegacy })
       : startControllerReader(DEDICATED_PROFILES.includes(config.profile) ? config.profile : 'PHOENIXWAN', send, { ...options, lr2ModeEnabled: config.lr2ModeEnabled });
     if (!reader) return;
-    usedPaths.push(reader.path);
+    for (const key of [...reconnectLogged]) if (key.startsWith(`${side}:`)) reconnectLogged.delete(key);
     readers.push({ side, kind: 'hid', reader });
   }
 
-  function start(settings) {
+  // 설정대로 입력을 다시 연다. 키보드는 바로, 컨트롤러는 장치 조회가 끝나면 연다 (기다리는 동안 앱·OBS 위젯이 멈추지 않는다)
+  async function start(settings) {
     stop();
+    const gen = generation;
     lastSettings = settings;
-    const usedPaths = []; // 같은 장치를 두 사이드가 함께 읽지 않도록
-    for (const side of activeSides(settings)) {
-      const config = sideConfig(settings, side);
-      console.log(`🎮 Starting controller reader: side ${side}, profile ${config.profile}`);
-      wanted.push({ side, config });
-      startSide(side, config, usedPaths);
+    wanted = activeSides(settings).map(side => ({ side, config: sideConfig(settings, side) }));
+    for (const { side, config } of wanted) console.log(`🎮 Starting controller reader: side ${side}, profile ${config.profile}`);
+    openSides(wanted.filter(w => w.config.profile === 'KB'), []);
+    if (missingSides().length) {
+      const devices = await scan();
+      if (gen !== generation) return; // 기다리는 동안 다시 저장했거나 앱을 끄는 중
+      openSides(missingSides(), devices);
     }
     ensureReconnect(); // 지금 연결되지 않은 컨트롤러는 꽂으면 알아서 잡는다
   }
@@ -152,19 +191,26 @@ function createInputManager({ dispatch, logger, hid = controllerReader, reconnec
   }
 
   // 설정 창에서 기타 컨트롤러 매핑을 배우는 동안, 저장된 프로필과 상관없이 그 사이드의 일반 컨트롤러를 읽는다.
-  // devicePath: 설정 창에서 고른 장치. 반환값 status: 'generic' | 'officialOnly' | 'none'
-  function startMappingSession(side, onEvents, devicePath = null) {
+  // devicePath: 설정 창에서 고른 장치. 반환값 status: 'generic' | 'officialOnly' | 'none'.
+  // 장치를 찾는 동안 학습을 멈추거나 다시 시작하면 null (설정 창은 무시한다)
+  async function startMappingSession(side, onEvents, devicePath = null) {
     stopMappingSession();
-    const running = hidReaderOf(side);
-    if (running?.parser === 'GENERIC' && (!devicePath || running.path === devicePath)) {
-      // 이미 기타 컨트롤러로 읽고 있으면 그 입력이 설정 창으로 전달된다
-      return { status: 'generic', device: running.deviceName, shared: true };
-    }
+    const request = mappingRequest;
+    // 이미 기타 컨트롤러로 읽고 있으면 그 입력이 설정 창으로 전달된다
+    const shared = () => {
+      const running = hidReaderOf(side);
+      return running?.parser === 'GENERIC' && (!devicePath || running.path === devicePath)
+        ? { status: 'generic', device: running.deviceName, shared: true } : null;
+    };
+    if (shared()) return shared();
+    const devices = await scan();
+    if (request !== mappingRequest) return null;
+    if (shared()) return shared(); // 기다리는 동안 다시 연결된 경우
     const otherSide = side === 1 ? 2 : 1;
     const excludePaths = [hidReaderOf(otherSide)?.path].filter(Boolean);
-    const reader = startAutoControllerReader(events => onEvents(tagSide(side, events)), { genericMapping: {}, devicePath, excludePaths, logger });
+    const reader = startAutoControllerReader(events => onEvents(tagSide(side, events)), { devices, genericMapping: {}, devicePath, excludePaths, logger });
     if (!reader) {
-      const official = listControllerDevices('PHOENIXWAN').length + listControllerDevices('FPS EMP Gen2').length > 0;
+      const official = listControllerDevices('PHOENIXWAN', devices).length + listControllerDevices('FPS EMP Gen2', devices).length > 0;
       return { status: official ? 'officialOnly' : 'none' };
     }
     mappingReader = { side, reader };
@@ -204,8 +250,10 @@ function createInputManager({ dispatch, logger, hid = controllerReader, reconnec
   }
 
   // options: { profile, devicePath, byteIndex(기타 컨트롤러), lr2ModeEnabled(전용) }
-  function startTurntablePreview(side, options, onValue) {
+  // 전용 프로필은 장치를 찾는 동안 미리보기를 멈추거나 다시 요청하면 열지 않는다 (false)
+  async function startTurntablePreview(side, options, onValue) {
     endTurntablePreview(side);
+    const request = previewRequests[side];
     const out = throttled(onValue);
     if (options.profile === 'AUTO') {
       const reader = mappingReaderOf(side);
@@ -216,9 +264,11 @@ function createInputManager({ dispatch, logger, hid = controllerReader, reconnec
       return true;
     }
     if (!DEDICATED_PROFILES.includes(options.profile)) return false;
+    const devices = await scan();
+    if (request !== previewRequests[side]) return false;
     const reader = startControllerReader(options.profile, events => {
       for (const e of events) if (e.type === 'axis' && e.axis === 'X' && Number.isInteger(e.discRaw)) out.push(e.discRaw);
-    }, { devicePath: options.devicePath || null, lr2ModeEnabled: !!options.lr2ModeEnabled, logger: () => {} });
+    }, { devices, devicePath: options.devicePath || null, lr2ModeEnabled: !!options.lr2ModeEnabled, logger: () => {} });
     if (!reader) return false;
     previews.set(side, { kind: 'dedicated', stop: () => { out.cancel(); reader.close(); } });
     return true;
@@ -226,6 +276,8 @@ function createInputManager({ dispatch, logger, hid = controllerReader, reconnec
 
   // side를 빼면 모든 사이드. kind를 주면 그 종류만 멈춘다
   function endTurntablePreview(side = null, kind = null) {
+    // 장치를 찾는 중인 전용 미리보기도 취소한다 (축 미리보기는 조회 없이 바로 열린다)
+    if (kind !== 'axis') for (const s of [1, 2]) if (side === null || s === side) previewRequests[s]++;
     for (const [s, preview] of [...previews]) {
       if ((side !== null && s !== side) || (kind && preview.kind !== kind)) continue;
       try { preview.stop(); } catch (e) {}
@@ -234,6 +286,7 @@ function createInputManager({ dispatch, logger, hid = controllerReader, reconnec
   }
 
   function stopMappingSession() {
+    mappingRequest++; // 장치를 찾는 중인 학습 시작도 취소한다
     endTurntablePreview(null, 'axis'); // 학습 리더를 닫으므로 그 리더에 붙은 미리보기도 멈춘다
     if (mappingReader) {
       try { mappingReader.reader.close(); } catch (e) {}
@@ -242,9 +295,10 @@ function createInputManager({ dispatch, logger, hid = controllerReader, reconnec
   }
 
   // 설정 창 장치 드롭다운: 프로필에 맞는 연결된 장치와, 지금 각 사이드가 쓰는 장치
-  function listDevices(profile) {
+  async function listDevices(profile) {
+    const devices = profile === 'KB' ? [] : listControllerDevices(profile, await scan());
     return {
-      devices: profile === 'KB' ? [] : listControllerDevices(profile),
+      devices,
       inUse: Object.fromEntries(readers.filter(r => r.kind === 'hid').map(r => [r.side, r.reader.path]))
     };
   }

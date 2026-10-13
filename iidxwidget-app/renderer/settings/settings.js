@@ -14,7 +14,20 @@ $('cancel-button').addEventListener('click', () => {
   window.close();
 });
 
+// 장치를 찾는 중이면 끝난 뒤에 저장한다 (기다리는 동안 저장 버튼은 눌리지 않는다)
 $('save-button').addEventListener('click', async () => {
+  const saveButton = $('save-button');
+  if (saveButton.disabled) return;
+  saveButton.disabled = true;
+  try {
+    await Promise.all(panels.map(panel => panel.idle()));
+    await save();
+  } finally {
+    saveButton.disabled = false;
+  }
+});
+
+async function save() {
   const serverPort = parseInt($('serverPort').value, 10);
   const webSocketPort = parseInt($('webSocketPort').value, 10);
   const globalMALength = parseInt($('GlobalReleaseMALength').value, 10);
@@ -81,10 +94,7 @@ $('save-button').addEventListener('click', async () => {
     }
   };
 
-  const saveButton = $('save-button');
-  saveButton.disabled = true;
   const result = await window.electronAPI.saveSettings(newSettings);
-  saveButton.disabled = false;
 
   if (!result?.ok) {
     showStatus(window.i18n.t('settings.saveFailed', { message: result?.error ?? '' }), { error: true });
@@ -96,7 +106,7 @@ $('save-button').addEventListener('click', async () => {
     return;
   }
   window.close();
-});
+}
 
 // ✅ 사이드별 컨트롤러 (1P, DP면 2P까지)
 const panels = [window.createControllerPanel(1), window.createControllerPanel(2)];

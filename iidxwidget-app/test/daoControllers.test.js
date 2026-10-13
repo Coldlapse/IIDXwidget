@@ -17,7 +17,7 @@ class FakeHID extends EventEmitter {
   close() {}
 }
 const hidPath = require.resolve('node-hid', { paths: [path.join(__dirname, '..', 'controller')] });
-require.cache[hidPath] = { id: hidPath, filename: hidPath, loaded: true, exports: { HID: FakeHID, devices: () => connected.slice() } };
+require.cache[hidPath] = { id: hidPath, filename: hidPath, loaded: true, exports: { HID: FakeHID, devices: () => connected.slice(), devicesAsync: async () => connected.slice() } };
 
 const { listControllerDevices, chooseDevice, startControllerReader, findAutoController } = require('../controller/controllerReader');
 const ps2 = require('./fixtures/dao-lmt-ps2-2p.json');

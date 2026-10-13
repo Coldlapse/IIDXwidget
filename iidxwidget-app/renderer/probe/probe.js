@@ -25,8 +25,21 @@ function stepText(id) {
 }
 
 // ─── 장치 ─────────────────────────────
+// 장치 목록은 동기로 찾는다 (장치가 많으면 0.3초 넘게 걸림). 150ms가 넘으면 '수집 중' 화면으로 창을 덮는다
+const SCANNING_DELAY_MS = 150;
+async function listWithOverlay() {
+  const overlay = $('scanning');
+  const timer = setTimeout(() => { overlay.hidden = false; }, SCANNING_DELAY_MS);
+  try {
+    return await api.probeList();
+  } finally {
+    clearTimeout(timer);
+    overlay.hidden = true;
+  }
+}
+
 async function refreshDevices() {
-  groups = await api.probeList();
+  groups = await listWithOverlay();
   const select = $('device');
   const previous = select.value;
   select.replaceChildren(...groups.map(g => {

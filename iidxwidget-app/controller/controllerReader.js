@@ -4,6 +4,32 @@ function getHID() {
   return hidModule;
 }
 
+// 연결된 장치 목록을 비동기로 받는다. HID.devices()는 장치 수에 따라 0.3초쯤 걸리고 그동안 main 프로세스(OBS 위젯 전송 포함)를 멈춘다.
+// 이미 조회 중이면 그 결과를 함께 쓴다 (설정 창의 1P·2P 목록과 미리보기가 한꺼번에 물어도 조회는 한 번).
+// background: 다시 연결용 조회. 설정 창·저장처럼 사용자가 부른 조회는 돌고 있던 다시 연결용 조회를 함께 쓰지 않고
+// 그 조회가 끝난 뒤 새로 조회한다 (방금 꽂은 컨트롤러를 그 조회는 못 봤을 수 있다)
+let pendingScan = null; // { promise, background }
+let queuedScan = null;
+function runScan(background) {
+  const hid = getHID();
+  const promise = Promise.resolve()
+    .then(() => (hid.devicesAsync ? hid.devicesAsync() : hid.devices()))
+    .finally(() => { if (pendingScan?.promise === promise) pendingScan = null; });
+  pendingScan = { promise, background };
+  return promise;
+}
+function scanDevices({ background = false } = {}) {
+  if (!pendingScan) return runScan(background);
+  if (background || !pendingScan.background) return pendingScan.promise;
+  if (!queuedScan) {
+    queuedScan = pendingScan.promise.catch(() => {}).then(() => {
+      queuedScan = null;
+      return scanDevices();
+    });
+  }
+  return queuedScan;
+}
+
 const LR2_ACTIVATE_THRESHOLD = 120;
 const LR2_DEACTIVATE_THRESHOLD = 3;
 // arcin 디지털 턴테이블 모드 판단: 축이 가운데 값에서 이만큼의 보고서 동안 안 움직였으면 아날로그가 꺼진 것으로 본다
@@ -124,12 +150,20 @@ function listControllerDevices(profile, devices = getHID().devices()) {
   });
 }
 
-// 장치 고르기: 저장된 경로 → 저장된 시리얼(다른 USB 포트에 꽂아 경로가 바뀐 경우) → 다른 사이드가 쓰지 않는 첫 장치
-function chooseDevice(profile, { devicePath = null, deviceSerial = null, excludePaths = [] } = {}, devices = getHID().devices()) {
+// 장치 고르기: 저장된 경로 → 저장된 시리얼(다른 USB 포트에 꽂아 경로가 바뀐 경우) → 다른 사이드가 쓰지 않는 첫 장치.
+// reserve: DP에서 다른 사이드의 설정 [{ profile, devicePath, deviceSerial }]. 그 사이드가 아직 연결되지 않았어도 그 사이드 몫은 가져가지 않는다
+// (예전에는 1P 콘이 없으면 2P 콘을 1P로 읽었고, 허브 전원이 나갔다 돌아오거나 자동 실행으로 2P가 먼저 인식되면 1P·2P가 뒤바뀐 채 남았다)
+// - 다른 사이드가 저장한 경로의 장치는 시리얼이 같아도 가져가지 않는다
+// - 저장한 장치가 없어 아무 장치나 고를 때는 다른 사이드가 저장한 시리얼의 장치도 빼고,
+//   기타 컨트롤러(수동 매핑)는 다른 사이드의 전용 프로필에 맞는 장치도 뺀다
+function chooseDevice(profile, { devicePath = null, deviceSerial = null, excludePaths = [], reserve = [] } = {}, devices = getHID().devices()) {
   const available = profileCandidates(profile, devices).filter(d => !excludePaths.includes(d.path));
+  const reservedPath = d => reserve.some(r => r.devicePath && d.path === r.devicePath);
+  const reserved = d => reservedPath(d) || reserve.some(r => (r.deviceSerial && serialOf(d) === r.deviceSerial)
+    || (profile === 'AUTO' && r.profile !== 'AUTO' && profileCandidates(r.profile, [d]).length));
   const device = available.find(d => d.path === devicePath)
-    || (deviceSerial && available.find(d => serialOf(d) === deviceSerial))
-    || available[0];
+    || (deviceSerial && available.find(d => serialOf(d) === deviceSerial && !reservedPath(d)))
+    || available.find(d => !reserved(d));
   return device ? { device, parser: parserFor(profile, device) } : null;
 }
 
@@ -551,9 +585,10 @@ function openReader(selection, callback, options) {
   };
 }
 
-// options.devicePath: 고른 장치 (없으면 처음 찾은 장치), options.excludePaths: 다른 사이드가 쓰는 장치
+// options.devicePath: 고른 장치 (없으면 처음 찾은 장치), options.excludePaths: 다른 사이드가 쓰는 장치, options.reserve: chooseDevice
+// options.devices: 미리 받아 둔 장치 목록 (scanDevices). 없으면 여기서 동기로 조회한다
 function startControllerReader(profile, callback, options = {}) {
-  const selection = chooseDevice(profile, options);
+  const selection = chooseDevice(profile, options, options.devices || getHID().devices());
   if (!selection) {
     options.logger?.('error', 'notFound', { profile });
     return null;
@@ -567,7 +602,7 @@ function hasOfficiallySupportedController(devices = getHID().devices()) {
 }
 
 function startAutoControllerReader(callback, options = {}) {
-  const devices = getHID().devices();
+  const devices = options.devices || getHID().devices();
   const selection = chooseDevice('AUTO', options, devices);
   if (!selection) {
     options.logger?.('error', hasOfficiallySupportedController(devices) ? 'otherOnlyOfficial' : 'otherNotFound');
@@ -577,6 +612,7 @@ function startAutoControllerReader(callback, options = {}) {
 }
 
 module.exports = {
+  scanDevices,
   startControllerReader,
   startAutoControllerReader,
   findExactDedicatedDevice,

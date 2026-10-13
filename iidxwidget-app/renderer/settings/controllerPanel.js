@@ -7,6 +7,7 @@
   const t = (key, values) => window.i18n.t(key, values);
   let activeLearning = null; // 지금 버튼을 기다리는 { panel, input }
   let sessionSide = null;    // 매핑 학습 중인 사이드
+  let sessionRequest = 0;    // 학습 시작 요청 번호 (장치를 찾는 동안 멈추거나 다른 사이드로 옮기면 늦게 온 결과를 버린다)
   const TURNTABLE_KEYS = ['SCup', 'SCdown'];
   // 버튼 학습 중 아날로그 축 감지: 축 값이 바뀌면 한 바이트의 여러 비트가 짧은 시간에 잇달아 켜졌다 꺼진다.
   // AXIS_WINDOW_MS 안에 같은 바이트에서 서로 다른 비트 AXIS_MIN_BITS개 이상, 변화 AXIS_MIN_EVENTS번 이상이면 축으로 본다
@@ -74,7 +75,10 @@
 
     async function startSession() {
       sessionSide = side;
-      mappingSession = await api.startMappingSession(side, devicePath());
+      const request = ++sessionRequest;
+      const result = await api.startMappingSession(side, devicePath());
+      if (request !== sessionRequest || !result) return;
+      mappingSession = result;
       renderSessionStatus();
       refreshPreview({ force: true }); // 학습 리더를 새로 열면 거기에 붙은 미리보기도 다시 연다
     }
@@ -82,6 +86,7 @@
     function stopSession() {
       if (activeLearning?.panel === panel) activeLearning = null;
       if (sessionSide !== side) return;
+      sessionRequest++;
       sessionSide = null;
       mappingSession = null;
       api.stopMappingSession();
@@ -113,7 +118,8 @@
         previewOn = false;
         return;
       }
-      previewOn = await api.startTurntablePreview(side, options);
+      const on = await api.startTurntablePreview(side, options);
+      if (previewKey === key) previewOn = on; // 기다리는 동안 다른 장치로 바꿨으면 늦게 온 결과는 버린다
     }
 
     function spinDisc(value, reversed) {
@@ -140,11 +146,31 @@
       q('reverse-help').textContent = dao ? `${help} ${t('settings.turntableReverseHelpDao')}` : help;
     }
 
-    // 장치 드롭다운: 연결된 장치만 보여준다 (1개면 1개만). 없으면 '연결된 장치 없음'
-    async function refreshDevices() {
+    // 장치 드롭다운: 연결된 장치만 보여준다 (1개면 1개만). 없으면 '연결된 장치 없음'.
+    // 장치를 찾는 동안(0.3초쯤)은 '장치 찾는 중'을 보이고 고를 수 없게 한다. 저장은 찾기가 끝난 뒤에 한다 (panel.idle)
+    // 반환값: 이 요청이 마지막 요청인지 (그사이 다시 찾았으면 false, 부른 쪽은 뒤 요청에 맡긴다)
+    let devicesRequest = 0;
+    let devicesPending = Promise.resolve();
+    function refreshDevices() {
+      const request = ++devicesRequest;
+      const task = loadDevices(request);
+      devicesPending = task.catch(() => {});
+      return task;
+    }
+    async function loadDevices(request) {
       const select = q('device');
       const current = select.value || savedDevice;
+      select.disabled = true;
+      q('refresh').disabled = true;
+      if (!select.options.length || !select.value) {
+        const searching = document.createElement('option');
+        searching.value = '';
+        searching.textContent = t('settings.searchingDevices');
+        select.replaceChildren(searching);
+      }
       const { devices } = await api.listControllerDevices(profile());
+      if (request !== devicesRequest) return false;
+      q('refresh').disabled = false;
       select.replaceChildren(...(devices.length ? devices : [{ path: '', name: t('settings.noDevice') }]).map(d => {
         const option = document.createElement('option');
         option.value = d.path;
@@ -156,6 +182,7 @@
       // 저장된 경로가 없으면(다른 USB 포트에 꽂은 경우) 같은 시리얼의 장치를 고른다
       const match = devices.find(d => d.path === current) || (savedSerial && devices.find(d => d.serial === savedSerial));
       if (match) select.value = match.path;
+      return true;
     }
 
     function applyProfileUI() {
@@ -174,7 +201,7 @@
 
     async function onProfileChanged() {
       applyProfileUI();
-      if (profile() !== 'KB') await refreshDevices();
+      if (profile() !== 'KB' && !(await refreshDevices())) return; // 그사이 다시 찾았으면 뒤 요청이 이어서 한다
       if (profile() === 'AUTO') startSession();
       else stopSession();
       refreshPreview();
@@ -184,7 +211,7 @@
     q('device').addEventListener('change', () => { if (profile() === 'AUTO') startSession(); else refreshPreview(); });
     q('lr2').addEventListener('change', () => refreshPreview());
     q('refresh').addEventListener('click', async () => {
-      await refreshDevices();
+      if (!(await refreshDevices())) return;
       if (profile() === 'AUTO') startSession();
       else refreshPreview({ force: true }); // 컨트롤러를 새로 꽂은 경우 다시 연다
     });
@@ -249,6 +276,11 @@
 
     const panel = {
       side,
+      // 장치 목록을 찾는 중이면 끝날 때까지 기다린다 (저장할 때 고른 장치가 채워진 뒤에 읽도록)
+      async idle() {
+        let pending;
+        do { pending = devicesPending; await pending; } while (pending !== devicesPending);
+      },
       // 사이드 설정: { controllerProfile, controllerDevice, lr2ModeEnabled, keyMapping: { KB, GENERIC, GENERIC_AXIS } }
       async load(config) {
         q('profile').value = config.controllerProfile;

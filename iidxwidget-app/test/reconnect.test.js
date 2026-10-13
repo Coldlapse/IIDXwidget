@@ -18,7 +18,7 @@ class FakeHID extends EventEmitter {
   close() { this.closed = true; }
 }
 const hidPath = require.resolve('node-hid', { paths: [path.join(__dirname, '..', 'controller')] });
-require.cache[hidPath] = { id: hidPath, filename: hidPath, loaded: true, exports: { HID: FakeHID, devices: () => connected.slice() } };
+require.cache[hidPath] = { id: hidPath, filename: hidPath, loaded: true, exports: { HID: FakeHID, devices: () => connected.slice(), devicesAsync: async () => connected.slice() } };
 
 const controllerReader = require('../controller/controllerReader');
 const { createInputManager } = require('../inputManager');
@@ -32,7 +32,7 @@ test('연결이 끊기면 누르고 있던 건반을 떼고, 다시 꽂으면 �
   const events = [];
   const logs = [];
   const inputs = createInputManager({ dispatch: e => events.push(...e), logger: (level, code) => logs.push(code), reconnectIntervalMs: 20 });
-  inputs.start(settings);
+  await inputs.start(settings);
   assert.equal(opened.length, 1);
 
   // 1번 건반을 누른 채 USB를 뽑는다
@@ -65,7 +65,7 @@ test('앱을 켤 때 없던 컨트롤러도 나중에 꽂으면 잡힌다', asyn
   connected.length = 0;
   opened.length = 0;
   const inputs = createInputManager({ dispatch: () => {}, logger: () => {}, reconnectIntervalMs: 20 });
-  inputs.start(settings);
+  await inputs.start(settings);
   assert.equal(opened.length, 0);
   connected.push(PHOENIX);
   await wait(60);
