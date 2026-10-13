@@ -67,14 +67,14 @@
     </div>
 
     <hr class="section-divider" />
-    <label class="section-label" data-i18n="settings.inputAnalysis">Release 표본 수집 기준</label>
+    <label class="section-label" data-i18n="settings.inputAnalysis">릴리즈 표본 수집 기준</label>
     <div class="setting-group">
-      <label for="GlobalReleaseMALength" data-i18n="settings.globalMA">전체 Release 수집 표본 갯수 (기본 2000, 수치가 높을수록 변화에 둔감)</label>
+      <label for="GlobalReleaseMALength" data-i18n="settings.globalMA">전체 릴리즈 수집 표본 개수 (기본 2000, 수치가 높을수록 변화에 둔감)</label>
       <input type="number" id="GlobalReleaseMALength" min="10" max="5000" step="1" value="2000" />
     </div>
 
     <div class="setting-group">
-      <label for="PerButtonMALength" data-i18n="settings.perButtonMA">버튼별 Release 수집 표본 갯수 (기본 300, 수치가 높을수록 변화에 둔감)</label>
+      <label for="PerButtonMALength" data-i18n="settings.perButtonMA">버튼별 릴리즈 수집 표본 개수 (기본 300, 수치가 높을수록 변화에 둔감)</label>
       <input type="number" id="PerButtonMALength" min="10" max="5000" step="1" value="300" />
     </div>
 
@@ -91,7 +91,7 @@
     <label class="section-label" data-i18n="settings.appearance">위젯 외관 커스터마이징</label>
     <div class="setting-group">
       <label><input type="checkbox" id="transparent-container" /> <span data-i18n="settings.transparentContainer">위젯 컨테이너 배경 투명하게</span></label>
-      <label><input type="checkbox" id="showKeyRelease" /> <span data-i18n="settings.showKeyRelease">각 버튼 위에 버튼별 Release 수치 표시</span></label>
+      <label><input type="checkbox" id="showKeyRelease" /> <span data-i18n="settings.showKeyRelease">각 버튼 위에 버튼별 릴리즈 수치 표시</span></label>
     </div>
     <div class="setting-group">
       <label for="infoPosition" data-i18n="settings.infoPosition">세션 정보 표시 위치</label>
@@ -101,7 +101,7 @@
     </div>
     <div class="setting-group">
       <!-- 설명은 마우스를 올리면 보인다 (data-i18n-title) -->
-      <label class="has-tooltip" data-i18n-title="settings.promoHint"><input type="checkbox" id="showPromoBox" /> <span data-i18n="settings.promo">위젯 홍보 박스 표시</span> <span class="tooltip-mark" aria-hidden="true">ⓘ</span></label>
+      <label class="has-tooltip" data-i18n-title="settings.promoHint"><input type="checkbox" id="showPromoBox" /> <span data-i18n="settings.promo">위젯 홍보 줄 표시</span> <span class="tooltip-mark" aria-hidden="true">ⓘ</span></label>
     </div>
     <div class="setting-group">
       <label><input type="checkbox" id="kpsGaugeEnabled" /> <span data-i18n="settings.kpsGauge">KPS 스피드미터 게이지 표시</span></label>
@@ -122,7 +122,7 @@
     <div class="setting-group">
       <label id="up-disc-label">스크래치 커스텀 이미지 업로드</label>
       <div class="input-with-delete">
-        <button type="button" id="pick-up-disc-button" data-i18n="settings.pickImage">이미지 선택</button>
+        <button type="button" id="pick-up-disc-button" data-i18n="settings.pickImage">이미지 고르기</button>
         <button type="button" id="delete-up-disc-button" data-i18n="settings.delete">삭제</button>
       </div>
       <img id="up-disc-preview" class="disc-preview" alt="" />
@@ -130,7 +130,7 @@
     <div class="setting-group" id="down-disc-group" style="display: none;">
       <label data-i18n="settings.discImageDown">아랫방향 스크래치 커스텀 이미지 업로드</label>
       <div class="input-with-delete">
-        <button type="button" id="pick-down-disc-button" data-i18n="settings.pickImage">이미지 선택</button>
+        <button type="button" id="pick-down-disc-button" data-i18n="settings.pickImage">이미지 고르기</button>
         <button type="button" id="delete-down-disc-button" data-i18n="settings.delete">삭제</button>
       </div>
       <img id="down-disc-preview" class="disc-preview" alt="" />
@@ -177,7 +177,7 @@
     <div class="save-bar" id="save-bar">
       <div id="form-status" role="alert"></div>
       <div class="button-row">
-        <button id="save-button" data-i18n="settings.save">저장</button><button id="cancel-button" data-i18n="settings.cancel">저장하지 않고 종료</button>
+        <button id="save-button" data-i18n="settings.save">저장</button><button id="cancel-button" data-i18n="settings.cancel">저장하지 않고 닫기</button>
       </div>
     </div>
     <div id="save-bar-anchor" aria-hidden="true"></div>
@@ -204,7 +204,7 @@
           <button type="button" class="guide-button" data-role="refresh" data-i18n="settings.refreshDevices">다시 찾기</button>
         </div>
       </div>
-      <label data-role="lr2-row" class="has-tooltip" data-i18n-title="settings.lr2Hint"><input type="checkbox" data-role="lr2" /> <span data-i18n="settings.lr2">LR2 모드 감지 (주작콘 전용)</span> <span class="tooltip-mark" aria-hidden="true">ⓘ</span></label>
+      <label data-role="lr2-row" class="has-tooltip" data-i18n-title="settings.lr2Hint"><input type="checkbox" data-role="lr2" /> <span data-i18n="settings.lr2">LR2 모드 감지</span> <span class="tooltip-mark" aria-hidden="true">ⓘ</span></label>
       <div class="reverse-row" data-role="reverse-row">
         <label><input type="checkbox" data-role="tt-reverse" /> <span data-i18n="settings.turntableReverse">턴테이블 방향 반전</span></label>
         <div class="tt-preview idle" data-role="tt-preview" aria-hidden="true"><div class="tt-needle" data-role="tt-disc"></div></div>
@@ -263,7 +263,7 @@
           <span data-i18n="settings.turntableAxis">턴테이블 (축)</span>
           <span class="axis-value" data-role="axis-value"></span>
           <button type="button" data-role="learn-axis" data-i18n="settings.learnAxis">학습</button>
-          <button type="button" data-role="clear-axis" data-i18n="settings.clearAxis">할당 해제</button>
+          <button type="button" data-role="clear-axis" data-i18n="settings.clearAxis">매핑 해제</button>
         </div>
         <p class="mapping-help" data-role="axis-help" data-i18n="settings.axisHelp">턴테이블이 축으로 동작하는 기판이라면 '학습'을 누르고 2초 동안 턴테이블을 돌리세요.</p>
       </div>
