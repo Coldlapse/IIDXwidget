@@ -9,7 +9,7 @@ What the numbers in Menu → **Chatter detector** mean, how they are counted, an
 ## What is chatter?
 
 The switch inside each key makes its signal when metal contacts touch and separate.
-When a switch gets worn or dirty, the contacts don't close cleanly. They **bounce several times in a very short moment.**
+When a switch gets worn or dirty, the contacts don't close cleanly. They **bounce several times within a split second.**
 Then one press can reach the computer as **two or more presses**. That's **chatter (double input)**.
 
 The upper line means released, the lower line means pressed.
@@ -80,11 +80,11 @@ Change them with **⚙ Settings** at the top right of the chatter window. You ca
 
 ## 📈 How to read the numbers
 
-Chatter being detected doesn't necessarily mean that key has a bad double-input problem. **Most switches show some chatter even when brand new.**
+Detected chatter doesn't necessarily mean that key has a bad double-input problem. **Most switches show some chatter even when brand new.**
 What matters is finding **double inputs that actually affect your play** (for example, late POORs after a note or long-note combo breaks).
 
 ### If one key is much higher than the rest
-If one of the seven keys stands out, for example every key is around 20 but one shows about 70, that can be one sign that the key's switch is near the end of its life.
+If one of the seven keys stands out (for example, every key is around 20 but one shows about 70), that can be a sign that the key's switch is near the end of its life.
 
 ### Keys 2, 4 and 6 tend to be a bit higher
 - On 1P with the common 엄중검 fingering, keys 2, 4 and 6 are played with the left middle finger, the right index finger and the right middle finger.
@@ -106,7 +106,7 @@ If one of the seven keys stands out, for example every key is around 20 but one 
 
 ## 🎮 How games handle input
 
-The same bounce is treated differently by each game. This looks at the open-source **beatoraja** and **LR2** (based on OpenLR2, a rewritten source).
+The same bounce is treated differently by each game. This section compares the open-source **beatoraja** and **LR2** (through OpenLR2, a rewrite of LR2's source).
 
 ### Two things to know first
 - **Check interval** : how often the game reads the key state. An input shorter than this can be missed.
@@ -136,4 +136,4 @@ The same bounce is treated differently by each game. This looks at the open-sour
 
 ---
 
-For what the release number means, see the [RELEASE guide](RELEASE.en.md). For everything else, see [Usage and Settings](USAGE.en.md).
+For what the release number means, see the [RELEASE guide](RELEASE.en.md). For everything else, see [Usage and settings](USAGE.en.md).

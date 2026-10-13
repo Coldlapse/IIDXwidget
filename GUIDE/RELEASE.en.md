@@ -24,12 +24,12 @@ Some players, like [Rag](https://rag-oji.com/dakendisplay/), land in the 50s on 
 ## 🎯 What it's good for
 
 ### 1. Seeing whether you hard-press or roll
-- Hard-pressing (gachi-oshi) basically means **letting go quickly**. If you hard-press ★17 gazer [MANIAQ], your release should be under 60ms at the very most.
+- Hard-pressing (gachi-oshi) basically means **letting go quickly**. If you hard-press ★17 gazer [MANIAQ], your release should be 60ms at most.
 - If you get 70–80 on gazer, you are rolling it.
 - Rolling is not bad at all. It's just a different way to play, and some players get great judgments while rolling. The number is here to help you **see your own technique objectively**.
 
 ### 2. Checking today's condition
-- Say you usually get 40–50 on a 140–150 BPM hard-press chart (★22 Hay FEVER [G]), and one day you get 60–70. That day, you can't hard-press it like usual.
+- Say you usually get 40–50 on a 140–150 BPM hard-press chart (★22 Hay FEVER [G]), and one day you get 60–70. That tells you you aren't hard-pressing it as well as usual that day.
 - Use it to compare against **your usual, or your best, condition**.
 
 ---
@@ -40,7 +40,7 @@ The release value isn't about being low or high. It's useful for seeing, objecti
 - **how far you are from your usual state**
 - whether you are **hard-pressing or rolling** right now
 
-> ⚠️ This section is not purely objective fact. It is the developer's own research, put together from the developer's experience, the experience of people around them, and opinions from some top players. Treat it as a reference only.
+> ⚠️ This section is not purely objective fact. It's the developer's own take, based on personal experience, the experience of people around them, and opinions from some top players. Treat it as a reference only.
 
 ---
 
@@ -56,4 +56,4 @@ Release uses the same rules as [Rag](https://rag-oji.com/dakendisplay/)'s widget
 - **Average release** on the Session page is the average of every press in this session.
 - You can change the sample counts and the long note threshold in Settings. When you do, this session is recalculated right away.
 
-For the settings, see [Usage and Settings](USAGE.en.md).
+For the settings, see [Usage and settings](USAGE.en.md).

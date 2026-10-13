@@ -3,7 +3,7 @@
 [한국어](CONNECTION.md)
 
 How to put IIDXwidget on your OBS stream, **from the very beginning**.
-You don't need to know what an IP or a port is. We'll explain just what you need.
+You don't need to know what an IP or a port is. We'll explain only what you need.
 
 ---
 
@@ -88,16 +88,16 @@ Do this on the **stream PC**.
 - **A "Windows protected your PC" window appears**
   - This is the standard Windows warning for programs without a code signature. Click **More info → Run anyway** to install.
 - **Smart App Control blocks the installer (Windows 11)**
-  - Smart App Control is a Windows 11 feature that blocks programs without a code signature that few people use. There is no **Run** button then, so it can't be installed as is.
+  - Smart App Control is a Windows 11 feature that blocks unsigned programs that few people have used. In that case there is no **Run anyway** button, so you can't install it without changing this setting.
   - To turn it off: **Windows Security → App & browser control → Smart App Control settings → Off**
-  - Turning it back **On** from the same place after installing is recommended. On the developer's PC the app and auto-update kept working after turning it back on, but that can't be guaranteed everywhere. If the app or updates get blocked after that, turn it off again and let us know in [Issues](https://github.com/Coldlapse/IIDXwidget/issues). (Older Windows 11 needed a reset to turn it back on once it was off; recent updates can turn it back on right away.)
-  - Why there is no code signature: code signing certificates cost quite a bit, so this free, personally made program doesn't have one yet. Beyond saying it's safe, the developer has no other way to prove it. The source code is fully public, so please check and decide for yourself.
+  - We recommend turning it back **On** in the same place after installing. On the developer's PC the app and auto-update kept working after turning it back on, but that can't be guaranteed everywhere. If the app or updates get blocked after that, turn it off again and let us know in [Issues](https://github.com/Coldlapse/IIDXwidget/issues). (Older Windows 11 needed a reset to turn it back on once it was off; recent updates can turn it back on right away.)
+  - Why there is no code signature: code signing certificates are expensive, so this free, one-person project doesn't have one yet. Other than saying it's safe, the developer has no way to prove it. The source code is fully public, so please check and decide for yourself.
 - **Windows Defender flags version 2.1.0 or earlier as a virus**
   - The installer may be flagged as `Trojan:Win32/Vigorf.A` and an installed file as `Trojan:Win32/KeyLogger!AMTB`. **These are false positives.**
-  - A third-party component used to read keys in keyboard mode looked like a keylogger. It is no longer used since 3.0.0. **Please install the latest version.**
+  - A third-party component used to read keys in keyboard mode looked like a keylogger. It has not been used since 3.0.0. **Please install the latest version.**
 - **How is keyboard input used?**
   - Keys are read only in keyboard mode, and only the keys you mapped are used for the widget.
-  - Key input is never sent over the internet. The only thing that goes online is your press count, when you press Upload on the **Session** page or when **Upload remaining presses when quitting**, which you turn on yourself, runs. The source code is fully public, so you can check.
+  - Key input is never sent over the internet. The only thing that goes online is your press count, and only when you press **Upload now** on the **Session** page, or when **Upload remaining presses when quitting** (off unless you turn it on) runs. The source code is fully public, so you can check.
 - If it's still blocked on the latest version, let us know in [Issues](https://github.com/Coldlapse/IIDXwidget/issues).
 
 ---
@@ -128,4 +128,4 @@ Still stuck? Take a screenshot of Menu → **Logs** and post it in [Issues](http
 
 ---
 
-For other features and settings, see [Usage and Settings](USAGE.en.md).
+For other features and settings, see [Usage and settings](USAGE.en.md).

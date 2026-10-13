@@ -1,4 +1,4 @@
-# 📘 Usage and Settings
+# 📘 Usage and settings
 
 [한국어](USAGE.md)
 
@@ -30,7 +30,7 @@ For what release means, see the [RELEASE guide](RELEASE.en.md).
 - **Menu**
   - **Settings** : Change the [settings](#-settings) below.
   - **Logs** : Whether your controller was detected, and any errors. Look here first when something goes wrong.
-  - **Session** : Presses, sent and remaining counts for this session, and uploading to [beatmania.app](https://beatmania.app).
+  - **Session** : Presses, uploaded and remaining counts for this session, and uploading to [beatmania.app](https://beatmania.app).
   - **Controller probe** : Records the signals of a controller that isn't officially supported, for requesting official support. See the [controller support request guide](CONTROLLER.en.md).
   - **Chatter detector** : Chatter (double input) counts per key, grouped as 1-3-5-7 and 2-4-6, with keys that stand out within their group highlighted in red. Change the detection preset (Rag / Coldlapse) and thresholds with **⚙ Settings** at the top right of the window. See the [chatter guide](CHATTER.en.md).
   - **Developer & Contributors** : App version, the developer and their links, support (Buy me a coffee) and the contributors, all in one window.
@@ -60,18 +60,18 @@ Press **Save** to apply changes. Saved changes show up in the OBS widget right a
 
 - Choosing **DP** adds a **2P controller** section so 1P and 2P each get their own controller. The two sides can use different profiles (e.g. PHOENIXWAN on 1P and FPS on 2P), and one side can be a keyboard.
 - The widget shows the 1P and 2P bodies joined by a 40px gap in the widget background color, with the session dashboard as a trapezoid in the middle. If a side uses the keyboard, **1P · KB**, **2P · KB** (or **INPUT · KB** for both) appears at the top between the two bodies. Presses, KPS and average release combine both sides.
-- The DP widget is 1000px wide, so set the OBS browser source to **1320×600**. The app window also gets wider, only while DP is selected.
+- The DP widget is 1000px wide, so set the OBS browser source to **1320×600**. The app window also gets wider while DP is selected.
 - The chatter window shows a second keyboard for 2P below 1P and compares each side separately.
 
 ### Controller profiles
 
 Choose a profile and a **device** for each side (one for SP, 1P and 2P for DP). The keyboard and other-controller mapping tables appear right below the profile.
 
-- **Device** : Lists only connected controllers that match the profile; if there is just one, only one appears. Identical controllers (two boards for 1P and 2P, for example) get a tag in front of the name: the last 4 digits of the serial number such as `[S/N …1234]`, or `[#1]`, `[#2]` if they have no serial. Press **Rescan** to refresh the list. The serial lets the app find the same device even on a different USB port; if the saved device is missing, another connected one is used.
+- **Device** : Lists the connected controllers that match the profile. Identical controllers (two boards for 1P and 2P, for example) get a tag in front of the name: the last 4 digits of the serial number such as `[S/N …1234]`, or `[#1]`, `[#2]` if they have no serial. Press **Rescan** to refresh the list. The serial lets the app find the same device even on a different USB port; if the saved device is missing, another connected one is used.
 - In DP, 1P and 2P can't use the same device.
-- In DP, a side never takes the device the other side saved. If one controller shows up late, or both are unplugged and plugged back in, 1P and 2P don't get swapped. An Other controller (manual mapping) side also leaves alone controllers that match the other side's profile (unless you picked and saved that device for it).
+- In DP, a side never takes the device the other side saved. If one controller shows up late, or both are unplugged and plugged back in, 1P and 2P don't get swapped. A side set to Other controller (manual mapping) also won't take a controller that matches the other side's profile, unless you picked and saved that device for it.
 - If you unplug and replug a controller, or plug one in after starting the app, input comes back within about 2 seconds without saving or restarting.
-- **Detect LR2 mode (dedicated controller only)** : Shown only for the PHOENIXWAN, FPS and LMT Classic profiles. A PHOENIXWAN in LR2 sends turntable signals differently; with this on, the app detects LR2 mode and shows the turntable correctly. If you never use LR2 mode, you can leave it off.
+- **Detect LR2 mode** : Shown only for the PHOENIXWAN, FPS and LMT Classic profiles. A PHOENIXWAN in LR2 mode sends turntable signals differently; with this on, the app detects LR2 mode and shows the turntable correctly. If you never use LR2 mode, you can leave it off.
 - **Reverse turntable direction** : Available for every profile except Keyboard. The small disc next to it follows your turntable input and spins the same way as the OBS widget. If it spins the opposite way when you turn the turntable clockwise, turn this on. Changing the checkbox, profile or device shows the result on the disc before you save, and once you save the widget spins the way you see here. (For Other controller, the disc moves once an axis is learned in Analog turntable.)
 
 - **PHOENIXWAN+ / FPS EMP Gen2** : Works as soon as you select it.
@@ -79,10 +79,10 @@ Choose a profile and a **device** for each side (one for SP, 1P and 2P for DP). 
   - **PS2 and BLE mode**, **EAC2dx and HID mode** : just select the profile. The turntable direction assumes the turntable **Reverse** option in IIDXOLLER is off. If you turned it on in IIDXOLLER, turn on **Reverse turntable direction** in the app too.
   - **LR2 layout mode** : turn on **Detect LR2 mode**, just like on a PHOENIXWAN.
   - Other modes (beatoraja layout, keyboard and mouse, DS4, NS) aren't supported. Map them with the **Other controller (manual mapping)** or **Keyboard** profile.
-- **RED-LMS** : a double controller whose 1P and 2P halves connect separately. The 1P and 2P halves show up separately in the device list, so pick the right one for each side. The turntable direction assumes the turntable **Reverse** option in IIDXOLLER is off. For a side where you turned it on (for example only 1P, to match the INFINITAS song select), turn on **Reverse turntable direction** for that side in the app too.
-- **arcin-infinitas** : [arcin-infinitas](https://github.com/kinetic-flow/arcin-infinitas) — guaranteed to work only with arcin-infinitas, the INFINITAS firmware for arcin boards developed by kinetic-flow. Renaming the board (label) in the config tool is fine. Every turntable mode is followed automatically.
+- **RED-LMS** : a double controller whose 1P and 2P halves connect separately and show up as separate devices, so pick the right one for each side. The turntable direction assumes the turntable **Reverse** option in IIDXOLLER is off. For a side where you turned it on (for example only 1P, to match the INFINITAS song select), turn on **Reverse turntable direction** for that side in the app too.
+- **arcin-infinitas** : Guaranteed to work only with [arcin-infinitas](https://github.com/kinetic-flow/arcin-infinitas), kinetic-flow's INFINITAS firmware for arcin boards. Renaming the board (label) in the config tool is fine. Every turntable mode is followed automatically.
   - **Analog** (recommended for INFINITAS and beatoraja) : the turntable position is read as is.
-  - **Digital** (recommended for LR2) : only the direction comes in, so the disc turns a little each time the direction changes, like PHOENIXWAN LR2 mode. There's no option to turn on.
+  - **Digital** (recommended for LR2) : only the direction comes in, so the disc turns a little each time the direction changes, like PHOENIXWAN LR2 mode. You don't need to turn on any option.
   - **Digital + analog** : the analog position is read.
   - If you flipped the turntable direction in the arcin config tool (analog reversed, etc.), match the widget with **Reverse turntable direction** above.
   - If you use the arcin in **keyboard mode**, map it with the **Keyboard** profile.
@@ -105,7 +105,7 @@ Not every controller on the market is supported. The Other controller profile is
 
 **Likely to work**
 - Arcade-style IIDX controllers that connect as a gamepad (HID)
-- DIY boards built with Arduino and similar
+- Arduino and similar DIY boards
 - PS2 controllers connected through a USB adapter
 
 **May not work, or not checked yet**
@@ -130,10 +130,10 @@ If you'd like a dedicated profile for your controller, record its signals with M
 
 | Setting | Meaning |
 |---|---|
-| **beatmania.app account** | Paste the token from [beatmania.app](https://beatmania.app) My Page → **Get an API token** and press **Connect**. It is checked with the server and saved right away, and the connected account name is shown. The token is stored encrypted with your Windows account. |
-| **Upload remaining presses when quitting** | When you quit, uploads what this session has not sent yet. Off by default. When off, unsent presses are gone when you quit. |
+| **beatmania.app account** | Paste the token from [beatmania.app](https://beatmania.app) My Page → **Get an API token** and press **Connect**. The app checks it with the server, saves it right away and shows the connected account name. The token is stored encrypted with your Windows account. |
+| **Upload remaining presses when quitting** | When you quit, uploads what this session has not uploaded yet. Off by default. When off, presses not yet uploaded are gone when you quit. |
 
-- To upload by hand, go to Menu → **Session** → **Upload now**. Only what hasn't been sent is uploaded, so pressing it more than once never double-counts.
+- To upload by hand, go to Menu → **Session** → **Upload now**. Only what hasn't been uploaded yet is uploaded, so pressing it more than once never double-counts.
 - Daily records are on your beatmania.app My Page. The server files each upload under the date it arrived (Korea time).
 
 ### Server ports
@@ -152,7 +152,7 @@ Release is calculated with the same rules as [Rag](https://rag-oji.com/dakendisp
 | Setting | Meaning |
 |---|---|
 | **Global release sample count** | How many recent presses the overall average release uses. Default 2000 (same as Rag's widget). Higher values change more slowly. |
-| **Per-button release sample count** | How many recent presses each key's release number uses. Default 300 (same as Rag's widget). |
+| **Per-key release sample count** | How many recent presses each key's release number uses. Default 300 (same as Rag's widget). |
 | **Long note (CN) threshold** | Presses held this long or longer count as long notes and are left out of the release average. The key shows the long note color while held. Default 200ms, 100–500ms. |
 | **Open chatter detection settings** | Opens the settings view of the chatter window. For presets and thresholds, see the [chatter guide](CHATTER.en.md). |
 
@@ -170,15 +170,15 @@ KPS speedometer presets:
 
 | Setting | Meaning |
 |---|---|
-| **Transparent container background** | Makes the background behind the widget transparent so only the widget shows on stream. |
-| **Show each button's release value above it** | Shows or hides the release number above each key. On by default. |
-| **Session information position** | Attach the session dashboard below or above the widget body, or hide it. The promotion strip goes on the opposite side. |
-| **Show widget promotion box** | Shows the IIDXwidget repository address as a small strip on the side opposite the session dashboard. Thanks if you turn it on 🙏 |
+| **Transparent widget background** | Makes the background behind the widget transparent so only the widget shows on stream. |
+| **Show each key's release value above it** | Shows or hides the release number above each key. On by default. |
+| **Session info position** | Attach the session dashboard below or above the widget body, or hide it. The promotion strip goes on the opposite side. |
+| **Show widget promotion strip** | Shows "Get this widget → iidxwidget.coldlapse.dev" (the IIDXwidget website) as a small strip on the side opposite the session dashboard. Thanks if you turn it on 🙏 |
 | **Show KPS speedometer gauge** | Shows KPS as a speedometer. On by default; turn it off to show just the number. The preset sets the red zone and the end of the gauge (table above). |
 | **Turntable image mode** | **Single image** : one image spins with the turntable. **Two images** : a different image for each spin direction. |
 | **Custom turntable image** | The image used for the disc (PNG, JPG, WEBP, BMP, and **animated images like GIFs**). **Delete** goes back to the default disc. |
 | **Use recommended colors for this image** | Shown only when a turntable image is set. When on, colors are picked from the image (the default/upward image in two-image mode) and applied to the widget background, keys, text and long notes. While on, the color fields below just show the recommended colors. **Your own colors are kept, so turning it off brings them back.** GIFs use their first frame. Off by default. |
-| **Colors** | Widget background, turntable background (also used for the dashboard and promotion strip), idle/active colors (the idle color also draws the dashboard dividers), text color, and the color of a key held as a long note. |
+| **Colors** | **Widget background**, **Turntable background** (also used for the dashboard and promotion strip), **Idle key/turntable color** and **Active key/turntable color** (the idle color also draws the dashboard dividers), **Text/turntable line color**, and the color of a key held as a long note. |
 
 ---
 
@@ -213,6 +213,6 @@ Good to know
 ## 💡 Good to know
 
 - If you quit and restart the app, the OBS widget reconnects by itself. While the app is off, OBS shows "Lost connection to IIDXwidget".
-- Only one copy of the app runs. Launching it again brings the open window to the front.
+- Only one copy of the app can run at a time. Launching it again brings the open window to the front.
 - Right after updating the app, press **Refresh cache of current page** once in the OBS browser source properties.
 - Questions and bugs go to [Issues](https://github.com/Coldlapse/IIDXwidget/issues).

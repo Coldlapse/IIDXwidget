@@ -45,14 +45,14 @@ You only need to do this once. From now on the widget follows settings changes a
 - **Antivirus false positive fixed** : Windows Defender no longer blocks the app as it did with 2.1.0 and earlier. The component that reads keyboard input was replaced.
 - **Korean / English** : Menu → Language
 - **PHOENIXWAN+ LMT Classic board supported** : Pick the **PHOENIXWAN+ LMT Classic** profile in Settings and it works the same way as a PHOENIXWAN. For LR2 mode, also turn on **Detect LR2 mode**. Other controller (manual mapping) still works too. For settings per board mode (IIDXOLLER), see [Usage and settings](USAGE.en.md#controller-profiles).
-- **Other controller (manual mapping)** : Controllers that are not officially supported and DIY boards can be mapped by pressing their buttons. Boards whose turntable is an axis are found with "Learn".
+- **Other controller (manual mapping)** : Controllers that are not officially supported and DIY boards can be mapped by pressing their buttons. For boards whose turntable is an axis, press **Learn** to find it.
 - **Widget redesign** : The floating session info box is now a dashboard attached to the widget body. The turntable and keys keep their size and position, and the widget takes up no more space than before.
 - **DP support** : Pick a controller for 1P and 2P separately; the widget shows both sides joined together. Use a 1320×600 OBS browser source. With several identical controllers, choose the device in Settings.
 - **KPS speedometer** : KPS on the dashboard is shown as a speedometer gauge that heats up in the red zone. Turn it off or pick a preset (IIDX / BMS up to ★★ / BMS ★★ and up) in Settings.
 - **Widget customization** : animated turntable images such as GIFs, recommended colors for your image (turn it off to get your own colors back), two-image turntable mode (a different image per spin direction), transparent widget background, show/hide release numbers on keys, long note color
 - **Instant settings and auto reconnect** : Saved settings show up in the OBS widget right away, and the widget reconnects by itself when you restart the app. While the app is off, OBS shows "Lost connection to IIDXwidget".
-- **Session** (Menu → Session) : See presses, sent and remaining counts for this session and upload them to beatmania.app right there.
-- **Upload when quitting** : Turn it on in Settings to upload the remaining presses automatically when you quit. Off by default.
+- **Session** (Menu → Session) : See presses, uploaded and remaining counts for this session and upload them to beatmania.app right there.
+- **Upload remaining presses when quitting** : Turn it on in Settings to upload the remaining presses automatically when you quit. Off by default.
 - **Controller probe** (Menu → Controller probe) : Record the signals of a controller that isn't officially supported and request official support through a GitHub issue. ([Controller support request guide](CONTROLLER.en.md))
 - **Developer & Contributors** : About and Contributors are now one window.
 - **Guides** (top menu → Guides) : Usage, connection, release and chatter guides inside the app.
@@ -61,7 +61,7 @@ You only need to do this once. From now on the widget follows settings changes a
 
 ## 🔑 Connecting your beatmania.app account changed
 
-- Paste your token and press **Connect**. It is checked with the server, saved, and the **connected account name** is shown.
+- Paste your token and press **Connect**. The app checks it with the server, saves it, and shows the **connected account name**.
 - The token is stored **encrypted** with your Windows account.
 - The token you entered in 2.x was moved over automatically. If you see your account name in Settings, you're all set.
 - If you see "The server rejected the saved token", copy the token from your [beatmania.app](https://beatmania.app) My Page again and paste it.
@@ -69,4 +69,4 @@ You only need to do this once. From now on the widget follows settings changes a
 
 ---
 
-You can open this page again any time from the top menu → **Guides**. For all features and settings, see [Usage and Settings](USAGE.en.md).
+You can open this page again any time from the top menu → **Guides**. For all features and settings, see [Usage and settings](USAGE.en.md).
