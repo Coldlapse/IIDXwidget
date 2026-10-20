@@ -1,0 +1,73 @@
+name: 버그 제보 / Bug report
+description: 앱이나 OBS 위젯이 안 되거나 이상하게 동작할 때 알려 주세요. / Tell us when the app or the OBS widget doesn't work or acts oddly.
+title: "[버그] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        먼저 [연결 가이드 → 안 될 때](https://github.com/Coldlapse/IIDXwidget/blob/main/GUIDE/CONNECTION.md#-안-될-때)를 확인해 주세요. 공식 지원하지 않는 컨트롤러를 쓰신다면 [컨트롤러 지원 요청](https://github.com/Coldlapse/IIDXwidget/issues/new?template=controller-support.yml) 양식이 더 알맞습니다.
+        Please check [Connection guide → When it doesn't work](https://github.com/Coldlapse/IIDXwidget/blob/main/GUIDE/CONNECTION.en.md#-when-it-doesnt-work) first. If your controller isn't officially supported, the [controller support request](https://github.com/Coldlapse/IIDXwidget/issues/new?template=controller-support.yml) form fits better.
+  - type: input
+    id: version
+    attributes:
+      label: IIDXwidget 버전 / Version
+      description: 메뉴 → 개발자 정보/기여자 / Menu → Developer & Contributors
+      placeholder: "3.0.5"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: 운영체제 / OS
+      options:
+        - Windows 11
+        - Windows 10
+        - 리눅스 (AppImage) / Linux (AppImage)
+        - 기타 / Other
+    validations:
+      required: true
+  - type: dropdown
+    id: profile
+    attributes:
+      label: 컨트롤러 프로필 / Controller profile
+      description: 설정 창에서 고른 프로필. DP라면 1P·2P를 아래 증상 칸에 적어 주세요. / The profile chosen in Settings. For DP, note both sides in the box below.
+      options:
+        - PHOENIXWAN+
+        - PHOENIXWAN+ LMT Classic
+        - RED-LMS
+        - FPS EMP Gen2
+        - arcin-infinitas
+        - 기타 컨트롤러 (수동 매핑) / Other controller (manual mapping)
+        - 키보드 / Keyboard
+        - 컨트롤러와 관계없음 / Not controller related
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: 증상 / What happened
+      description: 무엇이 어떻게 잘못됐는지, 원래는 어떻게 돼야 하는지 적어 주세요. / What went wrong, and what you expected instead.
+      placeholder: "예 / e.g. 설정을 저장하면 OBS 위젯이 1초쯤 멈춤. 멈추지 않아야 함"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 재현 방법 / Steps to reproduce
+      description: 어떻게 하면 다시 생기는지. 가끔만 생기면 언제 생겼는지 적어 주세요. / How to make it happen again. If it only happens sometimes, say when it happened.
+      placeholder: |
+        1. 
+        2. 
+        3. 
+  - type: textarea
+    id: logs
+    attributes:
+      label: 로그 / Logs
+      description: 메뉴 → 로그 창의 내용을 붙여 넣거나 캡처해 주세요. / Paste or screenshot the contents of Menu → Logs.
+      render: text
+  - type: textarea
+    id: attachments
+    attributes:
+      label: 스크린샷·영상·파일 / Screenshots, videos, files
+      description: 이 칸에 끌어다 놓으면 첨부됩니다. 컨트롤러 입력 문제라면 메뉴 → 컨트롤러 정보 수집의 JSON 파일이 큰 도움이 됩니다. / Drag files here to attach them. For controller input problems, the JSON file from Menu → Controller probe helps a lot.

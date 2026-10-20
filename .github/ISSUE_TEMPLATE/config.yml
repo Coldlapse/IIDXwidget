@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 사용 가이드 / Guides
+    url: https://github.com/Coldlapse/IIDXwidget/tree/main/GUIDE
+    about: 연결, 설정, 컨트롤러 정보 수집 방법은 가이드에 있습니다. / Connection, settings and the controller probe are covered in the guides.

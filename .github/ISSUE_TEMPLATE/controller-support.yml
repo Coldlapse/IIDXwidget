@@ -1,6 +1,7 @@
 name: 컨트롤러 지원 요청 / Controller support request
 description: 공식 지원하지 않는 컨트롤러의 전용 프로필을 요청합니다. / Ask for a dedicated profile for a controller that isn't officially supported.
 title: "[컨트롤러] "
+labels: ["controller"]
 body:
   - type: markdown
     attributes:
@@ -9,6 +10,9 @@ body:
         First, record the steps in IIDXwidget under Menu → **Controller probe** and press **Save result file** to save a JSON file. ([How](https://github.com/Coldlapse/IIDXwidget/blob/main/GUIDE/CONTROLLER.en.md))
 
         요청한다고 해서 공식 지원이 보장되지는 않습니다. / A request doesn't guarantee official support.
+
+        공식 지원 컨트롤러(PHOENIXWAN+, LMT Classic, RED-LMS, FPS EMP Gen2, arcin-infinitas)에서 생긴 문제는 [버그 제보](https://github.com/Coldlapse/IIDXwidget/issues/new?template=bug-report.yml)로 알려 주세요.
+        For problems with an officially supported controller (PHOENIXWAN+, LMT Classic, RED-LMS, FPS EMP Gen2, arcin-infinitas), use the [bug report](https://github.com/Coldlapse/IIDXwidget/issues/new?template=bug-report.yml) form.
   - type: input
     id: controller
     attributes:
@@ -56,4 +60,15 @@ body:
     attributes:
       label: IIDXwidget 버전 / Version
       description: 메뉴 → 개발자 정보/기여자 / Menu → Developer & Contributors
-      placeholder: "3.0.0"
+      placeholder: "3.0.5"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: 운영체제 / OS
+      options:
+        - Windows 11
+        - Windows 10
+        - 리눅스 (AppImage) / Linux (AppImage)
+        - 기타 / Other
